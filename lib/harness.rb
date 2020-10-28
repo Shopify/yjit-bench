@@ -1,10 +1,13 @@
 require 'csv'
 
-# Minimum benchmarking time in seconds
-$MIN_TIME = 20
+# Warmup iterations
+$WARMUP_ITRS = 12
 
 # Minimum number of benchmarking iterations
-$MIN_ITRS = 20
+$MIN_BENCH_ITRS = 10
+
+# Minimum benchmarking time in seconds
+$MIN_BENCH_TIME = 10
 
 $out_csv_path = ENV.fetch('OUT_CSV_PATH', 'output.csv')
 
@@ -36,13 +39,16 @@ def run_benchmark
         times << time
         total_time += time
 
-        if num_itrs >= $MIN_ITRS and total_time >= $MIN_TIME
+        if num_itrs >= $WARMUP_ITRS + $MIN_BENCH_ITRS and total_time >= $MIN_BENCH_TIME
             break
         end
     end
 
+    # Throw away the warmup iterations
+    times = times[$WARMUP_ITRS..]
+
     # Write each time value on its own row
     CSV.open($out_csv_path, "wb") do |csv|
-        times.each { |t| csv << [t] }
+        csv << times
     end
 end

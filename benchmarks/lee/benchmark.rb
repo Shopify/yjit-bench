@@ -102,9 +102,9 @@ run_benchmark do
     raise 'invalid solution' unless Lee.solution_valid?(board, solutions)
 
     cost, depth = Lee.cost_solutions(board, solutions)
-    puts "routes: #{board.routes.size}"
-    puts "cost:   #{cost}"
-    puts "depth:  #{depth}"
+    #puts "routes: #{board.routes.size}"
+    #puts "cost:   #{cost}"
+    #puts "depth:  #{depth}"
 
     Lee.draw board, solutions.values, output_filename if output_filename
 end

@@ -9,5 +9,5 @@ def fib(n)
 end
 
 run_benchmark do
-    fib(35)
+    fib(32)
 end
