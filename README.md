@@ -19,16 +19,19 @@ graphed in any spreadsheet editor.
 
 ## Installation
 
-Building MicroJIT:
+Install [chruby](https://github.com/postmodern/chruby)
+
+Build MicroJIT:
 
 ```
 git clone https://github.com/Shopify/ruby.git
+cd ruby
 git checkout microjit
 ./configure --prefix=$HOME/.rubies/ruby-microjit
 make -j16 install
 ```
 
-Installing dependencies:
+Install dependencies:
 ```
 pip3 install --user tabulate
 gem install victor

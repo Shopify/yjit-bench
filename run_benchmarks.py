@@ -120,8 +120,6 @@ for bench_name in bench_names:
         speedup
     ])
 
-print_table(table)
-
 # Save data as CSV so we can produce tables/graphs in a spreasheet program
 # NOTE: we don't do any number formatting for the output file because
 #       we don't want to lose any precision
@@ -129,3 +127,6 @@ table = [[ruby_version], []] + table
 with open('table.csv', 'w') as csvfile:
     writer = csv.writer(csvfile, delimiter=',', quotechar='"')
     writer.writerow(table)
+
+# Print the table to the console, with numbers truncated
+print_table(table)
