@@ -103,7 +103,7 @@ print('Total time spent benchmarking: {}s'.format(bench_total_time))
 print()
 
 # Table for the data we've gathered
-table = [["bench", "interp", "stddev %", "ujit", "stddev %", "speedup %"]]
+table = [["bench", "interp (ms)", "stddev (%)", "ujit (ms)", "stddev (%)", "speedup (%)"]]
 
 for bench_name in bench_names:
     ujit_t = ujit_times[bench_name]
