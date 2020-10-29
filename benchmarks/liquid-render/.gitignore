@@ -1,0 +1,10 @@
+*~
+*.gem
+*.swp
+pkg
+*.rbc
+.rvmrc
+.ruby-version
+Gemfile.lock
+.bundle
+.byebug_history
