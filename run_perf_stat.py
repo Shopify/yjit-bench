@@ -24,31 +24,29 @@ def run_benchmarks(enable_ujit):
         if not script_path.endswith('.rb'):
             script_path = os.path.join(script_path, 'benchmark.rb')
 
-        # Set up the environment for the benchmarking command
-        sub_env = os.environ.copy()
-        sub_env["OUT_CSV_PATH"] = 'output.csv'
-
         # Set up the benchmarking command
         cmd = [
+            "perf", "stat", "-e", "cycles:u",
             "ruby",
             "--ujit" if enable_ujit else "--disable-ujit",
-            "-I", "./harness",
+            "-I", "./harness-perf",
             script_path
         ]
 
+        times = []
+
         # Do the benchmarking
-        print(cmd)
-        subprocess.check_call(cmd, env=sub_env)
+        for i in range(4):
+            print(cmd)
+            cmd_output = subprocess.check_output(cmd)
+            lines = cmd_output.split('\n')
+            lines = map(lambda l: l.strip())
 
-        with open(sub_env["OUT_CSV_PATH"]) as csvfile:
-            reader = csv.reader(csvfile, delimiter=',', quotechar='"')
-            rows = list(reader)
-            # Convert times to ms
-            times = list(map(lambda v: 1000 * float(v), rows[0]))
-
-        #print(times)
-        #print(mean(times))
-        #print(stddev(times))
+            for line in lines:
+                tokens = line.split()
+                if tokens[1] == 'cycles:u':
+                    times.append(int(tokens[0]))
+                    break
 
         bench_times[bench_name] = times
 
