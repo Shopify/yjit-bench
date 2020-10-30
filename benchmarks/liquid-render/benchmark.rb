@@ -8,6 +8,6 @@ profiler = ThemeRunner.new
 
 profiler.compile
 
-run_benchmark(500) do
+run_benchmark(1500) do
     profiler.render
 end
