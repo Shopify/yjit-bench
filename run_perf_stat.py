@@ -38,16 +38,20 @@ def run_benchmarks(enable_ujit):
         # Do the benchmarking
         for i in range(4):
             print(cmd)
-            cmd_output = subprocess.check_output(cmd)
+            cmd_output = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
+            cmd_output = str(cmd_output, 'utf-8')
             lines = cmd_output.split('\n')
-            lines = map(lambda l: l.strip())
+            lines = map(lambda l: l.strip(), lines)
 
             for line in lines:
                 tokens = line.split()
-                if tokens[1] == 'cycles:u':
-                    times.append(int(tokens[0]))
+                if len(tokens) == 2 and tokens[1] == 'cycles:u':
+                    cycles = int(tokens[0])
+                    print(cycles)
+                    times.append(cycles)
                     break
 
+        assert (len(times) > 0)
         bench_times[bench_name] = times
 
     return bench_times
@@ -65,7 +69,7 @@ print('Total time spent benchmarking: {}s'.format(bench_total_time))
 print()
 
 # Table for the data we've gathered
-table = [["bench", "interp (ms)", "stddev (%)", "ujit (ms)", "stddev (%)", "speedup (%)"]]
+table = [["bench", "interp (cyc)", "stddev (%)", "ujit (cyc)", "stddev (%)", "speedup (%)"]]
 
 for bench_name in bench_names:
     ujit_t = ujit_times[bench_name]
