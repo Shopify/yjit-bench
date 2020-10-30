@@ -1,2 +1,3 @@
-*.csv
-*.json
+output_*.csv
+output_*.json
+output_*.txt

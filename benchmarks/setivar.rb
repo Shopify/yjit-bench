@@ -16,6 +16,6 @@ end
 
 obj = TheClass.new
 
-run_benchmark do
+run_benchmark(100) do
     obj.set_value_loop
 end

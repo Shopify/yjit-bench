@@ -21,7 +21,7 @@ def time_itr
 end
 
 # Takes a block as input
-def run_benchmark
+def run_benchmark(num_itrs_hint)
     times = []
     total_time = 0
 

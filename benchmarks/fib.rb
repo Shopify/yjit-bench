@@ -8,6 +8,6 @@ def fib(n)
     return fib(n-1) + fib(n-2)
 end
 
-run_benchmark do
+run_benchmark(100) do
     fib(32)
 end

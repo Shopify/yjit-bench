@@ -6,9 +6,10 @@ import csv
 import os
 import json
 import time
+import datetime
 
 # Path to the Ruby benchmark harness dir
-HARNESS_LIB_DIR = './lib'
+HARNESS_LIB_DIR = './harness'
 
 def run_benchmarks(enable_ujit):
     """
@@ -55,7 +56,7 @@ def run_benchmarks(enable_ujit):
 
     return bench_times
 
-def print_table(table_data):
+def table_to_str(table_data):
     from tabulate import tabulate
 
     def trim_cell(cell):
@@ -70,7 +71,7 @@ def print_table(table_data):
     # Trim numbers to one decimal for console display
     table_data = list(map(trim_row, table_data))
 
-    print(tabulate(table_data))
+    return tabulate(table_data)
 
 def mean(values):
     total = sum(values)
@@ -82,6 +83,13 @@ def stddev(values):
     diff_sqrs = map(lambda v: (v-xbar)*(v-xbar), values)
     mean_sqr = sum(diff_sqrs) / len(values)
     return math.sqrt(mean_sqr)
+
+def free_file_no():
+    for file_no in range(1, 1000):
+        out_path = 'output_{:03d}.csv'.format(file_no)
+        if not os.path.exists(out_path):
+            return file_no
+    assert False
 
 # TODO: argparse
 # TODO: quick test mode, --quick ?
@@ -120,13 +128,21 @@ for bench_name in bench_names:
         speedup
     ])
 
+# Find a free file index for the output files
+file_no = free_file_no()
+
 # Save data as CSV so we can produce tables/graphs in a spreasheet program
 # NOTE: we don't do any number formatting for the output file because
 #       we don't want to lose any precision
-table = [[ruby_version], []] + table
-with open('table.csv', 'w') as csvfile:
+output_tbl = [[ruby_version], []] + table
+with open('output_{:03d}.csv'.format(file_no), 'w') as csvfile:
     writer = csv.writer(csvfile, delimiter=',', quotechar='"')
-    writer.writerow(table)
+    writer.writerow(output_tbl)
+
+# Save the output in a text file that we can easily refer to
+output_str = ruby_version + '\n' + table_to_str(table) + '\n'
+with open('output_{:03d}.txt'.format(file_no), 'w') as txtfile:
+    txtfile.write(output_str)
 
 # Print the table to the console, with numbers truncated
-print_table(table)
+print(output_str)

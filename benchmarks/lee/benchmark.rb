@@ -82,7 +82,7 @@ end
 
 require 'harness'
 
-run_benchmark do
+run_benchmark(20) do
     depth = Lee::Matrix.new(board.height, board.width)
 
     solutions = {}
