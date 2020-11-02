@@ -6,8 +6,19 @@ class TheClass
     end
 
     def set_value_loop
+        # 1M
         i = 0
-        while i < 5000000
+        while i < 1000000
+            # 10 times to de-emphasize loop overhead
+            @levar = i
+            @levar = i
+            @levar = i
+            @levar = i
+            @levar = i
+            @levar = i
+            @levar = i
+            @levar = i
+            @levar = i
             @levar = i
             i += 1
         end

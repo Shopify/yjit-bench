@@ -8,8 +8,19 @@ class TheClass
     def get_value_loop
         sum = 0
 
+        # 1M
         i = 0
-        while i < 5000000
+        while i < 1000000
+            # 10 times to de-emphasize loop overhead
+            sum += @levar
+            sum += @levar
+            sum += @levar
+            sum += @levar
+            sum += @levar
+            sum += @levar
+            sum += @levar
+            sum += @levar
+            sum += @levar
             sum += @levar
             i += 1
         end

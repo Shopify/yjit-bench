@@ -1,4 +1,4 @@
-output_*.csv
+*.csv
 output_*.json
 output_*.txt
 
