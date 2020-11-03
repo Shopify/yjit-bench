@@ -45,6 +45,7 @@ def run_benchmarks(enable_ujit):
             rows = list(reader)
             # Convert times to ms
             times = list(map(lambda v: 1000 * float(v), rows[0]))
+            times = sorted(times)
 
         #print(times)
         #print(mean(times))
@@ -69,6 +70,7 @@ print()
 # Table for the data we've gathered
 table = [["bench", "interp (ms)", "stddev (%)", "ujit (ms)", "stddev (%)", "speedup (%)"]]
 
+# Format the results table
 for bench_name in bench_names:
     ujit_t = ujit_times[bench_name]
     interp_t = interp_times[bench_name]
@@ -99,6 +101,15 @@ with open('output_{:03d}.csv'.format(file_no), 'w') as csvfile:
 output_str = ruby_version + '\n' + table_to_str(table) + '\n'
 with open('output_{:03d}.txt'.format(file_no), 'w') as txtfile:
     txtfile.write(output_str)
+
+# Save the raw data
+with open('data_{:03d}.json'.format(file_no), "w") as write_file:
+    data = {
+        'ujit': ujit_times,
+        'interp': interp_times,
+        'ruby_version': ruby_version,
+    }
+    json.dump(data, write_file, indent=4)
 
 # Print the table to the console, with numbers truncated
 print(output_str)
