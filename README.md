@@ -62,8 +62,8 @@ setivar        92.5         2.4         68.9       2.0         25.5
 To run one individual benchmark without recording the data:
 ```
 # For single-file microbenchmarks:
-ruby -I./lib benchmarks/fib.rb
+ruby -I./harness benchmarks/fib.rb
 
 # For macro-benchmarks, there is a benchmark.rb file in each directory:
-ruby -I./lib benchmarks/lee/benchmark.rb
+ruby -I./harness benchmarks/lee/benchmark.rb
 ```
