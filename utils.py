@@ -1,3 +1,4 @@
+import sys
 import os
 import math
 import subprocess
@@ -6,7 +7,11 @@ def get_ruby_version():
     ruby_version = subprocess.check_output(["ruby", "-v"])
     ruby_version = str(ruby_version, 'utf-8').replace('\n', ' ')
     print(ruby_version)
-    assert "MicroJIT" in ruby_version
+
+    if not "MicroJIT" in ruby_version:
+        print("You forgot to do `chruby ruby-microjit`")
+        sys.exit(-1)
+
     return ruby_version
 
 def table_to_str(table_data):
