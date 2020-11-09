@@ -67,3 +67,25 @@ ruby -I./harness benchmarks/fib.rb
 # For macro-benchmarks, there is a benchmark.rb file in each directory:
 ruby -I./harness benchmarks/lee/benchmark.rb
 ```
+
+## Disabling frequency scaling on your AWS instance:
+
+Edit `/etc/default/grub.d/50-cloudimg-settings.cfg` and add\
+`intel_pstate=no_hwp` to `GRUB_CMDLINE_LINUX_DEFAULT`. It’s a space
+separated list.
+
+Then:
+```
+sudo update-grub
+ - sudo reboot
+ - sudo sh -c 'echo 1 > /sys/devices/system/cpu/intel_pstate/no_turbo'
+```
+
+To verify things worked:
+ - `cat /proc/cmdline` to see the `intel_pstate=no_hwp` parameter is in there
+ - `ls /sys/devices/system/cpu/intel_pstate/` and `hwp_dynamic_boost` should not exist
+ - `cat /sys/devices/system/cpu/intel_pstate/no_turbo` should say `1`
+
+Helpful docs:
+ - https://01.org/linuxgraphics/gfx-docs/drm/admin-guide/pm/intel_pstate.html
+ - https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/processor_state_control.html#baseline-perf
