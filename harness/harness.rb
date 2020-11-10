@@ -1,7 +1,7 @@
 require 'csv'
 
 # Warmup iterations
-$WARMUP_ITRS = 12
+$WARMUP_ITRS = 15
 
 # Minimum number of benchmarking iterations
 $MIN_BENCH_ITRS = 10
