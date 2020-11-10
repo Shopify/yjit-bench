@@ -70,9 +70,7 @@ ruby -I./harness benchmarks/lee/benchmark.rb
 
 ## Disabling frequency scaling on your AWS instance:
 
-Edit `/etc/default/grub.d/50-cloudimg-settings.cfg` and add\
-`intel_pstate=no_hwp` to `GRUB_CMDLINE_LINUX_DEFAULT`. It’s a space
-separated list.
+Edit `/etc/default/grub.d/50-cloudimg-settings.cfg` and add `intel_pstate=no_hwp` to `GRUB_CMDLINE_LINUX_DEFAULT`. It’s a space separated list.
 
 Then:
 ```
