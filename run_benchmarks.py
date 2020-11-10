@@ -30,6 +30,8 @@ def run_benchmarks(enable_ujit):
 
         # Set up the benchmarking command
         cmd = [
+            "nice", "-20",
+            "taskset", "-c", "11",
             "ruby",
             "--ujit" if enable_ujit else "--disable-ujit",
             "-I", "./harness",
@@ -55,7 +57,11 @@ def run_benchmarks(enable_ujit):
 
     return bench_times
 
+# Get the ruby binary version string
 ruby_version = get_ruby_version()
+
+# Check that turbo is disabled
+check_no_turbo()
 
 bench_start_time = time.time()
 ujit_times = run_benchmarks(enable_ujit=True)

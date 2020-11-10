@@ -9,10 +9,23 @@ def get_ruby_version():
     print(ruby_version)
 
     if not "MicroJIT" in ruby_version:
-        print("You forgot to do `chruby ruby-microjit`")
+        print("You forgot to chruby to ruby-microjit:")
+        print("  chruby ruby-microjit")
         sys.exit(-1)
 
     return ruby_version
+
+def check_no_turbo():
+    if not os.path.exists('/sys/devices/system/cpu/intel_pstate/no_turbo'):
+        return
+
+    with open('/sys/devices/system/cpu/intel_pstate/no_turbo', mode='r') as file:
+        content = file.read().strip()
+
+    if content != '1':
+        print("You forgot to disable turbo:")
+        print("  sudo sh -c 'echo 1 > /sys/devices/system/cpu/intel_pstate/no_turbo'")
+        sys.exit(-1)
 
 def table_to_str(table_data):
     from tabulate import tabulate
