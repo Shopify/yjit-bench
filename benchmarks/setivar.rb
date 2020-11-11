@@ -2,6 +2,9 @@ require 'harness'
 
 class TheClass
     def initialize
+        @v0 = 1
+        @v1 = 2
+        @v3 = 3
         @levar = 1
     end
 
