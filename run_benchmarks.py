@@ -109,7 +109,7 @@ with open('output_{:03d}.txt'.format(file_no), 'w') as txtfile:
     txtfile.write(output_str)
 
 # Save the raw data
-with open('data_{:03d}.json'.format(file_no), "w") as write_file:
+with open('output_{:03d}.json'.format(file_no), "w") as write_file:
     data = {
         'ujit': ujit_times,
         'interp': interp_times,
