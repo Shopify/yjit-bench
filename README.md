@@ -37,6 +37,8 @@ pip3 install --user tabulate
 gem install victor
 ```
 
+See [`railsbench`'s README](benchmark/railsbench/README.md) for setting up `railsbench`.
+
 ## Usage
 
 To run all the benchmarks and record the data:
