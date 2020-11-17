@@ -18,7 +18,7 @@ run_benchmark(20) do
     env = Rack::MockRequest::env_for("http://localhost#{path}")
     response_array = app.call(env)
     unless response_array.first == 200
-      raise "HTTP response is #{status} instead of 200. Is the benchmark app properly set up? See README.md."
+      raise "HTTP response is #{response_array.first} instead of 200. Is the benchmark app properly set up? See README.md."
     end
   end
 end
