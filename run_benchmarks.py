@@ -9,7 +9,7 @@ import time
 import datetime
 from utils import *
 
-def run_benchmarks(enable_ujit):
+def run_benchmarks(enable_ujit, name_filter):
     """
     Run all the benchmarks and record execution times
     """
@@ -18,6 +18,8 @@ def run_benchmarks(enable_ujit):
 
     for entry in sorted(os.listdir('benchmarks')):
         bench_name = entry.replace('.rb', '')
+        if name_filter not in bench_name:
+            continue
 
         # Path to the benchmark runner script
         script_path = os.path.join('benchmarks', entry)
@@ -57,6 +59,10 @@ def run_benchmarks(enable_ujit):
 
     return bench_times
 
+parser = argparse.ArgumentParser(description='Run MicroJIT benchmarks.')
+parser.add_argument('bench_name_filter', type=str, nargs='?', default='', help='when given, only benchmarks with names that contain this string will run')
+args = parser.parse_args()
+
 # Get the ruby binary version string
 ruby_version = get_ruby_version()
 
@@ -64,8 +70,8 @@ ruby_version = get_ruby_version()
 check_no_turbo()
 
 bench_start_time = time.time()
-ujit_times = run_benchmarks(enable_ujit=True)
-interp_times = run_benchmarks(enable_ujit=False)
+ujit_times = run_benchmarks(enable_ujit=True, name_filter=args.bench_name_filter)
+interp_times = run_benchmarks(enable_ujit=False, name_filter=args.bench_name_filter)
 bench_end_time = time.time()
 bench_names = sorted(ujit_times.keys())
 

@@ -70,6 +70,11 @@ ruby -I./harness benchmarks/fib.rb
 ruby -I./harness benchmarks/lee/benchmark.rb
 ```
 
+To run one individual benchmark and record the data:
+```
+./run_benchmarks.py $BENCHMARK_NAME
+``
+
 ## Disabling frequency scaling on your AWS instance:
 
 Edit `/etc/default/grub.d/50-cloudimg-settings.cfg` and add `intel_pstate=no_hwp` to `GRUB_CMDLINE_LINUX_DEFAULT`. It’s a space separated list.
