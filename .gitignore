@@ -1,5 +1,5 @@
 output*.csv
 output*.txt
-data*.json
+output*.json
 
 __pycache__
