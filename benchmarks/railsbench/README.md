@@ -20,6 +20,8 @@ https://classic.yarnpkg.com/en/docs/install/.
 Run these commands in the root of this application:
 
 ```sh
+cd benchmarks/railsbench/
+chruby ruby-microjit
 bundle install
 yarn
 bin/rails assets:precompile RAILS_ENV=production
