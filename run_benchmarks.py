@@ -32,8 +32,13 @@ def run_benchmarks(enable_ujit, name_filter):
 
         # Set up the benchmarking command
         cmd = [
+            # Disable address space randomization (for determinism)
+            "setarch", "x86_64", "-R",
+            # Increase process priority
             "nice", "-20",
+            # Pin the process to one given core
             "taskset", "-c", "11",
+            # Run the benchmark
             "ruby",
             "--ujit" if enable_ujit else "--disable-ujit",
             "-I", "./harness",
