@@ -24,6 +24,7 @@ Install [chruby](https://github.com/postmodern/chruby)
 Build MicroJIT:
 
 ```
+sudo apt-get install sqlite3 libsqlite3-dev
 git clone https://github.com/Shopify/ruby.git
 cd ruby
 git checkout microjit
@@ -34,6 +35,7 @@ make -j16 install
 Install dependencies:
 ```
 pip3 install --user tabulate
+chruby ruby-microjit
 gem install victor
 ```
 
