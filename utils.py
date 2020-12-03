@@ -15,7 +15,7 @@ def get_ruby_version():
 
     return ruby_version
 
-def check_no_turbo():
+def check_pstate():
     if not os.path.exists('/sys/devices/system/cpu/intel_pstate/no_turbo'):
         return
 
@@ -25,6 +25,17 @@ def check_no_turbo():
     if content != '1':
         print("You forgot to disable turbo:")
         print("  sudo sh -c 'echo 1 > /sys/devices/system/cpu/intel_pstate/no_turbo'")
+        sys.exit(-1)
+
+    if not os.path.exists('/sys/devices/system/cpu/intel_pstate/min_perf_pct'):
+        return
+
+    with open('/sys/devices/system/cpu/intel_pstate/min_perf_pct', mode='r') as file:
+        content = file.read().strip()
+
+    if content != '100':
+        print("You forgot to set the min perf percentage to 100:")
+        print("  sudo sh -c 'echo 100 > /sys/devices/system/cpu/intel_pstate/min_perf_pct'")
         sys.exit(-1)
 
 def table_to_str(table_data):

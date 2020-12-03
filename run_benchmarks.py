@@ -71,8 +71,8 @@ args = parser.parse_args()
 # Get the ruby binary version string
 ruby_version = get_ruby_version()
 
-# Check that turbo is disabled
-check_no_turbo()
+# Check pstate status
+check_pstate()
 
 bench_start_time = time.time()
 ujit_times = run_benchmarks(enable_ujit=True, name_filter=args.bench_name_filter)
