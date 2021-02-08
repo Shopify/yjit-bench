@@ -26,7 +26,7 @@ def build_ujit(repo_dir):
     # Build in parallel
     n_cores = os.cpu_count()
     print('Building MicroJIT with {} processes'.format(n_cores))
-    subprocess.check_call(['make', '-j' + str(n_cores)])
+    subprocess.check_call(['make', '-j' + str(n_cores), 'install'])
 
     os.chdir(cwd)
 
