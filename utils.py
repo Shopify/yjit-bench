@@ -30,12 +30,17 @@ def build_ujit(repo_dir):
 
     os.chdir(cwd)
 
+def set_bench_config():
+     # sudo requires the flag '-S' in order to take input from stdin
+     subprocess.check_call("sudo -S sh -c 'echo 1 > /sys/devices/system/cpu/intel_pstate/no_turbo'", shell=True)
+     subprocess.check_call("sudo -S sh -c 'echo 100 > /sys/devices/system/cpu/intel_pstate/min_perf_pct'", shell=True)
+
 def get_ruby_version():
     ruby_version = subprocess.check_output(["ruby", "-v"])
     ruby_version = str(ruby_version, 'utf-8').replace('\n', ' ')
     print(ruby_version)
 
-    if not "MicroJIT" in ruby_version:
+    if not "ujit" in ruby_version.lower():
         print("You forgot to chruby to ruby-microjit:")
         print("  chruby ruby-microjit")
         sys.exit(-1)

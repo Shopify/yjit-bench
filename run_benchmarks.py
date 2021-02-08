@@ -72,6 +72,9 @@ args = parser.parse_args()
 # Update and build MicroJIT
 build_ujit(args.repo_dir)
 
+# Disable CPU frequency scaling
+set_bench_config()
+
 # Get the ruby binary version string
 ruby_version = get_ruby_version()
 
