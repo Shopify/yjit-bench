@@ -13,13 +13,13 @@ def build_ujit(repo_dir):
     # Change to the MicroJIT directory
     os.chdir(repo_dir)
 
-    subprocess.check_call("git pull")
+    subprocess.check_call(['git', 'pull'])
 
     # Don't do a clone and configure every time
     # ./config.status --config => check that DRUBY_DEBUG is not in there
-    config_out = subprocess.check_output("./config.status --config")
+    config_out = subprocess.check_output(['./config.status', '--config'])
 
-    if "DRUBY_DEBUG" in config_out:
+    if "DRUBY_DEBUG" in str(config_out):
         print("You should configure MicroJIT in release mode for benchmarking")
         sys.exit(-1)
 
