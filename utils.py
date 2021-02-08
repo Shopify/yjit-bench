@@ -3,6 +3,33 @@ import os
 import math
 import subprocess
 
+def build_ujit(repo_dir):
+    cwd = os.getcwd()
+
+    if not os.path.exists(repo_dir):
+        print('Directory does not exist "' + repo_dir + '"')
+        sys.exit(-1)
+
+    # Change to the MicroJIT directory
+    os.chdir(repo_dir)
+
+    subprocess.check_call("git pull")
+
+    # Don't do a clone and configure every time
+    # ./config.status --config => check that DRUBY_DEBUG is not in there
+    config_out = subprocess.check_output("./config.status --config")
+
+    if "DRUBY_DEBUG" in config_out:
+        print("You should configure MicroJIT in release mode for benchmarking")
+        sys.exit(-1)
+
+    # Build in parallel
+    n_cores = os.cpu_count()
+    print('Building MicroJIT with {} processes'.format(n_cores))
+    subprocess.check_call(['make', '-j' + str(n_cores)])
+
+    os.chdir(cwd)
+
 def get_ruby_version():
     ruby_version = subprocess.check_output(["ruby", "-v"])
     ruby_version = str(ruby_version, 'utf-8').replace('\n', ' ')

@@ -65,8 +65,12 @@ def run_benchmarks(enable_ujit, name_filter):
     return bench_times
 
 parser = argparse.ArgumentParser(description='Run MicroJIT benchmarks.')
-parser.add_argument('bench_name_filter', type=str, nargs='?', default='', help='when given, only benchmarks with names that contain this string will run')
+parser.add_argument('--repo_dir', type=str, default='~/microjit', help='directory where the ujit repo is cloned')
+parser.add_argument('bench_name', type=str, nargs='?', default='', help='when given, only benchmarks with names that contain this string will run')
 args = parser.parse_args()
+
+# Update and build MicroJIT
+build_ujit(args.repo_dir)
 
 # Get the ruby binary version string
 ruby_version = get_ruby_version()
