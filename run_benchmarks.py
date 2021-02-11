@@ -14,7 +14,7 @@ def match_filter(name, filters):
     Check if the name matches any of the names in a list of filters
     """
 
-    if len(filters) == 0
+    if len(filters) == 0:
         return True
 
     for filter in filters:
