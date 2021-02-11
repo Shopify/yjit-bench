@@ -10,7 +10,14 @@ import datetime
 from utils import *
 
 def match_filter(name, filters):
-    for filter in name_filter:
+    """
+    Check if the name matches any of the names in a list of filters
+    """
+
+    if len(filters) == 0
+        return True
+
+    for filter in filters:
         if filter in name:
             return True
     return False
@@ -73,7 +80,7 @@ def run_benchmarks(enable_ujit, name_filters):
 
 parser = argparse.ArgumentParser(description='Run MicroJIT benchmarks.')
 parser.add_argument('--repo_dir', type=str, default='../microjit', help='directory where the ujit repo is cloned')
-parser.add_argument('bench_filter', type=str, nargs='*', default=[''], help='when given, only benchmarks with names that contain this string will run')
+parser.add_argument('name_filters', type=str, nargs='*', default=[''], help='when given, only benchmarks with names that contain one of these strings will run')
 args = parser.parse_args()
 
 # Update and build MicroJIT
@@ -89,8 +96,8 @@ ruby_version = get_ruby_version()
 check_pstate()
 
 bench_start_time = time.time()
-ujit_times = run_benchmarks(enable_ujit=True, name_filter=args.bench_filter)
-interp_times = run_benchmarks(enable_ujit=False, name_filter=args.bench_filter)
+ujit_times = run_benchmarks(enable_ujit=True, name_filters=args.name_filters)
+interp_times = run_benchmarks(enable_ujit=False, name_filters=args.name_filters)
 bench_end_time = time.time()
 bench_names = sorted(ujit_times.keys())
 
