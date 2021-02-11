@@ -9,7 +9,13 @@ import time
 import datetime
 from utils import *
 
-def run_benchmarks(enable_ujit, name_filter):
+def match_filter(name, filters):
+    for filter in name_filter:
+        if filter in name:
+            return True
+    return False
+
+def run_benchmarks(enable_ujit, name_filters):
     """
     Run all the benchmarks and record execution times
     """
@@ -18,7 +24,8 @@ def run_benchmarks(enable_ujit, name_filter):
 
     for entry in sorted(os.listdir('benchmarks')):
         bench_name = entry.replace('.rb', '')
-        if name_filter not in bench_name:
+
+        if not match_filter(bench_name, name_filters):
             continue
 
         # Path to the benchmark runner script
@@ -66,7 +73,7 @@ def run_benchmarks(enable_ujit, name_filter):
 
 parser = argparse.ArgumentParser(description='Run MicroJIT benchmarks.')
 parser.add_argument('--repo_dir', type=str, default='../microjit', help='directory where the ujit repo is cloned')
-parser.add_argument('bench_filter', type=str, nargs='?', default='', help='when given, only benchmarks with names that contain this string will run')
+parser.add_argument('bench_filter', type=str, nargs='*', default=[''], help='when given, only benchmarks with names that contain this string will run')
 args = parser.parse_args()
 
 # Update and build MicroJIT
