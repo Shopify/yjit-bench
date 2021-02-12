@@ -84,6 +84,9 @@ parser.add_argument('--out_path', type=str, default='./data', help='directory wh
 parser.add_argument('name_filters', type=str, nargs='*', default=[''], help='when given, only benchmarks with names that contain one of these strings will run')
 args = parser.parse_args()
 
+# Create the output directory
+os.mkdir(args.out_path, parents=True, exist_ok=True)
+
 # Update and build MicroJIT
 build_ujit(args.repo_dir)
 
@@ -126,7 +129,6 @@ for bench_name in bench_names:
     ])
 
 # Find a free file index for the output files
-os.mkdir(args.out_path, parents=True, exist_ok=True)
 file_no = free_file_no(args.out_path)
 
 # Save data as CSV so we can produce tables/graphs in a spreasheet program
