@@ -97,9 +97,9 @@ def stddev(values):
     mean_sqr = sum(diff_sqrs) / len(values)
     return math.sqrt(mean_sqr)
 
-def free_file_no():
+def free_file_no(out_path):
     for file_no in range(1, 1000):
-        out_path = 'output_{:03d}.csv'.format(file_no)
+        out_path = os.path.join(out_path, 'output_{:03d}.csv'.format(file_no))
         if not os.path.exists(out_path):
             return file_no
     assert False
