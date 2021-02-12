@@ -85,7 +85,7 @@ parser.add_argument('name_filters', type=str, nargs='*', default=[''], help='whe
 args = parser.parse_args()
 
 # Create the output directory
-os.mkdir(args.out_path, parents=True, exist_ok=True)
+os.makedirs(args.out_path, exist_ok=True)
 
 # Update and build MicroJIT
 build_ujit(args.repo_dir)
