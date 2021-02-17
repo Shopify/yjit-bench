@@ -28,7 +28,7 @@ sudo apt-get install sqlite3 libsqlite3-dev
 git clone https://github.com/Shopify/ruby.git
 cd ruby
 git checkout microjit
-./configure --prefix=$HOME/.rubies/ruby-microjit
+./configure --disable-install-doc --disable--install-rdoc --prefix=$HOME/.rubies/ruby-microjit
 make -j16 install
 ```
 
