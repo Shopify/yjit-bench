@@ -15,6 +15,7 @@ visiting_routes.each do |path|
   env = Rack::MockRequest::env_for("http://localhost#{path}")
   response_array = app.call(env)
   unless response_array.first == 200
+    p response_array
     raise "HTTP response is #{response_array.first} instead of 200. Is the benchmark app properly set up? See README.md."
   end
 end
