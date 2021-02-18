@@ -11,7 +11,8 @@ Each benchmark includes a harness found in `/lib/harness.rb`. The harness
 controls the number of times a benchmark is run, and writes timing values
 into an output CSV file.
 
-The `run_benchmarks.py` script pulls and recompiles then MicroJIT repo,
+The `run_benchmarks.py` script pulls the latest commits from the MicroJIT repo,
+recompiles the MicroJIT ruby installation,
 and then traverses the `benchmarks` directory and
 to automatically discover and run the benchmarks in there. It reads the
 CSV file written by the benchmarking harness. The output is written to
