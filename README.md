@@ -1,7 +1,8 @@
 microjit-bench
 ==============
 
-Small set of benchmarks and scripts for the [MicroJIT](https://github.com/Shopify/ruby/tree/microjit) Ruby JIT compiler project.
+Small set of benchmarks and scripts for the MicroJIT Ruby JIT compiler project, which currently lives in
+the [microjit branch](https://github.com/Shopify/ruby/tree/microjit) of the Shopify/ruby repository.
 
 The benchmarks are found in the `benchmarks` directory. Individual Ruby files
 in `benchmarks` are microbenchmarks. Subdirectories under `benchmarks` are
