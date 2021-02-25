@@ -59,8 +59,6 @@ GEM
     addressable (2.7.0)
       public_suffix (>= 2.0.2, < 5.0)
     bindex (0.8.1)
-    bootsnap (1.7.2)
-      msgpack (~> 1.0)
     builder (3.2.4)
     byebug (11.1.3)
     capybara (3.35.3)
@@ -97,7 +95,6 @@ GEM
     mini_mime (1.0.2)
     mini_portile2 (2.5.0)
     minitest (5.14.3)
-    msgpack (1.4.2)
     nio4r (2.5.5)
     nokogiri (1.11.1)
       mini_portile2 (~> 2.5.0)
@@ -200,7 +197,6 @@ PLATFORMS
   x86_64-darwin-19
 
 DEPENDENCIES
-  bootsnap (>= 1.4.2)
   byebug
   capybara (>= 2.15)
   jbuilder (~> 2.7)
