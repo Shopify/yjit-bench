@@ -1,8 +1,8 @@
-microjit-bench
-==============
+yjit-bench
+==========
 
-Small set of benchmarks and scripts for the MicroJIT Ruby JIT compiler project, which currently lives in
-the [microjit branch](https://github.com/Shopify/ruby/blob/microjit/doc/ujit.md) of the Shopify/ruby repository.
+Small set of benchmarks and scripts for the YJIT Ruby JIT compiler project, which currently lives in
+the [yjit branch](https://github.com/Shopify/ruby/blob/yjit/doc/yjit.md) of the Shopify/ruby repository.
 
 The benchmarks are found in the `benchmarks` directory. Individual Ruby files
 in `benchmarks` are microbenchmarks. Subdirectories under `benchmarks` are
@@ -12,8 +12,8 @@ Each benchmark includes a harness found in `/lib/harness.rb`. The harness
 controls the number of times a benchmark is run, and writes timing values
 into an output CSV file.
 
-The `run_benchmarks.py` script pulls the latest commits from the MicroJIT repo,
-recompiles the MicroJIT ruby installation,
+The `run_benchmarks.py` script pulls the latest commits from the YJIT repo,
+recompiles the YJIT ruby installation,
 and then traverses the `benchmarks` directory and
 to automatically discover and run the benchmarks in there. It reads the
 CSV file written by the benchmarking harness. The output is written to
@@ -24,21 +24,21 @@ graphed in any spreadsheet editor.
 
 Install [chruby](https://github.com/postmodern/chruby)
 
-Build MicroJIT:
+Build YJIT:
 
 ```
 sudo apt-get install sqlite3 libsqlite3-dev
 git clone https://github.com/Shopify/ruby.git
 cd ruby
-git checkout microjit
-./configure --disable-install-doc --disable--install-rdoc --prefix=$HOME/.rubies/ruby-microjit
+git checkout yjit
+./configure --disable-install-doc --disable--install-rdoc --prefix=$HOME/.rubies/ruby-yjit
 make -j16 install
 ```
 
 Install dependencies:
 ```
 pip3 install --user tabulate
-chruby ruby-microjit
+chruby ruby-yjit
 gem install victor
 ```
 
@@ -48,14 +48,14 @@ See the [railsbench README](benchmarks/railsbench/README.md) for setting up `rai
 
 To run all the benchmarks and record the data:
 ```
-chruby ruby-microjit
+chruby ruby-yjit
 ./run_benchmarks.py
 ```
 
 This runs for a few minutes and produces a table like this in the console:
 ```
 -------------  -----------  ----------  ---------  ----------  -----------
-bench          interp (ms)  stddev (%)  ujit (ms)  stddev (%)  speedup (%)
+bench          interp (ms)  stddev (%)  yjit (ms)  stddev (%)  speedup (%)
 cfunc_itself   254.3        1.7         201.5      3.6         20.8
 fib            169.8        1.3         138.5      1.4         18.4
 getivar        87.5         1.4         66.4       3.3         24.1
