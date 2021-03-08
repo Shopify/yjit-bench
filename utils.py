@@ -3,14 +3,14 @@ import os
 import math
 import subprocess
 
-def build_ujit(repo_dir):
+def build_yjit(repo_dir):
     cwd = os.getcwd()
 
     if not os.path.exists(repo_dir):
         print('Directory does not exist "' + repo_dir + '"')
         sys.exit(-1)
 
-    # Change to the MicroJIT directory
+    # Change to the YJIT directory
     os.chdir(repo_dir)
 
     subprocess.check_call(['git', 'pull'])
@@ -20,12 +20,12 @@ def build_ujit(repo_dir):
     config_out = subprocess.check_output(['./config.status', '--config'])
 
     if "DRUBY_DEBUG" in str(config_out):
-        print("You should configure MicroJIT in release mode for benchmarking")
+        print("You should configure YJIT in release mode for benchmarking")
         sys.exit(-1)
 
     # Build in parallel
     n_cores = os.cpu_count()
-    print('Building MicroJIT with {} processes'.format(n_cores))
+    print('Building YJIT with {} processes'.format(n_cores))
     subprocess.check_call(['make', '-j' + str(n_cores), 'install'])
 
     os.chdir(cwd)
@@ -40,9 +40,9 @@ def get_ruby_version():
     ruby_version = str(ruby_version, 'utf-8').replace('\n', ' ')
     print(ruby_version)
 
-    if not "ujit" in ruby_version.lower():
-        print("You forgot to chruby to ruby-microjit:")
-        print("  chruby ruby-microjit")
+    if not "yjit" in ruby_version.lower():
+        print("You forgot to chruby to ruby-yjit:")
+        print("  chruby ruby-yjit")
         sys.exit(-1)
 
     return ruby_version

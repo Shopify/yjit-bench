@@ -13,7 +13,7 @@ visiting_routes = Array.new(visit_count) { possible_routes.sample(random: rng) }
 puts("***RUNNING BENCHMARK***")
 
 # Don't want stats for loading the benchmark.
-UJIT.reset_stats! if defined?(UJIT.reset_stats!)
+YJIT.reset_stats! if defined?(YJIT.reset_stats!)
 
 visiting_routes.each do |path|
   # The app mutates `env`, so we need to create one every time.

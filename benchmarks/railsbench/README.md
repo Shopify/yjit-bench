@@ -12,7 +12,7 @@ Run these commands in the root of this application:
 
 ```sh
 cd benchmarks/railsbench/
-chruby ruby-microjit
+chruby ruby-yjit
 bundle install
 yarn
 bin/rails assets:precompile RAILS_ENV=production
