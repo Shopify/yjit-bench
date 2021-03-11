@@ -114,9 +114,9 @@ end
 
 def stddev(values)
     xbar = mean(values)
-    #diff_sqrs = map(lambda v: (v-xbar)*(v-xbar), values)
-    #mean_sqr = sum(diff_sqrs) / values.length
-    #return math.sqrt(mean_sqr)
+    diff_sqrs = values.map { |v| (v-xbar)*(v-xbar) }
+    mean_sqr = diff_sqrs.sum(0.0) / values.length
+    return Math.sqrt(mean_sqr)
 end
 
 def free_file_no(out_path)
@@ -140,6 +140,8 @@ def match_filter(name, filters)
             return true
         end
     end
+
+    return false
 end
 
 # Run all the benchmarks and record execution times
@@ -148,11 +150,12 @@ def run_benchmarks(enable_yjit, name_filters, out_path)
 
     Dir.children('benchmarks').sort.each do |entry|
         bench_name = entry.gsub('.rb', '')
-        puts bench_name
 
         if !match_filter(bench_name, name_filters)
-            continue
+            next
         end
+
+        puts("Running benchmark \"#{bench_name}\"")
 
         # Path to the benchmark runner script
         script_path = File.join('benchmarks', entry)
@@ -191,10 +194,9 @@ def run_benchmarks(enable_yjit, name_filters, out_path)
 
         puts(times)
         puts(mean(times))
-        #puts(stddev(times))
+        puts(stddev(times))
 
         bench_times[bench_name] = times
-
     end
 
     return bench_times
@@ -217,7 +219,7 @@ OptionParser.new do |opts|
     args.out_path = v
   end
 
-  opts.on("--name_filters x,y,z", Array, "when given, only benchmarks with names that contain one of these strings will run") do |list|
+  opts.on("--name_filters=x,y,z", Array, "when given, only benchmarks with names that contain one of these strings will run") do |list|
     args.name_filters = list
   end
 
@@ -256,9 +258,8 @@ puts()
 # Table for the data we've gathered
 table = [["bench", "interp (ms)", "stddev (%)", "yjit (ms)", "stddev (%)", "speedup (%)"]]
 
-=begin
 # Format the results table
-for bench_name in bench_names
+bench_names.each do |bench_name|
     yjit_t = yjit_times[bench_name]
     interp_t = interp_times[bench_name]
 
@@ -272,17 +273,20 @@ for bench_name in bench_names
         100 * stddev(yjit_t) / mean(yjit_t),
         speedup
     ])
-=end
+end
 
 # Find a free file index for the output files
 file_no = free_file_no(args.out_path)
 
-=begin
 # Save data as CSV so we can produce tables/graphs in a spreasheet program
 # NOTE: we don't do any number formatting for the output file because
 #       we don't want to lose any precision
 output_tbl = [[ruby_version], []] + table
-out_tbl_path = File.join(args.out_path, 'output_{:03d}.csv'.format(file_no))
+out_tbl_path = File.join(args.out_path, 'output_%03d.csv' % file_no)
+
+
+
+=begin
 with open(out_tbl_path , 'w') as csvfile:
     writer = csv.writer(csvfile, delimiter=',', quotechar='"')
     writer.writerow(output_tbl)
