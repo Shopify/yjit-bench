@@ -45,57 +45,71 @@ end
 
 
 
-=begin
-def set_bench_config():
+
+
+
+
+
+def set_bench_config()
      # sudo requires the flag '-S' in order to take input from stdin
-     subprocess.check_call("sudo -S sh -c 'echo 1 > /sys/devices/system/cpu/intel_pstate/no_turbo'", shell=True)
-     subprocess.check_call("sudo -S sh -c 'echo 100 > /sys/devices/system/cpu/intel_pstate/min_perf_pct'", shell=True)
+     #subprocess.check_call("sudo -S sh -c 'echo 1 > /sys/devices/system/cpu/intel_pstate/no_turbo'", shell=True)
+     #subprocess.check_call("sudo -S sh -c 'echo 100 > /sys/devices/system/cpu/intel_pstate/min_perf_pct'", shell=True)
+end
 
-def get_ruby_version():
-    ruby_version = subprocess.check_output(["ruby", "-v"])
-    ruby_version = str(ruby_version, 'utf-8').replace('\n', ' ')
-    print(ruby_version)
+def get_ruby_version()
+    #ruby_version = subprocess.check_output(["ruby", "-v"])
+    #ruby_version = str(ruby_version, 'utf-8').replace('\n', ' ')
+    #print(ruby_version)
 
-    if not "yjit" in ruby_version.lower():
-        print("You forgot to chruby to ruby-yjit:")
-        print("  chruby ruby-yjit")
-        sys.exit(-1)
+    #if not "yjit" in ruby_version.lower()
+    #    print("You forgot to chruby to ruby-yjit:")
+    #    print("  chruby ruby-yjit")
+    #    sys.exit(-1)
 
-    return ruby_version
+    #return ruby_version
+end
 
-def check_pstate():
-    if not os.path.exists('/sys/devices/system/cpu/intel_pstate/no_turbo'):
-        return
 
-    with open('/sys/devices/system/cpu/intel_pstate/no_turbo', mode='r') as file:
-        content = file.read().strip()
 
-    if content != '1':
-        print("You forgot to disable turbo:")
-        print("  sudo sh -c 'echo 1 > /sys/devices/system/cpu/intel_pstate/no_turbo'")
-        sys.exit(-1)
 
-    if not os.path.exists('/sys/devices/system/cpu/intel_pstate/min_perf_pct'):
-        return
+def check_pstate()
+    #if not os.path.exists('/sys/devices/system/cpu/intel_pstate/no_turbo')
+    #    return
 
-    with open('/sys/devices/system/cpu/intel_pstate/min_perf_pct', mode='r') as file:
-        content = file.read().strip()
+    #with open('/sys/devices/system/cpu/intel_pstate/no_turbo', mode='r') as file
+    #    content = file.read().strip()
 
-    if content != '100':
-        print("You forgot to set the min perf percentage to 100:")
-        print("  sudo sh -c 'echo 100 > /sys/devices/system/cpu/intel_pstate/min_perf_pct'")
-        sys.exit(-1)
+    #if content != '1':
+    #    print("You forgot to disable turbo:")
+    #    print("  sudo sh -c 'echo 1 > /sys/devices/system/cpu/intel_pstate/no_turbo'")
+    #    sys.exit(-1)
 
-def table_to_str(table_data):
+    #if not os.path.exists('/sys/devices/system/cpu/intel_pstate/min_perf_pct')
+    #    return
+
+    #with open('/sys/devices/system/cpu/intel_pstate/min_perf_pct', mode='r') as file
+    #    content = file.read().strip()
+
+    #if content != '100'
+    #    print("You forgot to set the min perf percentage to 100:")
+    #    print("  sudo sh -c 'echo 100 > /sys/devices/system/cpu/intel_pstate/min_perf_pct'")
+    #    sys.exit(-1)
+end
+
+
+
+
+=begin
+def table_to_str(table_data)
     from tabulate import tabulate
 
-    def trim_cell(cell):
+    def trim_cell(cell)
         try:
             return '{:.1f}'.format(cell)
         except:
             return cell
 
-    def trim_row(row):
+    def trim_row(row)
         return list(map(lambda c: trim_cell(c), row))
 
     # Trim numbers to one decimal for console display
@@ -103,20 +117,20 @@ def table_to_str(table_data):
 
     return tabulate(table_data)
 
-def mean(values):
+def mean(values)
     total = sum(values)
     return total / len(values)
 
-def stddev(values):
+def stddev(values)
     xbar = mean(values)
     diff_sqrs = map(lambda v: (v-xbar)*(v-xbar), values)
     mean_sqr = sum(diff_sqrs) / len(values)
     return math.sqrt(mean_sqr)
 
-def free_file_no(out_path):
-    for file_no in range(1, 1000):
+def free_file_no(out_path)
+    for file_no in range(1, 1000)
         out_path = os.path.join(out_path, 'output_{:03d}.csv'.format(file_no))
-        if not os.path.exists(out_path):
+        if not os.path.exists(out_path)
             return file_no
     assert False
 =end
@@ -147,43 +161,37 @@ def free_file_no(out_path):
 
 
 
+# Check if the name matches any of the names in a list of filters
+def match_filter(name, filters)
+    #if len(filters) == 0:
+    #    return True
 
-=begin
-def match_filter(name, filters):
-    """
-    Check if the name matches any of the names in a list of filters
-    """
-
-    if len(filters) == 0:
-        return True
-
-    for filter in filters:
-        if filter in name:
-            return True
+    #for filter in filters:
+    #    if filter in name:
+    #        return True
     return False
-=end
+end
 
 
 
 
 =begin
-
-def run_benchmarks(enable_yjit, name_filters, out_path):
+def run_benchmarks(enable_yjit, name_filters, out_path)
     """
     Run all the benchmarks and record execution times
     """
 
     bench_times = {}
 
-    for entry in sorted(os.listdir('benchmarks')):
+    for entry in sorted(os.listdir('benchmarks'))
         bench_name = entry.replace('.rb', '')
 
-        if not match_filter(bench_name, name_filters):
+        if not match_filter(bench_name, name_filters)
             continue
 
         # Path to the benchmark runner script
         script_path = os.path.join('benchmarks', entry)
-        if not script_path.endswith('.rb'):
+        if not script_path.endswith('.rb')
             script_path = os.path.join(script_path, 'benchmark.rb')
 
         # Set up the environment for the benchmarking command
@@ -237,7 +245,7 @@ def run_benchmarks(enable_yjit, name_filters, out_path):
 
 
 args = OpenStruct.new({
-    repo_dir: "../microjit",
+    repo_dir: "../yjit",
     out_path: "./data",
     name_filters: ['']
 })
@@ -267,6 +275,19 @@ FileUtils.mkdir_p(args.out_path)
 
 # Update and build MicroJIT
 build_yjit(args.repo_dir)
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 =begin
