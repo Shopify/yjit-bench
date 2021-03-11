@@ -24,6 +24,11 @@ graphed in any spreadsheet editor.
 
 Install [chruby](https://github.com/postmodern/chruby)
 
+Clone this repository:
+```
+git clone https://github.com/Shopify/yjit-bench.git yjit-bench
+```
+
 Build YJIT:
 
 ```
@@ -33,11 +38,6 @@ cd yjit
 git checkout yjit
 ./configure --disable-install-doc --disable--install-rdoc --prefix=$HOME/.rubies/ruby-yjit
 make -j16 install
-```
-
-Clone this repo:
-```
-git clone https://github.com/Shopify/yjit-bench.git yjit-bench
 ```
 
 Install dependencies:
