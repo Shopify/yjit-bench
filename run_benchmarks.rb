@@ -4,6 +4,7 @@ require 'optparse'
 require 'ostruct'
 require 'fileutils'
 require 'shellwords'
+require 'csv'
 
 def check_call(args)
     command = (args.kind_of?(Array)) ? (args.shelljoin):args
@@ -147,6 +148,7 @@ def run_benchmarks(enable_yjit, name_filters, out_path)
 
     Dir.children('benchmarks').sort.each do |entry|
         bench_name = entry.gsub('.rb', '')
+        puts bench_name
 
         if !match_filter(bench_name, name_filters)
             continue
@@ -158,9 +160,6 @@ def run_benchmarks(enable_yjit, name_filters, out_path)
         if !script_path.end_with?('.rb')
             script_path = File.join(script_path, 'benchmark.rb')
         end
-
-        puts bench_name
-        puts script_path
 
         # Set up the environment for the benchmarking command
         ENV["OUT_CSV_PATH"] = File.join(out_path, 'temp.csv')
@@ -184,34 +183,24 @@ def run_benchmarks(enable_yjit, name_filters, out_path)
         puts(cmd.join(' '))
         check_call(cmd)
 
-    #    with open(sub_env["OUT_CSV_PATH"]) as csvfile
-    #        reader = csv.reader(csvfile, delimiter=',', quotechar='"')
-    #        rows = list(reader)
-    #        # Convert times to ms
-    #        times = list(map(lambda v: 1000 * float(v), rows[0]))
-    #        times = times.sort
+        # Read the benchmark data
+        # Convert times to ms
+        rows = CSV.read(ENV["OUT_CSV_PATH"])
+        times = rows[0].map { |v| 1000 * v.to_f }
+        times = times.sort
 
-        #puts(times)
-        #puts(mean(times))
+        puts(times)
+        puts(mean(times))
         #puts(stddev(times))
 
-    #    bench_times[bench_name] = times
+        bench_times[bench_name] = times
 
     end
 
     return bench_times
 end
 
-
-
-
-
-
-
-
-
-
-
+# Default values for command-line arguments
 args = OpenStruct.new({
     repo_dir: "../yjit",
     out_path: "./data",
