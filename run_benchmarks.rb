@@ -6,15 +6,15 @@ require 'fileutils'
 require 'shellwords'
 
 def check_call(args)
-  command = args.shelljoin
-  status = system(command)
-  raise RuntimeError unless status
+    command = (args.kind_of?(Array)) ? (args.shelljoin):args
+    status = system(command)
+    raise RuntimeError unless status
 end
 
 def check_output(args)
-  output = IO.popen(args).read
-  raise RuntimeError unless $?
-  return output
+    output = IO.popen(args).read
+    raise RuntimeError unless $?
+    return output
 end
 
 def build_yjit(repo_dir)
@@ -31,58 +31,53 @@ def build_yjit(repo_dir)
         config_out = check_output(['./config.status', '--config'])
 
         if config_out.include?("DRUBY_DEBUG")
-            puts("You should configure MicroJIT in release mode for benchmarking")
+            puts("You should configure YJIT in release mode for benchmarking")
             exit(-1)
         end
 
         # Build in parallel
         #n_cores = os.cpu_count()
         n_cores = 32
-        #puts("Building MicroJIT with #{n_cores} processes")
+        puts("Building YJIT with #{n_cores} processes")
         check_call(['make', '-j' + n_cores.to_s, 'install'])
     end
 end
 
-
-
-
-
-
-
-
 def set_bench_config()
-     # sudo requires the flag '-S' in order to take input from stdin
-     #subprocess.check_call("sudo -S sh -c 'echo 1 > /sys/devices/system/cpu/intel_pstate/no_turbo'", shell=True)
-     #subprocess.check_call("sudo -S sh -c 'echo 100 > /sys/devices/system/cpu/intel_pstate/min_perf_pct'", shell=True)
+    # Only available on intel systems
+    if File.exist?('/sys/devices/system/cpu/intel_pstate')
+        # sudo requires the flag '-S' in order to take input from stdin
+        check_call("sudo -S sh -c 'echo 1 > /sys/devices/system/cpu/intel_pstate/no_turbo'")
+        check_call("sudo -S sh -c 'echo 100 > /sys/devices/system/cpu/intel_pstate/min_perf_pct'")
+    end
 end
 
 def get_ruby_version()
-    #ruby_version = subprocess.check_output(["ruby", "-v"])
-    #ruby_version = str(ruby_version, 'utf-8').replace('\n', ' ')
-    #print(ruby_version)
+    ruby_version = check_output(["ruby", "-v"])
+    puts(ruby_version)
 
-    #if not "yjit" in ruby_version.lower()
-    #    print("You forgot to chruby to ruby-yjit:")
-    #    print("  chruby ruby-yjit")
-    #    sys.exit(-1)
+    if !ruby_version.downcase.include?("yjit")
+        puts("You forgot to chruby to ruby-yjit:")
+        puts("  chruby ruby-yjit")
+        exit(-1)
+    end
 
-    #return ruby_version
+    return ruby_version
 end
 
-
-
-
 def check_pstate()
-    #if not os.path.exists('/sys/devices/system/cpu/intel_pstate/no_turbo')
-    #    return
+    # Only available on intel systems
+    if !File.exist?('/sys/devices/system/cpu/intel_pstate/no_turbo')
+        return
+    end
 
     #with open('/sys/devices/system/cpu/intel_pstate/no_turbo', mode='r') as file
     #    content = file.read().strip()
 
-    #if content != '1':
-    #    print("You forgot to disable turbo:")
-    #    print("  sudo sh -c 'echo 1 > /sys/devices/system/cpu/intel_pstate/no_turbo'")
-    #    sys.exit(-1)
+    #if content != '1'
+    #    puts("You forgot to disable turbo:")
+    #    puts("  sudo sh -c 'echo 1 > /sys/devices/system/cpu/intel_pstate/no_turbo'")
+    #    exit(-1)
 
     #if not os.path.exists('/sys/devices/system/cpu/intel_pstate/min_perf_pct')
     #    return
@@ -91,148 +86,112 @@ def check_pstate()
     #    content = file.read().strip()
 
     #if content != '100'
-    #    print("You forgot to set the min perf percentage to 100:")
-    #    print("  sudo sh -c 'echo 100 > /sys/devices/system/cpu/intel_pstate/min_perf_pct'")
-    #    sys.exit(-1)
+    #    puts("You forgot to set the min perf percentage to 100:")
+    #    puts("  sudo sh -c 'echo 100 > /sys/devices/system/cpu/intel_pstate/min_perf_pct'")
+    #    exit(-1)
 end
 
-
-
-
-=begin
 def table_to_str(table_data)
-    from tabulate import tabulate
+    #def trim_cell(cell)
+    #    try:
+    #        return '{:.1f}'.format(cell)
+    #    except:
+    #        return cell
 
-    def trim_cell(cell)
-        try:
-            return '{:.1f}'.format(cell)
-        except:
-            return cell
-
-    def trim_row(row)
-        return list(map(lambda c: trim_cell(c), row))
+    #def trim_row(row)
+    #    return list(map(lambda c: trim_cell(c), row))
 
     # Trim numbers to one decimal for console display
-    table_data = list(map(trim_row, table_data))
+    #table_data = list(map(trim_row, table_data))
 
-    return tabulate(table_data)
+    #return tabulate(table_data)
+end
 
 def mean(values)
-    total = sum(values)
-    return total / len(values)
+    return values.sum(0.0) / values.size
+end
 
 def stddev(values)
     xbar = mean(values)
-    diff_sqrs = map(lambda v: (v-xbar)*(v-xbar), values)
-    mean_sqr = sum(diff_sqrs) / len(values)
-    return math.sqrt(mean_sqr)
+    #diff_sqrs = map(lambda v: (v-xbar)*(v-xbar), values)
+    #mean_sqr = sum(diff_sqrs) / values.length
+    #return math.sqrt(mean_sqr)
+end
 
 def free_file_no(out_path)
-    for file_no in range(1, 1000)
-        out_path = os.path.join(out_path, 'output_{:03d}.csv'.format(file_no))
-        if not os.path.exists(out_path)
-            return file_no
-    assert False
-=end
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    #for file_no in range(1, 1000)
+    #    out_path = os.path.join(out_path, 'output_{:03d}.csv'.format(file_no))
+    #    if not os.path.exists(out_path)
+    #        return file_no
+    #assert false
+end
 
 # Check if the name matches any of the names in a list of filters
 def match_filter(name, filters)
-    #if len(filters) == 0:
-    #    return True
+    if filters.length == 0
+        return true
+    end
 
-    #for filter in filters:
-    #    if filter in name:
-    #        return True
-    return False
+    filters.each do |filter|
+        if name.downcase.include?(filter)
+            return true
+        end
+    end
 end
 
-
-
-
-=begin
+# Run all the benchmarks and record execution times
 def run_benchmarks(enable_yjit, name_filters, out_path)
-    """
-    Run all the benchmarks and record execution times
-    """
-
     bench_times = {}
 
-    for entry in sorted(os.listdir('benchmarks'))
-        bench_name = entry.replace('.rb', '')
+    #for entry in sorted(os.listdir('benchmarks'))
+    #    bench_name = entry.replace('.rb', '')
 
-        if not match_filter(bench_name, name_filters)
-            continue
+    #    if not match_filter(bench_name, name_filters)
+    #        continue
 
         # Path to the benchmark runner script
-        script_path = os.path.join('benchmarks', entry)
-        if not script_path.endswith('.rb')
-            script_path = os.path.join(script_path, 'benchmark.rb')
+    #    script_path = os.path.join('benchmarks', entry)
+    #    if not script_path.endswith('.rb')
+    #        script_path = os.path.join(script_path, 'benchmark.rb')
 
-        # Set up the environment for the benchmarking command
-        sub_env = os.environ.copy()
-        sub_env["OUT_CSV_PATH"] = os.path.join(out_path, 'temp.csv')
+    #    # Set up the environment for the benchmarking command
+    #    sub_env = os.environ.copy()
+    #    sub_env["OUT_CSV_PATH"] = os.path.join(out_path, 'temp.csv')
 
         # Set up the benchmarking command
-        cmd = [
-            # Disable address space randomization (for determinism)
-            "setarch", "x86_64", "-R",
-            # Increase process priority
-            "nice", "-20",
-            # Pin the process to one given core
-            "taskset", "-c", "11",
-            # Run the benchmark
-            "ruby",
-            "--yjit" if enable_yjit else "--disable-yjit",
-            "-I", "./harness",
-            script_path
-        ]
+    #    cmd = [
+    #        # Disable address space randomization (for determinism)
+    #        "setarch", "x86_64", "-R",
+    #        # Increase process priority
+    #        "nice", "-20",
+    #        # Pin the process to one given core
+    #        "taskset", "-c", "11",
+    #        # Run the benchmark
+    #        "ruby",
+    #        "--yjit" if enable_yjit else "--disable-yjit",
+    #        "-I", "./harness",
+    #        script_path
+    #    ]
 
-        # Do the benchmarking
-        print(cmd)
-        subprocess.check_call(cmd, env=sub_env)
+    #    # Do the benchmarking
+    #    puts(cmd)
+    #    subprocess.check_call(cmd, env=sub_env)
 
-        with open(sub_env["OUT_CSV_PATH"]) as csvfile:
-            reader = csv.reader(csvfile, delimiter=',', quotechar='"')
-            rows = list(reader)
-            # Convert times to ms
-            times = list(map(lambda v: 1000 * float(v), rows[0]))
-            times = sorted(times)
+    #    with open(sub_env["OUT_CSV_PATH"]) as csvfile
+    #        reader = csv.reader(csvfile, delimiter=',', quotechar='"')
+    #        rows = list(reader)
+    #        # Convert times to ms
+    #        times = list(map(lambda v: 1000 * float(v), rows[0]))
+    #        times = sorted(times)
 
-        #print(times)
-        #print(mean(times))
-        #print(stddev(times))
+        #puts(times)
+        #puts(mean(times))
+        #puts(stddev(times))
 
-        bench_times[bench_name] = times
+    #    bench_times[bench_name] = times
 
     return bench_times
-
-=end
+end
 
 
 
@@ -273,24 +232,9 @@ end.parse!
 # Create the output directory
 FileUtils.mkdir_p(args.out_path)
 
-# Update and build MicroJIT
+# Update and build YJIT
 build_yjit(args.repo_dir)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-=begin
 # Disable CPU frequency scaling
 set_bench_config()
 
@@ -300,21 +244,29 @@ ruby_version = get_ruby_version()
 # Check pstate status
 check_pstate()
 
-bench_start_time = time.time()
-yjit_times = run_benchmarks(enable_yjit=True, name_filters=args.name_filters, out_path=args.out_path)
-interp_times = run_benchmarks(enable_yjit=False, name_filters=args.name_filters, out_path=args.out_path)
-bench_end_time = time.time()
-bench_names = sorted(yjit_times.keys())
 
-bench_total_time = int(bench_end_time - bench_start_time)
-print('Total time spent benchmarking: {}s'.format(bench_total_time))
-print()
+
+
+
+
+
+
+bench_start_time = Time.now.to_f
+yjit_times = run_benchmarks(enable_yjit=true, name_filters=args.name_filters, out_path=args.out_path)
+interp_times = run_benchmarks(enable_yjit=false, name_filters=args.name_filters, out_path=args.out_path)
+bench_end_time = Time.now.to_f
+#bench_names = sorted(yjit_times.keys())
+
+bench_total_time = (bench_end_time - bench_start_time).to_i
+puts("Total time spent benchmarking: #{bench_total_time}s")
+puts()
 
 # Table for the data we've gathered
 table = [["bench", "interp (ms)", "stddev (%)", "yjit (ms)", "stddev (%)", "speedup (%)"]]
 
+=begin
 # Format the results table
-for bench_name in bench_names:
+for bench_name in bench_names
     yjit_t = yjit_times[bench_name]
     interp_t = interp_times[bench_name]
 
@@ -328,10 +280,12 @@ for bench_name in bench_names:
         100 * stddev(yjit_t) / mean(yjit_t),
         speedup
     ])
+=end
 
 # Find a free file index for the output files
 file_no = free_file_no(args.out_path)
 
+=begin
 # Save data as CSV so we can produce tables/graphs in a spreasheet program
 # NOTE: we don't do any number formatting for the output file because
 #       we don't want to lose any precision
@@ -358,6 +312,5 @@ with open(out_json_path, "w") as write_file:
     json.dump(data, write_file, indent=4)
 
 # Print the table to the console, with numbers truncated
-print(output_str)
-
+puts(output_str)
 =end
