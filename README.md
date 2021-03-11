@@ -28,11 +28,16 @@ Build YJIT:
 
 ```
 sudo apt-get install sqlite3 libsqlite3-dev
-git clone https://github.com/Shopify/ruby.git
-cd ruby
+git clone https://github.com/Shopify/ruby.git yjit
+cd yjit
 git checkout yjit
 ./configure --disable-install-doc --disable--install-rdoc --prefix=$HOME/.rubies/ruby-yjit
 make -j16 install
+```
+
+Clone this repo:
+```
+git clone https://github.com/Shopify/yjit-bench.git yjit-bench
 ```
 
 Install dependencies:
@@ -48,6 +53,7 @@ See the [railsbench README](benchmarks/railsbench/README.md) for setting up `rai
 
 To run all the benchmarks and record the data:
 ```
+cd yjit-bench
 chruby ruby-yjit
 ./run_benchmarks.py
 ```
