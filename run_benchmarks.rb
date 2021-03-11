@@ -119,11 +119,13 @@ def stddev(values)
 end
 
 def free_file_no(out_path)
-    #for file_no in range(1, 1000)
-    #    out_path = os.path.join(out_path, 'output_{:03d}.csv'.format(file_no))
-    #    if not os.path.exists(out_path)
-    #        return file_no
-    #assert false
+    (1..1000).each do |file_no|
+        out_path = File.join(out_path, "output_%03d.csv" % file_no)
+        if !File.exist?(out_path)
+            return file_no
+        end
+    end
+    assert false
 end
 
 # Check if the name matches any of the names in a list of filters
@@ -143,52 +145,59 @@ end
 def run_benchmarks(enable_yjit, name_filters, out_path)
     bench_times = {}
 
-    #for entry in sorted(os.listdir('benchmarks'))
-    #    bench_name = entry.replace('.rb', '')
+    Dir.children('benchmarks').sort.each do |entry|
+        bench_name = entry.gsub('.rb', '')
 
-    #    if not match_filter(bench_name, name_filters)
-    #        continue
+        if !match_filter(bench_name, name_filters)
+            continue
+        end
 
         # Path to the benchmark runner script
-    #    script_path = os.path.join('benchmarks', entry)
-    #    if not script_path.endswith('.rb')
-    #        script_path = os.path.join(script_path, 'benchmark.rb')
+        script_path = File.join('benchmarks', entry)
 
-    #    # Set up the environment for the benchmarking command
-    #    sub_env = os.environ.copy()
-    #    sub_env["OUT_CSV_PATH"] = os.path.join(out_path, 'temp.csv')
+        if !script_path.end_with?('.rb')
+            script_path = File.join(script_path, 'benchmark.rb')
+        end
+
+        puts bench_name
+        puts script_path
+
+        # Set up the environment for the benchmarking command
+        ENV["OUT_CSV_PATH"] = File.join(out_path, 'temp.csv')
 
         # Set up the benchmarking command
-    #    cmd = [
-    #        # Disable address space randomization (for determinism)
-    #        "setarch", "x86_64", "-R",
-    #        # Increase process priority
-    #        "nice", "-20",
-    #        # Pin the process to one given core
-    #        "taskset", "-c", "11",
-    #        # Run the benchmark
-    #        "ruby",
-    #        "--yjit" if enable_yjit else "--disable-yjit",
-    #        "-I", "./harness",
-    #        script_path
-    #    ]
+        cmd = [
+            # Disable address space randomization (for determinism)
+            #"setarch", "x86_64", "-R",
+            # Increase process priority
+            #"nice", "-20",
+            # Pin the process to one given core
+            #"taskset", "-c", "11",
+            # Run the benchmark
+            "ruby",
+            enable_yjit ? "--yjit":"--disable-yjit",
+            "-I", "./harness",
+            script_path
+        ]
 
-    #    # Do the benchmarking
-    #    puts(cmd)
-    #    subprocess.check_call(cmd, env=sub_env)
+        # Do the benchmarking
+        puts(cmd.join(' '))
+        check_call(cmd)
 
     #    with open(sub_env["OUT_CSV_PATH"]) as csvfile
     #        reader = csv.reader(csvfile, delimiter=',', quotechar='"')
     #        rows = list(reader)
     #        # Convert times to ms
     #        times = list(map(lambda v: 1000 * float(v), rows[0]))
-    #        times = sorted(times)
+    #        times = times.sort
 
         #puts(times)
         #puts(mean(times))
         #puts(stddev(times))
 
     #    bench_times[bench_name] = times
+
+    end
 
     return bench_times
 end
@@ -244,18 +253,12 @@ ruby_version = get_ruby_version()
 # Check pstate status
 check_pstate()
 
-
-
-
-
-
-
-
+# Benchmark with and without YJIT
 bench_start_time = Time.now.to_f
 yjit_times = run_benchmarks(enable_yjit=true, name_filters=args.name_filters, out_path=args.out_path)
 interp_times = run_benchmarks(enable_yjit=false, name_filters=args.name_filters, out_path=args.out_path)
 bench_end_time = Time.now.to_f
-#bench_names = sorted(yjit_times.keys())
+bench_names = yjit_times.keys.sort
 
 bench_total_time = (bench_end_time - bench_start_time).to_i
 puts("Total time spent benchmarking: #{bench_total_time}s")
@@ -290,19 +293,19 @@ file_no = free_file_no(args.out_path)
 # NOTE: we don't do any number formatting for the output file because
 #       we don't want to lose any precision
 output_tbl = [[ruby_version], []] + table
-out_tbl_path = os.path.join(args.out_path, 'output_{:03d}.csv'.format(file_no))
+out_tbl_path = File.join(args.out_path, 'output_{:03d}.csv'.format(file_no))
 with open(out_tbl_path , 'w') as csvfile:
     writer = csv.writer(csvfile, delimiter=',', quotechar='"')
     writer.writerow(output_tbl)
 
 # Save the output in a text file that we can easily refer to
 output_str = ruby_version + '\n' + table_to_str(table) + '\n'
-out_txt_path = os.path.join(args.out_path, 'output_{:03d}.txt'.format(file_no))
+out_txt_path = File.join(args.out_path, 'output_{:03d}.txt'.format(file_no))
 with open(out_txt_path.format(file_no), 'w') as txtfile:
     txtfile.write(output_str)
 
 # Save the raw data
-out_json_path = os.path.join(args.out_path, 'output_{:03d}.json'.format(file_no))
+out_json_path = File.join(args.out_path, 'output_{:03d}.json'.format(file_no))
 with open(out_json_path, "w") as write_file:
     data = {
         'yjit': yjit_times,
