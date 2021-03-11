@@ -17,7 +17,7 @@ def check_output(args)
   return output
 end
 
-def build_ujit(repo_dir)
+def build_yjit(repo_dir)
     if !File.exist?(repo_dir)
         puts('Directory does not exist "' + repo_dir + '"')
         exit(-1)
@@ -56,9 +56,9 @@ def get_ruby_version():
     ruby_version = str(ruby_version, 'utf-8').replace('\n', ' ')
     print(ruby_version)
 
-    if not "ujit" in ruby_version.lower():
-        print("You forgot to chruby to ruby-microjit:")
-        print("  chruby ruby-microjit")
+    if not "yjit" in ruby_version.lower():
+        print("You forgot to chruby to ruby-yjit:")
+        print("  chruby ruby-yjit")
         sys.exit(-1)
 
     return ruby_version
@@ -168,7 +168,7 @@ def match_filter(name, filters):
 
 =begin
 
-def run_benchmarks(enable_ujit, name_filters, out_path):
+def run_benchmarks(enable_yjit, name_filters, out_path):
     """
     Run all the benchmarks and record execution times
     """
@@ -200,7 +200,7 @@ def run_benchmarks(enable_ujit, name_filters, out_path):
             "taskset", "-c", "11",
             # Run the benchmark
             "ruby",
-            "--ujit" if enable_ujit else "--disable-ujit",
+            "--yjit" if enable_yjit else "--disable-yjit",
             "-I", "./harness",
             script_path
         ]
@@ -266,7 +266,7 @@ end.parse!
 FileUtils.mkdir_p(args.out_path)
 
 # Update and build MicroJIT
-build_ujit(args.repo_dir)
+build_yjit(args.repo_dir)
 
 
 =begin
@@ -280,31 +280,31 @@ ruby_version = get_ruby_version()
 check_pstate()
 
 bench_start_time = time.time()
-ujit_times = run_benchmarks(enable_ujit=True, name_filters=args.name_filters, out_path=args.out_path)
-interp_times = run_benchmarks(enable_ujit=False, name_filters=args.name_filters, out_path=args.out_path)
+yjit_times = run_benchmarks(enable_yjit=True, name_filters=args.name_filters, out_path=args.out_path)
+interp_times = run_benchmarks(enable_yjit=False, name_filters=args.name_filters, out_path=args.out_path)
 bench_end_time = time.time()
-bench_names = sorted(ujit_times.keys())
+bench_names = sorted(yjit_times.keys())
 
 bench_total_time = int(bench_end_time - bench_start_time)
 print('Total time spent benchmarking: {}s'.format(bench_total_time))
 print()
 
 # Table for the data we've gathered
-table = [["bench", "interp (ms)", "stddev (%)", "ujit (ms)", "stddev (%)", "speedup (%)"]]
+table = [["bench", "interp (ms)", "stddev (%)", "yjit (ms)", "stddev (%)", "speedup (%)"]]
 
 # Format the results table
 for bench_name in bench_names:
-    ujit_t = ujit_times[bench_name]
+    yjit_t = yjit_times[bench_name]
     interp_t = interp_times[bench_name]
 
-    speedup = 100 * (1 - (mean(ujit_t) / mean(interp_t)))
+    speedup = 100 * (1 - (mean(yjit_t) / mean(interp_t)))
 
     table.append([
         bench_name,
         mean(interp_t),
         100 * stddev(interp_t) / mean(interp_t),
-        mean(ujit_t),
-        100 * stddev(ujit_t) / mean(ujit_t),
+        mean(yjit_t),
+        100 * stddev(yjit_t) / mean(yjit_t),
         speedup
     ])
 
@@ -330,7 +330,7 @@ with open(out_txt_path.format(file_no), 'w') as txtfile:
 out_json_path = os.path.join(args.out_path, 'output_{:03d}.json'.format(file_no))
 with open(out_json_path, "w") as write_file:
     data = {
-        'ujit': ujit_times,
+        'yjit': yjit_times,
         'interp': interp_times,
         'ruby_version': ruby_version,
     }
