@@ -231,7 +231,7 @@ end
 args = OpenStruct.new({
     repo_dir: "../yjit",
     out_path: "./data",
-    name_filters: ['']
+    name_filters: []
 })
 
 OptionParser.new do |opts|
@@ -253,6 +253,11 @@ OptionParser.new do |opts|
   end
 
 end.parse!
+
+# Remaining arguments are treated as benchmark name filters
+if ARGV.length > 0
+    args.name_filters += ARGV
+end
 
 # Create the output directory
 FileUtils.mkdir_p(args.out_path)
@@ -328,7 +333,7 @@ File.open(out_json_path, "w") do |file|
         'ruby_version': ruby_version,
     }
 
-    json_str = JSON.generate(data, { indent:'    ' })
+    json_str = JSON.generate(data)
     file.write json_str
 end
 
