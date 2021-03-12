@@ -56,7 +56,7 @@ def set_bench_config()
 end
 
 def get_ruby_version(repo_dir)
-    ruby_version = check_output(["ruby", "-v"])
+    ruby_version = check_output(["ruby", "-v"]).strip
 
     if !ruby_version.downcase.include?("yjit")
         puts("You forgot to chruby to ruby-yjit:")
@@ -66,7 +66,9 @@ def get_ruby_version(repo_dir)
 
     Dir.chdir(repo_dir) do
         branch_name = check_output(['git', 'branch', '--show-current']).strip
-        ruby_version += "git branch #{branch_name}"
+        ruby_version += "\ngit branch #{branch_name}"
+        commit_hash = check_output(['git', 'log', "--pretty=format:'%h'", '-n', '1']).strip
+        ruby_version += "\ngit commit hash #{commit_hash}"
     end
 
     puts(ruby_version)
