@@ -1,6 +1,4 @@
 require 'harness'
-
-# I'm too lazy to type `-Ilib` every time...
 require_relative "lib/optcarrot"
 
 run_benchmark(5) do
