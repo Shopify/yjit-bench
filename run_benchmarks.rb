@@ -58,18 +58,18 @@ end
 def get_ruby_version(repo_dir)
     ruby_version = check_output(["ruby", "-v"])
 
+    if !ruby_version.downcase.include?("yjit")
+        puts("You forgot to chruby to ruby-yjit:")
+        puts("  chruby ruby-yjit")
+        exit(-1)
+    end
+
     Dir.chdir(repo_dir) do
         branch_name = check_output(['git', 'branch', '--show-current']).strip
         ruby_version += "git branch #{branch_name}"
     end
 
     puts(ruby_version)
-
-    if !ruby_version.downcase.include?("yjit")
-        puts("You forgot to chruby to ruby-yjit:")
-        puts("  chruby ruby-yjit")
-        exit(-1)
-    end
 
     return ruby_version
 end
