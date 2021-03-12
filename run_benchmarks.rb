@@ -192,11 +192,11 @@ def run_benchmarks(enable_yjit, name_filters, out_path)
         # Set up the benchmarking command
         cmd = [
             # Disable address space randomization (for determinism)
-            #"setarch", "x86_64", "-R",
+            "setarch", "x86_64", "-R",
             # Increase process priority
-            #"nice", "-20",
+            "nice", "-20",
             # Pin the process to one given core
-            #"taskset", "-c", "11",
+            "taskset", "-c", "11",
             # Run the benchmark
             "ruby",
             enable_yjit ? "--yjit":"--disable-yjit",
