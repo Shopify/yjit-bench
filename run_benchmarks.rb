@@ -180,14 +180,15 @@ end
 def run_benchmarks(enable_yjit, name_filters, out_path)
     bench_times = {}
 
-    Dir.children('benchmarks').sort.each do |entry|
+    # Get the list of benchmark files/directories matching name filters
+    bench_files = Dir.children('benchmarks').sort.filter do |entry|
+        match_filter(entry, name_filters)
+    end
+
+    bench_files.each_with_index do |entry, idx|
         bench_name = entry.gsub('.rb', '')
 
-        if !match_filter(bench_name, name_filters)
-            next
-        end
-
-        puts("Running benchmark \"#{bench_name}\"")
+        puts("Running benchmark \"#{bench_name}\" (#{idx+1}/#{bench_files.length})")
 
         # Path to the benchmark runner script
         script_path = File.join('benchmarks', entry)
