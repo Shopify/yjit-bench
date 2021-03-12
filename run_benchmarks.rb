@@ -54,8 +54,8 @@ def set_bench_config()
     end
 end
 
-def get_ruby_version()
-    ruby_version = check_output(["ruby", "-v"])
+def get_ruby_version(repo_dir)
+    ruby_version = check_output(["ruby", "-v"]).strip
     puts(ruby_version)
 
     if !ruby_version.downcase.include?("yjit")
