@@ -73,24 +73,25 @@ def check_pstate()
         return
     end
 
-    #with open('/sys/devices/system/cpu/intel_pstate/no_turbo', mode='r') as file
-    #    content = file.read().strip()
+    File.open('/sys/devices/system/cpu/intel_pstate/no_turbo', mode='r') do |file|
+        if file.read.strip != '1'
+            puts("You forgot to disable turbo:")
+            puts("  sudo sh -c 'echo 1 > /sys/devices/system/cpu/intel_pstate/no_turbo'")
+            exit(-1)
+        end
+    end
 
-    #if content != '1'
-    #    puts("You forgot to disable turbo:")
-    #    puts("  sudo sh -c 'echo 1 > /sys/devices/system/cpu/intel_pstate/no_turbo'")
-    #    exit(-1)
+    if !File.exist?('/sys/devices/system/cpu/intel_pstate/min_perf_pct')
+        return
+    end
 
-    #if not os.path.exists('/sys/devices/system/cpu/intel_pstate/min_perf_pct')
-    #    return
-
-    #with open('/sys/devices/system/cpu/intel_pstate/min_perf_pct', mode='r') as file
-    #    content = file.read().strip()
-
-    #if content != '100'
-    #    puts("You forgot to set the min perf percentage to 100:")
-    #    puts("  sudo sh -c 'echo 100 > /sys/devices/system/cpu/intel_pstate/min_perf_pct'")
-    #    exit(-1)
+    File.open('/sys/devices/system/cpu/intel_pstate/min_perf_pct', mode='r') do |file|
+        if file.read.strip != '100'
+            puts("You forgot to set the min perf percentage to 100:")
+            puts("  sudo sh -c 'echo 100 > /sys/devices/system/cpu/intel_pstate/min_perf_pct'")
+            exit(-1)
+        end
+    end
 end
 
 def table_to_str(table_data)
