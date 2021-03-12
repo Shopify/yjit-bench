@@ -14,9 +14,10 @@ def check_call(args)
 end
 
 def check_output(args)
-    output = IO.popen(args).read
-    raise RuntimeError unless $?
-    return output
+    IO.popen(args) do |pipe|
+        output = pipe.read
+        return output
+    end
 end
 
 def build_yjit(repo_dir)
@@ -55,7 +56,13 @@ def set_bench_config()
 end
 
 def get_ruby_version(repo_dir)
-    ruby_version = check_output(["ruby", "-v"]).strip
+    ruby_version = check_output(["ruby", "-v"])
+
+    Dir.chdir(repo_dir) do
+        branch_name = check_output(['git', 'branch', '--show-current']).strip
+        ruby_version += "git branch #{branch_name}"
+    end
+
     puts(ruby_version)
 
     if !ruby_version.downcase.include?("yjit")
@@ -257,7 +264,7 @@ build_yjit(args.repo_dir)
 set_bench_config()
 
 # Get the ruby binary version string
-ruby_version = get_ruby_version()
+ruby_version = get_ruby_version(args.repo_dir)
 
 # Check pstate status
 check_pstate()
