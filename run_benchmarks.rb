@@ -5,6 +5,7 @@ require 'ostruct'
 require 'fileutils'
 require 'shellwords'
 require 'csv'
+require 'json'
 
 def check_call(args)
     command = (args.kind_of?(Array)) ? (args.shelljoin):args
@@ -93,19 +94,40 @@ def check_pstate()
 end
 
 def table_to_str(table_data)
-    #def trim_cell(cell)
-    #    try:
-    #        return '{:.1f}'.format(cell)
-    #    except:
-    #        return cell
-
-    #def trim_row(row)
-    #    return list(map(lambda c: trim_cell(c), row))
+    def trim_cell(cell)
+        begin
+            return "%.1f" % cell
+        rescue
+            return cell
+        end
+    end
 
     # Trim numbers to one decimal for console display
-    #table_data = list(map(trim_row, table_data))
+    table_data = table_data.map { |row| row.map { |c| trim_cell(c) } }
 
-    #return tabulate(table_data)
+    num_rows = table_data.length
+    num_cols = table_data[0].length
+
+    # Pad each column to the maximum width in the column
+    (0...num_cols).each do |c|
+        cell_lens = (0...num_rows).map { |r| table_data[r][c].length }
+        max_width = cell_lens.max
+        (0...num_rows).each { |r| table_data[r][c] = table_data[r][c].ljust(max_width) }
+    end
+
+    # Row of separator dashes
+    sep_row = (0...num_cols).map { |i| '-' * table_data[0][i].length }
+    sep_row = sep_row.join('  ')
+
+    out = sep_row + "\n"
+
+    table_data.each do |row|
+        out += row.join('  ') + "\n"
+    end
+
+    out += sep_row
+
+    return out
 end
 
 def mean(values)
@@ -191,11 +213,6 @@ def run_benchmarks(enable_yjit, name_filters, out_path)
         rows = CSV.read(ENV["OUT_CSV_PATH"])
         times = rows[0].map { |v| 1000 * v.to_f }
         times = times.sort
-
-        puts(times)
-        puts(mean(times))
-        puts(stddev(times))
-
         bench_times[bench_name] = times
     end
 
@@ -283,30 +300,29 @@ file_no = free_file_no(args.out_path)
 #       we don't want to lose any precision
 output_tbl = [[ruby_version], []] + table
 out_tbl_path = File.join(args.out_path, 'output_%03d.csv' % file_no)
-
-
-
-=begin
-with open(out_tbl_path , 'w') as csvfile:
-    writer = csv.writer(csvfile, delimiter=',', quotechar='"')
-    writer.writerow(output_tbl)
+CSV.open(out_tbl_path, "wb") do |csv|
+    output_tbl.each do |row|
+        csv << row
+    end
+end
 
 # Save the output in a text file that we can easily refer to
-output_str = ruby_version + '\n' + table_to_str(table) + '\n'
-out_txt_path = File.join(args.out_path, 'output_{:03d}.txt'.format(file_no))
-with open(out_txt_path.format(file_no), 'w') as txtfile:
-    txtfile.write(output_str)
+output_str = ruby_version + "\n" + table_to_str(table) + "\n"
+out_txt_path = File.join(args.out_path, "output_%03d.txt" % file_no)
+File.open(out_txt_path, "w") { |f| f.write output_str }
 
-# Save the raw data
-out_json_path = File.join(args.out_path, 'output_{:03d}.json'.format(file_no))
-with open(out_json_path, "w") as write_file:
+# Save the raw data as JSON
+out_json_path = File.join(args.out_path, "output_%03d.json" % file_no)
+File.open(out_json_path, "w") do |file|
     data = {
         'yjit': yjit_times,
         'interp': interp_times,
         'ruby_version': ruby_version,
     }
-    json.dump(data, write_file, indent=4)
+
+    json_str = JSON.generate(data, { indent:'    ' })
+    file.write json_str
+end
 
 # Print the table to the console, with numbers truncated
 puts(output_str)
-=end

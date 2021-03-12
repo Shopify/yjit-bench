@@ -12,7 +12,7 @@ Each benchmark includes a harness found in `/lib/harness.rb`. The harness
 controls the number of times a benchmark is run, and writes timing values
 into an output CSV file.
 
-The `run_benchmarks.py` script pulls the latest commits from the YJIT repo,
+The `run_benchmarks.rb` script pulls the latest commits from the YJIT repo,
 recompiles the YJIT ruby installation,
 and then traverses the `benchmarks` directory and
 to automatically discover and run the benchmarks in there. It reads the
@@ -55,7 +55,7 @@ To run all the benchmarks and record the data:
 ```
 cd yjit-bench
 chruby ruby-yjit
-./run_benchmarks.py
+./run_benchmarks.rb
 ```
 
 This runs for a few minutes and produces a table like this in the console:
@@ -83,7 +83,7 @@ ruby -I./harness benchmarks/lee/benchmark.rb
 
 To run one individual benchmark and record the data:
 ```
-./run_benchmarks.py $BENCHMARK_NAME
+./run_benchmarks.rb $BENCHMARK_NAME
 ```
 
 ## Disabling CPU Frequency Scaling
