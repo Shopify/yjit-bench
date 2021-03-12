@@ -67,7 +67,7 @@ def get_ruby_version(repo_dir)
     Dir.chdir(repo_dir) do
         branch_name = check_output(['git', 'branch', '--show-current']).strip
         ruby_version += "\ngit branch #{branch_name}"
-        commit_hash = check_output(['git', 'log', "--pretty=format:'%h'", '-n', '1']).strip
+        commit_hash = check_output(['git', 'log', "--pretty=format:%h", '-n', '1']).strip
         ruby_version += "\ngit commit hash #{commit_hash}"
     end
 
