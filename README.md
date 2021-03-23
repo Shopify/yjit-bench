@@ -87,9 +87,11 @@ ruby -I./harness benchmarks/lee/benchmark.rb
 ```
 
 There is also a harness that is designed to run benchmarks for a fixed
-number of iterations, for examlpe to use with the `perf stat` tool:
+number of iterations, for example to use with the `perf stat` tool or
+with the `--yjit-stats` command-line option:
+
 ```
-ruby -I./harness-perf benchmarks/lee/benchmark.rb
+ruby --yjit-stats -I./harness-perf benchmarks/lee/benchmark.rb
 ```
 
 ## Disabling CPU Frequency Scaling
