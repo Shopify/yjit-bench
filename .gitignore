@@ -1,4 +1,4 @@
 data
-output.csv
+*.csv
 
 __pycache__
