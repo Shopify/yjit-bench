@@ -72,6 +72,11 @@ setivar        92.5         2.4         68.9       2.0         25.5
 -------------  -----------  ----------  ---------  ----------  -----------
 ```
 
+To run one or more specific benchmarks and record the data:
+```
+./run_benchmarks.rb fib lee optcarrot
+```
+
 To run one individual benchmark without recording the data:
 ```
 # For single-file microbenchmarks:
@@ -81,9 +86,10 @@ ruby -I./harness benchmarks/fib.rb
 ruby -I./harness benchmarks/lee/benchmark.rb
 ```
 
-To run one individual benchmark and record the data:
+There is also a harness that is designed to run benchmarks for a fixed
+number of iterations, for examlpe to use with the `perf stat` tool:
 ```
-./run_benchmarks.rb $BENCHMARK_NAME
+ruby -I./harness-perf benchmarks/lee/benchmark.rb
 ```
 
 ## Disabling CPU Frequency Scaling
