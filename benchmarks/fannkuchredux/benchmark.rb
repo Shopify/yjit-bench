@@ -60,14 +60,13 @@ require 'harness'
 
 run_benchmark(5) do
     sum, flips = fannkuch(n)
-end
+    #printf "%d\nPfannkuchen(%d) = %d\n", sum, n, flips
 
-#printf "%d\nPfannkuchen(%d) = %d\n", sum, n, flips
+    if sum != 73196
+        raise RuntimeError "incorrect sum"
+    end
 
-if sum != 73196
-    raise RuntimeError "incorrect sum"
-end
-
-if flips != 38
-    raise RuntimeError "incorrect flips"
+    if flips != 38
+        raise RuntimeError "incorrect flips"
+    end
 end
