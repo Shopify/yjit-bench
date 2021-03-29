@@ -19,7 +19,7 @@ end
 
 def build_yjit(repo_dir)
     if !File.exist?(repo_dir)
-        puts('Directory does not exist "' + repo_dir + '"')
+        puts("Directory does not exist \"#{repo_dir}\"")
         exit(-1)
     end
 
@@ -39,7 +39,7 @@ def build_yjit(repo_dir)
         #n_cores = os.cpu_count()
         n_cores = 32
         puts("Building YJIT with #{n_cores} processes")
-        check_call(['make', '-j' + n_cores.to_s, 'install'])
+        check_call(["make", "-j#{n_cores}", "install"])
     end
 end
 
