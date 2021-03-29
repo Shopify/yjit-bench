@@ -14,10 +14,7 @@ def check_call(args)
 end
 
 def check_output(args)
-    IO.popen(args) do |pipe|
-        output = pipe.read
-        return output
-    end
+    IO.popen(args).read
 end
 
 def build_yjit(repo_dir)
