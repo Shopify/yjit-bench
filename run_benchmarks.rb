@@ -200,8 +200,6 @@ def run_benchmarks(enable_yjit, name_filters, out_path)
         cmd = [
             # Disable address space randomization (for determinism)
             "setarch", "x86_64", "-R",
-            # Increase process priority to avoid context switches
-            "nice", "-n", "-20",
             # Pin the process to one given core to improve caching
             "taskset", "-c", "11",
             # Run the benchmark
