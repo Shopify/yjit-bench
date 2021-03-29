@@ -123,8 +123,7 @@ def table_to_str(table_data)
     end
 
     # Row of separator dashes
-    sep_row = (0...num_cols).map { |i| '-' * table_data[0][i].length }
-    sep_row = sep_row.join('  ')
+    sep_row = (0...num_cols).map { |i| '-' * table_data[0][i].length }.join('  ')
 
     out = sep_row + "\n"
 
