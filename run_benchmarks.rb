@@ -14,15 +14,12 @@ def check_call(args)
 end
 
 def check_output(args)
-    IO.popen(args) do |pipe|
-        output = pipe.read
-        return output
-    end
+    IO.popen(args).read
 end
 
 def build_yjit(repo_dir)
     if !File.exist?(repo_dir)
-        puts('Directory does not exist "' + repo_dir + '"')
+        puts("Directory does not exist \"#{repo_dir}\"")
         exit(-1)
     end
 
@@ -42,7 +39,7 @@ def build_yjit(repo_dir)
         #n_cores = os.cpu_count()
         n_cores = 32
         puts("Building YJIT with #{n_cores} processes")
-        check_call(['make', '-j' + n_cores.to_s, 'install'])
+        check_call(["make", "-j#{n_cores}", "install"])
     end
 end
 
@@ -126,8 +123,7 @@ def table_to_str(table_data)
     end
 
     # Row of separator dashes
-    sep_row = (0...num_cols).map { |i| '-' * table_data[0][i].length }
-    sep_row = sep_row.join('  ')
+    sep_row = (0...num_cols).map { |i| '-' * table_data[0][i].length }.join('  ')
 
     out = sep_row + "\n"
 
