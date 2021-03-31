@@ -207,7 +207,7 @@ def run_benchmarks(enable_yjit, name_filters, out_path)
 
         # Set up the environment for the benchmarking command
         ENV["OUT_CSV_PATH"] = File.join(out_path, 'temp.csv')
-        ENV["WARMUP_ITRS"] = WARMUP_ITRS
+        ENV["WARMUP_ITRS"] = WARMUP_ITRS.to_s
 
         # Set up the benchmarking command
         cmd = [
