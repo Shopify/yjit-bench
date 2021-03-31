@@ -117,10 +117,10 @@ def table_to_str(table_data)
     end
 
     # Trim numbers to one decimal for console display
-    # Keep two decimals for the speedup ratio
+    # Keep two decimals for the speedup ratios
     trim_1dec = Proc.new { |c| trim_cell(c, 1) }
     trim_2dec = Proc.new { |c| trim_cell(c, 2) }
-    table_data = table_data.map { |row| row[..-2].map(&trim_1dec) + row[-1..].map(&trim_2dec) }
+    table_data = table_data.map { |row| row[..-3].map(&trim_1dec) + row[-2..].map(&trim_2dec) }
 
     num_rows = table_data.length
     num_cols = table_data[0].length
@@ -293,7 +293,7 @@ puts("Total time spent benchmarking: #{bench_total_time}s")
 puts()
 
 # Table for the data we've gathered
-table = [["bench", "interp (ms)", "stddev (%)", "yjit (ms)", "stddev (%)", "yjit/interp"]]
+table = [["bench", "interp (ms)", "stddev (%)", "yjit (ms)", "stddev (%)", "yjit/interp", "1st itr"]]
 
 # Format the results table
 bench_names.each do |bench_name|
@@ -301,6 +301,7 @@ bench_names.each do |bench_name|
     interp_t = interp_times[bench_name]
 
     ratio = mean(yjit_t) / mean(interp_t)
+    ratio_1st = yjit_t[0] / interp_t[0]
 
     table.append([
         bench_name,
@@ -308,7 +309,8 @@ bench_names.each do |bench_name|
         100 * stddev(interp_t) / mean(interp_t),
         mean(yjit_t),
         100 * stddev(yjit_t) / mean(yjit_t),
-        ratio
+        ratio,
+        ratio_1st
     ])
 end
 
