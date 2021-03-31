@@ -7,6 +7,8 @@ require 'shellwords'
 require 'csv'
 require 'json'
 
+WARMUP_ITRS = 15
+
 def check_call(args)
     command = (args.kind_of?(Array)) ? (args.shelljoin):args
     status = system(command)
@@ -205,6 +207,7 @@ def run_benchmarks(enable_yjit, name_filters, out_path)
 
         # Set up the environment for the benchmarking command
         ENV["OUT_CSV_PATH"] = File.join(out_path, 'temp.csv')
+        ENV["WARMUP_ITRS"] = WARMUP_ITRS
 
         # Set up the benchmarking command
         cmd = [
@@ -300,8 +303,13 @@ bench_names.each do |bench_name|
     yjit_t = yjit_times[bench_name]
     interp_t = interp_times[bench_name]
 
+    yjit_t0 = yjit_t[0]
+    interp_t0 = interp_t[0]
+    yjit_t = yjit_t[WARMUP_ITRS..]
+    interp_t = interp_t[WARMUP_ITRS..]
+
+    ratio_1st = yjit_t0 / interp_t0
     ratio = mean(yjit_t) / mean(interp_t)
-    ratio_1st = yjit_t[0] / interp_t[0]
 
     table.append([
         bench_name,

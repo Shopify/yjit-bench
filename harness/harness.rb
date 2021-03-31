@@ -1,7 +1,7 @@
 require 'csv'
 
 # Warmup iterations
-$WARMUP_ITRS = 15
+$WARMUP_ITRS = ENV.fetch('WARMUP_ITRS', 15).to_i
 
 # Minimum number of benchmarking iterations
 $MIN_BENCH_ITRS = 10
@@ -43,9 +43,6 @@ def run_benchmark(num_itrs_hint)
             break
         end
     end
-
-    # Throw away the warmup iterations
-    times = times[$WARMUP_ITRS..]
 
     # Write each time value on its own row
     CSV.open($out_csv_path, "wb") do |csv|
