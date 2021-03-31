@@ -120,7 +120,7 @@ def table_to_str(table_data)
     # Keep two decimals for the speedup ratio
     trim_1dec = Proc.new { |c| trim_cell(c, 1) }
     trim_2dec = Proc.new { |c| trim_cell(c, 2) }
-    table_data = table_data.map { |row| row[..-2].map(trim_1dec) + row[-1..].map(trim_2dec) }
+    table_data = table_data.map { |row| row[..-2].map(&trim_1dec) + row[-1..].map(&trim_2dec) }
 
     num_rows = table_data.length
     num_cols = table_data[0].length
