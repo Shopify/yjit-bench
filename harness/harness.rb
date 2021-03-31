@@ -24,8 +24,8 @@ end
 def run_benchmark(num_itrs_hint)
     times = []
     total_time = 0
-
     num_itrs = 0
+
     loop do
         time = time_itr { yield }
         num_itrs += 1

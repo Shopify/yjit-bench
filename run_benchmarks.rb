@@ -230,7 +230,6 @@ def run_benchmarks(enable_yjit, name_filters, out_path)
         # Convert times to ms
         rows = CSV.read(ENV["OUT_CSV_PATH"])
         times = rows[0].map { |v| 1000 * v.to_f }
-        times = times.sort
         bench_times[bench_name] = times
     end
 
