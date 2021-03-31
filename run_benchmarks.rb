@@ -101,16 +101,26 @@ def check_pstate()
 end
 
 def table_to_str(table_data)
-    def trim_cell(cell)
+    def trim_cell(cell, num_decimals)
         begin
-            return "%.1f" % cell
+            case num_decimals
+            when 1
+                return "%.1f" % cell
+            when 2
+                return "%.2f" % cell
+            else
+                raise RuntimeError
+            end
         rescue
             return cell
         end
     end
 
     # Trim numbers to one decimal for console display
-    table_data = table_data.map { |row| row.map { |c| trim_cell(c) } }
+    # Keep two decimals for the speedup ratio
+    trim_1dec = Proc.new { |c| trim_cell(c, 1) }
+    trim_2dec = Proc.new { |c| trim_cell(c, 2) }
+    table_data = table_data.map { |row| row[..-2].map(trim_1dec) + row[-1..].map(trim_2dec) }
 
     num_rows = table_data.length
     num_cols = table_data[0].length
