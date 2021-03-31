@@ -283,14 +283,14 @@ puts("Total time spent benchmarking: #{bench_total_time}s")
 puts()
 
 # Table for the data we've gathered
-table = [["bench", "interp (ms)", "stddev (%)", "yjit (ms)", "stddev (%)", "speedup (%)"]]
+table = [["bench", "interp (ms)", "stddev (%)", "yjit (ms)", "stddev (%)", "yjit/interp"]]
 
 # Format the results table
 bench_names.each do |bench_name|
     yjit_t = yjit_times[bench_name]
     interp_t = interp_times[bench_name]
 
-    speedup = 100 * (1 - (mean(yjit_t) / mean(interp_t)))
+    ratio = mean(yjit_t) / mean(interp_t)
 
     table.append([
         bench_name,
@@ -298,7 +298,7 @@ bench_names.each do |bench_name|
         100 * stddev(interp_t) / mean(interp_t),
         mean(yjit_t),
         100 * stddev(yjit_t) / mean(yjit_t),
-        speedup
+        ratio
     ])
 end
 
