@@ -12,7 +12,7 @@ visit_count = 2000
 rng = Random.new(0x1be52551fc152997)
 visiting_routes = Array.new(visit_count) { possible_routes.sample(random: rng) }
 
-run_benchmark(20) do
+run_benchmark(10) do
   visiting_routes.each do |path|
     # The app mutates `env`, so we need to create one every time.
     env = Rack::MockRequest::env_for("http://localhost#{path}")
