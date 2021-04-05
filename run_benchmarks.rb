@@ -54,7 +54,7 @@ def set_bench_config()
     end
 end
 
-def get_ruby_version(repo_dir)
+def check_chruby()
     ruby_version = check_output(["ruby", "-v"]).strip
 
     if !ruby_version.downcase.include?("yjit")
@@ -62,6 +62,10 @@ def get_ruby_version(repo_dir)
         puts("  chruby ruby-yjit")
         exit(-1)
     end
+end
+
+def get_ruby_version(repo_dir)
+    ruby_version = check_output(["ruby", "-v"]).strip
 
     Dir.chdir(repo_dir) do
         branch_name = check_output(['git', 'branch', '--show-current']).strip
@@ -268,6 +272,10 @@ if ARGV.length > 0
     args.name_filters += ARGV
 end
 
+# Check that the chruby command was run
+# Note: we intentionally do this first
+check_chruby()
+
 # Create the output directory
 FileUtils.mkdir_p(args.out_path)
 
@@ -339,8 +347,8 @@ end
 output_str = ruby_version + "\n"
 output_str += table_to_str(table) + "\n"
 output_str += "Legend:\n"
-output_str += "interp/yjit: ratio of interp/yjit time. Higher is better. Above 1 represents a speedup.\n"
-output_str += "1st itr: ratio of interp/yjit time for the first benchmarking iteration.\n"
+output_str += "- interp/yjit: ratio of interp/yjit time. Higher is better. Above 1 represents a speedup.\n"
+output_str += "- 1st itr: ratio of interp/yjit time for the first benchmarking iteration.\n"
 out_txt_path = File.join(args.out_path, "output_%03d.txt" % file_no)
 File.open(out_txt_path, "w") { |f| f.write output_str }
 
