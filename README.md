@@ -6,11 +6,9 @@ the [yjit branch](https://github.com/Shopify/ruby/blob/yjit/doc/yjit.md) of the 
 
 The benchmarks are found in the `benchmarks` directory. Individual Ruby files
 in `benchmarks` are microbenchmarks. Subdirectories under `benchmarks` are
-larger macrobenchmarks.
-
-Each benchmark includes a harness found in `/lib/harness.rb`. The harness
-controls the number of times a benchmark is run, and writes timing values
-into an output CSV file.
+larger macrobenchmarks. Each benchmark relies on a harness found in
+`/lib/harness.rb`. The harness controls the number of times a benchmark is
+run, and writes timing values into an output CSV file.
 
 The `run_benchmarks.rb` script pulls the latest commits from the YJIT repo,
 recompiles the YJIT ruby installation,
@@ -60,17 +58,27 @@ chruby ruby-yjit
 
 This runs for a few minutes and produces a table like this in the console:
 ```
--------------  -----------  ----------  ---------  ----------  -----------
-bench          interp (ms)  stddev (%)  yjit (ms)  stddev (%)  speedup (%)
-cfunc_itself   254.3        1.7         201.5      3.6         20.8
-fib            169.8        1.3         138.5      1.4         18.4
-getivar        87.5         1.4         66.4       3.3         24.1
-lee            1153.2       2.2         1099.1     1.7         4.7
-liquid-render  10.0         10.7        9.9        7.5         1.0
-optcarrot      4530.5       1.8         4625.7     0.7         -2.1
-setivar        92.5         2.4         68.9       2.0         25.5
--------------  -----------  ----------  ---------  ----------  -----------
+-------------  -----------  ----------  ---------  ----------  -----------  -------
+bench          interp (ms)  stddev (%)  yjit (ms)  stddev (%)  interp/yjit  1st itr
+30k_ifelse     2322.8       0.0         399.7      0.0         5.81         4.48
+30k_methods    6502.7       0.0         900.9      0.0         7.22         6.85
+binarytrees    440.1        2.0         387.3      2.1         1.14         1.14
+cfunc_itself   108.8        0.4         58.9       0.6         1.85         1.84
+fannkuchredux  4839.4       0.0         4786.5     0.1         1.01         1.01
+fib            240.9        0.1         76.3       0.1         3.16         3.16
+getivar        118.6        0.1         49.9       0.1         2.38         1.02
+lee            1300.4       0.6         1231.1     0.7         1.06         1.07
+liquid-render  204.9        3.3         187.3      1.1         1.09         1.08
+nbody          132.6        0.1         131.8      0.1         1.01         1.00
+optcarrot      6268.4       0.3         5493.2     0.2         1.14         1.13
+railsbench     3957.1       1.1         3989.5     0.9         0.99         0.97
+setivar        70.8         0.1         27.3       0.1         2.59         1.01
+-------------  -----------  ----------  ---------  ----------  -----------  -------
 ```
+
+The `interp/yjit` column is the ratio of the average time taken by the interpreter over the
+average time taken by YJIT after a number of warmup iterations. Results above 1 represent
+speedups. For instance, 1.14 means "YJIT is 1.14 times as fast as the interpreter".
 
 To run one or more specific benchmarks and record the data:
 ```
