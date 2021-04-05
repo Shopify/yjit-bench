@@ -295,7 +295,7 @@ puts("Total time spent benchmarking: #{bench_total_time}s")
 puts()
 
 # Table for the data we've gathered
-table = [["bench", "interp (ms)", "stddev (%)", "yjit (ms)", "stddev (%)", "yjit/interp", "1st itr"]]
+table = [["bench", "interp (ms)", "stddev (%)", "yjit (ms)", "stddev (%)", "interp/yjit", "1st itr"]]
 
 # Format the results table
 bench_names.each do |bench_name|
@@ -307,8 +307,8 @@ bench_names.each do |bench_name|
     yjit_t = yjit_t[WARMUP_ITRS..]
     interp_t = interp_t[WARMUP_ITRS..]
 
-    ratio_1st = yjit_t0 / interp_t0
-    ratio = mean(yjit_t) / mean(interp_t)
+    ratio_1st = interp_t0 / yjit_t0
+    ratio = mean(interp_t) / mean(yjit_t)
 
     table.append([
         bench_name,
@@ -336,7 +336,11 @@ CSV.open(out_tbl_path, "wb") do |csv|
 end
 
 # Save the output in a text file that we can easily refer to
-output_str = ruby_version + "\n" + table_to_str(table) + "\n"
+output_str = ruby_version + "\n"
+output_str += table_to_str(table) + "\n"
+output_str += "Legend:\n"
+output_str += "interp/yjit: ratio of interp/yjit time. Higher is better. Above 1 represents a speedup.\n"
+output_str += "1st itr: ratio of interp/yjit time for the first benchmarking iteration.\n"
 out_txt_path = File.join(args.out_path, "output_%03d.txt" % file_no)
 File.open(out_txt_path, "w") { |f| f.write output_str }
 
