@@ -13,9 +13,9 @@ $out_csv_path = ENV.fetch('OUT_CSV_PATH', 'output.csv')
 
 # Time one iteration of a benchmark
 def time_itr
-    start_time = Time.now.to_f
+    start_time = Process.clock_gettime(Process::CLOCK_MONOTONIC)
     yield
-    end_time = Time.now.to_f
+    end_time = Process.clock_gettime(Process::CLOCK_MONOTONIC)
     delta_time = end_time - start_time
     return delta_time
 end
