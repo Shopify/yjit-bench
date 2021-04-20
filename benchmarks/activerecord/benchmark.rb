@@ -38,6 +38,8 @@ class Post < ActiveRecord::Base; end
 # heat any caches
 Post.where(id: 1).first.title
 
+YJIT.reset_stats! if defined?(YJIT.reset_stats!)
+
 run_benchmark(10) do
   1000.times do |i|
     Post.where(id: i + 1).first.title
