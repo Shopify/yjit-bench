@@ -31,9 +31,8 @@ Build YJIT:
 
 ```
 sudo apt-get install sqlite3 libsqlite3-dev
-git clone https://github.com/Shopify/ruby.git yjit
+git clone https://github.com/Shopify/yjit.git yjit
 cd yjit
-git checkout yjit
 ./configure --disable-install-doc --disable--install-rdoc --prefix=$HOME/.rubies/ruby-yjit
 make -j16 install
 ```
