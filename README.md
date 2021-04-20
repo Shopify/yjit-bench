@@ -1,8 +1,8 @@
 yjit-bench
 ==========
 
-Small set of benchmarks and scripts for the YJIT Ruby JIT compiler project, which currently lives in
-the [yjit branch](https://github.com/Shopify/ruby/blob/yjit/doc/yjit.md) of the Shopify/ruby repository.
+Small set of benchmarks and scripts for the YJIT Ruby JIT compiler project, which lives in
+the [Shopify/yjit](https://github.com/Shopify/yjit) repository.
 
 The benchmarks are found in the `benchmarks` directory. Individual Ruby files
 in `benchmarks` are microbenchmarks. Subdirectories under `benchmarks` are
