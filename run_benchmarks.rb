@@ -9,14 +9,14 @@ require 'json'
 
 WARMUP_ITRS = 15
 
-def check_call(args)
-    command = (args.kind_of?(Array)) ? (args.shelljoin):args
+def check_call(command)
+    puts(command)
     status = system(command)
     raise RuntimeError unless status
 end
 
-def check_output(args)
-    IO.popen(args).read
+def check_output(command)
+    IO.popen(command).read
 end
 
 def build_yjit(repo_dir)
@@ -26,11 +26,11 @@ def build_yjit(repo_dir)
     end
 
     Dir.chdir(repo_dir) do
-        check_call(['git', 'pull'])
+        check_call("git pull")
 
         # Don't do a clone and configure every time
         # ./config.status --config => check that DRUBY_DEBUG is not in there
-        config_out = check_output(['./config.status', '--config'])
+        config_out = check_output("./config.status --config")
 
         if config_out.include?("DRUBY_DEBUG")
             puts("You should configure YJIT in release mode for benchmarking")
@@ -41,7 +41,7 @@ def build_yjit(repo_dir)
         #n_cores = os.cpu_count()
         n_cores = 32
         puts("Building YJIT with #{n_cores} processes")
-        check_call(["make", "-j#{n_cores}", "install"])
+        check_call("make -j#{n_cores} install")
     end
 end
 
@@ -55,7 +55,7 @@ def set_bench_config()
 end
 
 def check_chruby()
-    ruby_version = check_output(["ruby", "-v"]).strip
+    ruby_version = check_output("ruby -v").strip
 
     if !ruby_version.downcase.include?("yjit")
         puts("You forgot to chruby to ruby-yjit:")
@@ -65,12 +65,12 @@ def check_chruby()
 end
 
 def get_ruby_version(repo_dir)
-    ruby_version = check_output(["ruby", "-v"]).strip
+    ruby_version = check_output("ruby -v").strip
 
     Dir.chdir(repo_dir) do
-        branch_name = check_output(['git', 'branch', '--show-current']).strip
+        branch_name = check_output("git branch --show-current").strip
         ruby_version += "\ngit branch #{branch_name}"
-        commit_hash = check_output(['git', 'log', "--pretty=format:%h", '-n', '1']).strip
+        commit_hash = check_output("git log --pretty=format:%h -n 1").strip
         ruby_version += "\ngit commit hash #{commit_hash}"
     end
 
@@ -227,8 +227,7 @@ def run_benchmarks(ruby_opts, name_filters, out_path)
         ]
 
         # Do the benchmarking
-        puts(cmd.join(' '))
-        check_call(cmd)
+        check_call(cmd.join(' '))
 
         # Read the benchmark data
         # Convert times to ms
