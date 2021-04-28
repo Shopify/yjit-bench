@@ -222,10 +222,9 @@ def run_benchmarks(ruby_opts, name_filters, out_path)
             # Run the benchmark
             "ruby",
             "-I", "./harness",
+            ruby_opts,
+            script_path
         ]
-
-        # Add the ruby command-line options and the script path
-        cmd += ruby_opts + [script_path]
 
         # Do the benchmarking
         puts(cmd.join(' '))
