@@ -277,6 +277,9 @@ end
 # Note: we intentionally do this first
 check_chruby()
 
+# Disable CPU frequency scaling
+set_bench_config()
+
 # Check pstate status
 check_pstate()
 
@@ -285,9 +288,6 @@ FileUtils.mkdir_p(args.out_path)
 
 # Update and build YJIT
 build_yjit(args.repo_dir)
-
-# Disable CPU frequency scaling
-set_bench_config()
 
 # Get the ruby binary version string
 ruby_version = get_ruby_version(args.repo_dir)
