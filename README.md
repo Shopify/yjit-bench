@@ -85,6 +85,11 @@ To run one or more specific benchmarks and record the data:
 ./run_benchmarks.rb fib lee optcarrot
 ```
 
+To benchmark YJIT with specific command-line options on specific benchmarks:
+```
+./run_benchmarks.rb --yjit_opts="--yjit-version-limit=10" fib lee optcarrot
+```
+
 To run one individual benchmark without recording the data:
 ```
 # For single-file microbenchmarks:
