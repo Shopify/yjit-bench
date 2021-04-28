@@ -189,7 +189,7 @@ def match_filter(name, filters)
 end
 
 # Run all the benchmarks and record execution times
-def run_benchmarks(enable_yjit, name_filters, out_path)
+def run_benchmarks(ruby_opts, name_filters, out_path)
     bench_times = {}
 
     # Get the list of benchmark files/directories matching name filters
@@ -221,10 +221,11 @@ def run_benchmarks(enable_yjit, name_filters, out_path)
             "taskset", "-c", "11",
             # Run the benchmark
             "ruby",
-            enable_yjit ? "--yjit":"--disable-yjit",
             "-I", "./harness",
-            script_path
         ]
+
+        # Add the ruby command-line options and the script path
+        cmd += ruby_opts + [script_path]
 
         # Do the benchmarking
         puts(cmd.join(' '))
@@ -244,6 +245,7 @@ end
 args = OpenStruct.new({
     repo_dir: "../yjit",
     out_path: "./data",
+    yjit_opts: "",
     name_filters: []
 })
 
@@ -261,10 +263,9 @@ OptionParser.new do |opts|
     args.name_filters = list
   end
 
-  opts.on("--out_path=OUT_PATH") do |v|
-    args[:out_path] = v
+  opts.on("--yjit_opts=OPT_STRING", "string of command-line options to run YJIT with") do |str|
+    args.yjit_opts=str
   end
-
 end.parse!
 
 # Remaining arguments are treated as benchmark name filters
@@ -275,6 +276,9 @@ end
 # Check that the chruby command was run
 # Note: we intentionally do this first
 check_chruby()
+
+# Check pstate status
+check_pstate()
 
 # Create the output directory
 FileUtils.mkdir_p(args.out_path)
@@ -288,13 +292,10 @@ set_bench_config()
 # Get the ruby binary version string
 ruby_version = get_ruby_version(args.repo_dir)
 
-# Check pstate status
-check_pstate()
-
 # Benchmark with and without YJIT
 bench_start_time = Time.now.to_f
-yjit_times = run_benchmarks(enable_yjit=true, name_filters=args.name_filters, out_path=args.out_path)
-interp_times = run_benchmarks(enable_yjit=false, name_filters=args.name_filters, out_path=args.out_path)
+yjit_times = run_benchmarks(ruby_opts="--yjit " + args.yjit_opts, name_filters=args.name_filters, out_path=args.out_path)
+interp_times = run_benchmarks(ruby_opts="--disable-yjit", name_filters=args.name_filters, out_path=args.out_path)
 bench_end_time = Time.now.to_f
 bench_names = yjit_times.keys.sort
 
