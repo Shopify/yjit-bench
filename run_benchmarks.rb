@@ -331,40 +331,50 @@ end
 # Find a free file index for the output files
 file_no = free_file_no(args.out_path)
 
+# Save the raw data as JSON
+out_data = {
+    'metadata': {
+        'end_time': Time.now.strftime("%Y-%m-%d %H:%M:%S %Z (%z)"),
+        'ruby_version': ruby_version,
+        'yjit_opts': args.yjit_opts,
+    },
+    'yjit': yjit_times,
+    'interp': interp_times,
+}
+out_json_path = File.join(args.out_path, "output_%03d.json" % file_no)
+File.open(out_json_path, "w") do |file|
+    json_str = JSON.generate(out_data)
+    file.write json_str
+end
+
 # Save data as CSV so we can produce tables/graphs in a spreasheet program
 # NOTE: we don't do any number formatting for the output file because
 #       we don't want to lose any precision
-output_tbl = [[ruby_version], [args.yjit_opts], []] + table
+output_rows = []
+out_data['metadata'].each do |key, value|
+    output_rows.append([key, value])
+end
+output_rows.append([])
+output_rows.concat(table)
 out_tbl_path = File.join(args.out_path, 'output_%03d.csv' % file_no)
 CSV.open(out_tbl_path, "wb") do |csv|
-    output_tbl.each do |row|
+    output_rows.each do |row|
         csv << row
     end
 end
 
 # Save the output in a text file that we can easily refer to
-output_str = ruby_version + "\n"
-output_str += "yjit_opts=\"#{args.yjit_opts}\"\n"
+output_str = ""
+out_data['metadata'].each do |key, value|
+    output_str += "#{key}=#{value}\n"
+end
+output_str += "\n"
 output_str += table_to_str(table) + "\n"
 output_str += "Legend:\n"
 output_str += "- interp/yjit: ratio of interp/yjit time. Higher is better. Above 1 represents a speedup.\n"
 output_str += "- 1st itr: ratio of interp/yjit time for the first benchmarking iteration.\n"
 out_txt_path = File.join(args.out_path, "output_%03d.txt" % file_no)
 File.open(out_txt_path, "w") { |f| f.write output_str }
-
-# Save the raw data as JSON
-out_json_path = File.join(args.out_path, "output_%03d.json" % file_no)
-File.open(out_json_path, "w") do |file|
-    data = {
-        'yjit': yjit_times,
-        'interp': interp_times,
-        'ruby_version': ruby_version,
-        'yjit_opts': args.yjit_opts
-    }
-
-    json_str = JSON.generate(data)
-    file.write json_str
-end
 
 # Print the table to the console, with numbers truncated
 puts(output_str)
