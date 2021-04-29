@@ -340,7 +340,7 @@ metadata = {
 out_json_path = File.join(args.out_path, "output_%03d.json" % file_no)
 File.open(out_json_path, "w") do |file|
     out_data = {
-        'metadata': metadata
+        'metadata': metadata,
         'yjit': yjit_times,
         'interp': interp_times,
     }
