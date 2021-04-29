@@ -334,7 +334,7 @@ file_no = free_file_no(args.out_path)
 # Save data as CSV so we can produce tables/graphs in a spreasheet program
 # NOTE: we don't do any number formatting for the output file because
 #       we don't want to lose any precision
-output_tbl = [[ruby_version], []] + table
+output_tbl = [[ruby_version], [args.yjit_opts], []] + table
 out_tbl_path = File.join(args.out_path, 'output_%03d.csv' % file_no)
 CSV.open(out_tbl_path, "wb") do |csv|
     output_tbl.each do |row|
@@ -344,6 +344,7 @@ end
 
 # Save the output in a text file that we can easily refer to
 output_str = ruby_version + "\n"
+output_str += "yjit_opts=\"{args.yjit_opts}\"\n"
 output_str += table_to_str(table) + "\n"
 output_str += "Legend:\n"
 output_str += "- interp/yjit: ratio of interp/yjit time. Higher is better. Above 1 represents a speedup.\n"
@@ -358,6 +359,7 @@ File.open(out_json_path, "w") do |file|
         'yjit': yjit_times,
         'interp': interp_times,
         'ruby_version': ruby_version,
+        'yjit_opts': args.yjit_opts
     }
 
     json_str = JSON.generate(data)
