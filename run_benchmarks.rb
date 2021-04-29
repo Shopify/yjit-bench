@@ -332,17 +332,18 @@ end
 file_no = free_file_no(args.out_path)
 
 # Save the raw data as JSON
-out_data = {
-    'metadata': {
-        'end_time': Time.now.strftime("%Y-%m-%d %H:%M:%S %Z (%z)"),
-        'ruby_version': ruby_version,
-        'yjit_opts': args.yjit_opts,
-    },
-    'yjit': yjit_times,
-    'interp': interp_times,
+metadata = {
+    'end_time': Time.now.strftime("%Y-%m-%d %H:%M:%S %Z (%z)"),
+    'ruby_version': ruby_version,
+    'yjit_opts': args.yjit_opts,
 }
 out_json_path = File.join(args.out_path, "output_%03d.json" % file_no)
 File.open(out_json_path, "w") do |file|
+    out_data = {
+        'metadata': metadata
+        'yjit': yjit_times,
+        'interp': interp_times,
+    }
     json_str = JSON.generate(out_data)
     file.write json_str
 end
@@ -351,7 +352,7 @@ end
 # NOTE: we don't do any number formatting for the output file because
 #       we don't want to lose any precision
 output_rows = []
-out_data['metadata'].each do |key, value|
+metadata.each do |key, value|
     output_rows.append([key, value])
 end
 output_rows.append([])
@@ -365,7 +366,7 @@ end
 
 # Save the output in a text file that we can easily refer to
 output_str = ""
-out_data['metadata'].each do |key, value|
+metadata.each do |key, value|
     output_str += "#{key}=#{value}\n"
 end
 output_str += "\n"
