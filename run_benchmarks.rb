@@ -344,7 +344,7 @@ end
 
 # Save the output in a text file that we can easily refer to
 output_str = ruby_version + "\n"
-output_str += "yjit_opts=\"{args.yjit_opts}\"\n"
+output_str += "yjit_opts=\"#{args.yjit_opts}\"\n"
 output_str += table_to_str(table) + "\n"
 output_str += "Legend:\n"
 output_str += "- interp/yjit: ratio of interp/yjit time. Higher is better. Above 1 represents a speedup.\n"
