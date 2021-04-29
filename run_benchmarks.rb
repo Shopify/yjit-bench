@@ -163,9 +163,9 @@ def stddev(values)
     return Math.sqrt(mean_sqr)
 end
 
-def free_file_no(out_path)
+def free_file_no(prefix)
     (1..1000).each do |file_no|
-        out_path = File.join(out_path, "output_%03d.csv" % file_no)
+        out_path = File.join(prefix, "output_%03d.csv" % file_no)
         if !File.exist?(out_path)
             return file_no
         end
