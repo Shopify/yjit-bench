@@ -65,16 +65,14 @@ def check_chruby()
 end
 
 def get_ruby_version(repo_dir)
-    ruby_version = check_output("ruby -v").strip
+    ruby_version = {}
+
+    ruby_version[:ruby_version] = check_output("ruby -v").strip
 
     Dir.chdir(repo_dir) do
-        branch_name = check_output("git branch --show-current").strip
-        ruby_version += "\ngit branch #{branch_name}"
-        commit_hash = check_output("git log --pretty=format:%h -n 1").strip
-        ruby_version += "\ngit commit hash #{commit_hash}"
+        ruby_version[:git_branch] = check_output("git branch --show-current").strip
+        ruby_version[:git_commit] = check_output("git log --pretty=format:%h -n 1").strip
     end
-
-    puts(ruby_version)
 
     return ruby_version
 end
@@ -331,12 +329,16 @@ end
 # Find a free file index for the output files
 file_no = free_file_no(args.out_path)
 
-# Save the raw data as JSON
 metadata = {
     'end_time': Time.now.strftime("%Y-%m-%d %H:%M:%S %Z (%z)"),
-    'ruby_version': ruby_version,
     'yjit_opts': args.yjit_opts,
 }
+
+ruby_version.each do |k, v|
+    metadata[k] = v
+end
+
+# Save the raw data as JSON
 out_json_path = File.join(args.out_path, "output_%03d.json" % file_no)
 File.open(out_json_path, "w") do |file|
     out_data = {
@@ -367,7 +369,7 @@ end
 # Save the output in a text file that we can easily refer to
 output_str = ""
 metadata.each do |key, value|
-    output_str += "#{key}=#{value}\n"
+    output_str += "#{key}=\"#{value}\"\n"
 end
 output_str += "\n"
 output_str += table_to_str(table) + "\n"
