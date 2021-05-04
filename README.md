@@ -40,7 +40,6 @@ make -j16 install
 
 Install dependencies:
 ```
-pip3 install --user tabulate
 chruby ruby-yjit
 gem install victor
 ```
