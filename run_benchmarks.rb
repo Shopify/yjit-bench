@@ -104,27 +104,12 @@ def check_pstate()
     end
 end
 
-def table_to_str(table_data)
-    def trim_cell(cell, num_decimals)
-        begin
-            case num_decimals
-            when 1
-                return "%.1f" % cell
-            when 2
-                return "%.2f" % cell
-            else
-                raise RuntimeError
-            end
-        rescue
-            return cell
-        end
-    end
-
+def table_to_str(table_data, format)
     # Trim numbers to one decimal for console display
     # Keep two decimals for the speedup ratios
-    trim_1dec = Proc.new { |c| trim_cell(c, 1) }
-    trim_2dec = Proc.new { |c| trim_cell(c, 2) }
-    table_data = table_data.map { |row| row[..-3].map(&trim_1dec) + row[-2..].map(&trim_2dec) }
+    table_data = table_data.first(1) + table_data.drop(1).map { |row|
+        format.zip(row).map { |fmt, data| fmt % data }
+    }
 
     num_rows = table_data.length
     num_cols = table_data[0].length
@@ -292,6 +277,7 @@ ruby_version = get_ruby_version(args.repo_dir)
 bench_start_time = Time.now.to_f
 yjit_times = run_benchmarks(ruby_opts="--yjit " + args.yjit_opts, name_filters=args.name_filters, out_path=args.out_path)
 interp_times = run_benchmarks(ruby_opts="--disable-yjit", name_filters=args.name_filters, out_path=args.out_path)
+mjit_times = run_benchmarks(ruby_opts="--disable-yjit --jit", name_filters=args.name_filters, out_path=args.out_path)
 bench_end_time = Time.now.to_f
 bench_names = yjit_times.keys.sort
 
@@ -300,20 +286,26 @@ puts("Total time spent benchmarking: #{bench_total_time}s")
 puts()
 
 # Table for the data we've gathered
-table = [["bench", "interp (ms)", "stddev (%)", "yjit (ms)", "stddev (%)", "interp/yjit", "1st itr"]]
+table  = [["bench", "interp (ms)", "stddev (%)", "yjit (ms)", "stddev (%)", "mjit (ms)", "stddev (%)", "interp/yjit", "yjit 1st itr", "mjit/yjit"]]
+format =  ["%s",    "%.1f",        "%.1f",       "%.1f",      "%.1f",       "%.1f",      "%.1f",       "%.2f",        "%.2f",         "%.2f"]
 
 # Format the results table
 bench_names.each do |bench_name|
     yjit_t = yjit_times[bench_name]
     interp_t = interp_times[bench_name]
+    mjit_t = mjit_times[bench_name]
 
     yjit_t0 = yjit_t[0]
     interp_t0 = interp_t[0]
+    mjit_t0 = mjit_t[0]
     yjit_t = yjit_t[WARMUP_ITRS..]
     interp_t = interp_t[WARMUP_ITRS..]
+    mjit_t = mjit_t[WARMUP_ITRS..]
 
     ratio_1st = interp_t0 / yjit_t0
     ratio = mean(interp_t) / mean(yjit_t)
+
+    mjit_ratio = mean(mjit_t) / mean(yjit_t)
 
     table.append([
         bench_name,
@@ -321,8 +313,11 @@ bench_names.each do |bench_name|
         100 * stddev(interp_t) / mean(interp_t),
         mean(yjit_t),
         100 * stddev(yjit_t) / mean(yjit_t),
+        mean(mjit_t),
+        100 * stddev(mjit_t) / mean(mjit_t),
         ratio,
-        ratio_1st
+        ratio_1st,
+        mjit_ratio,
     ])
 end
 
@@ -344,6 +339,7 @@ File.open(out_json_path, "w") do |file|
     out_data = {
         'metadata': metadata,
         'yjit': yjit_times,
+        'mjit': mjit_times,
         'interp': interp_times,
     }
     json_str = JSON.generate(out_data)
@@ -372,9 +368,10 @@ metadata.each do |key, value|
     output_str += "#{key}=\"#{value}\"\n"
 end
 output_str += "\n"
-output_str += table_to_str(table) + "\n"
+output_str += table_to_str(table, format) + "\n"
 output_str += "Legend:\n"
 output_str += "- interp/yjit: ratio of interp/yjit time. Higher is better. Above 1 represents a speedup.\n"
+output_str += "- mjit/yjit: ratio of mjit/yjit time. Higher is better. Above 1 represents a speedup.\n"
 output_str += "- 1st itr: ratio of interp/yjit time for the first benchmarking iteration.\n"
 out_txt_path = File.join(args.out_path, "output_%03d.txt" % file_no)
 File.open(out_txt_path, "w") { |f| f.write output_str }
