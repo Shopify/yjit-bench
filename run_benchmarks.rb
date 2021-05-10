@@ -277,7 +277,7 @@ ruby_version = get_ruby_version(args.repo_dir)
 bench_start_time = Time.now.to_f
 yjit_times = run_benchmarks(ruby_opts="--yjit " + args.yjit_opts, name_filters=args.name_filters, out_path=args.out_path)
 interp_times = run_benchmarks(ruby_opts="--disable-yjit", name_filters=args.name_filters, out_path=args.out_path)
-mjit_times = run_benchmarks(ruby_opts="--disable-yjit --jit", name_filters=args.name_filters, out_path=args.out_path)
+#mjit_times = run_benchmarks(ruby_opts="--disable-yjit --jit", name_filters=args.name_filters, out_path=args.out_path)
 bench_end_time = Time.now.to_f
 bench_names = yjit_times.keys.sort
 
@@ -286,14 +286,16 @@ puts("Total time spent benchmarking: #{bench_total_time}s")
 puts()
 
 # Table for the data we've gathered
-table  = [["bench", "interp (ms)", "stddev (%)", "yjit (ms)", "stddev (%)", "mjit (ms)", "stddev (%)", "interp/yjit", "yjit 1st itr", "mjit/yjit"]]
-format =  ["%s",    "%.1f",        "%.1f",       "%.1f",      "%.1f",       "%.1f",      "%.1f",       "%.2f",        "%.2f",         "%.2f"]
+#table  = [["bench", "interp (ms)", "stddev (%)", "yjit (ms)", "stddev (%)", "mjit (ms)", "stddev (%)", "interp/yjit", "yjit 1st itr", "mjit/yjit"]]
+#format =  ["%s",    "%.1f",        "%.1f",       "%.1f",      "%.1f",       "%.1f",      "%.1f",       "%.2f",        "%.2f",         "%.2f"]
+table  = [["bench", "interp (ms)", "stddev (%)", "yjit (ms)", "stddev (%)", "mjit (ms)", "stddev (%)", "interp/yjit", "yjit 1st itr"]]
+format =  ["%s",    "%.1f",        "%.1f",       "%.1f",      "%.1f",       "%.1f",      "%.1f",       "%.2f",        "%.2f"]
 
 # Format the results table
 bench_names.each do |bench_name|
     yjit_t = yjit_times[bench_name]
     interp_t = interp_times[bench_name]
-    mjit_t = mjit_times[bench_name]
+    #mjit_t = mjit_times[bench_name]
 
     yjit_t0 = yjit_t[0]
     interp_t0 = interp_t[0]
@@ -305,7 +307,7 @@ bench_names.each do |bench_name|
     ratio_1st = interp_t0 / yjit_t0
     ratio = mean(interp_t) / mean(yjit_t)
 
-    mjit_ratio = mean(mjit_t) / mean(yjit_t)
+    #mjit_ratio = mean(mjit_t) / mean(yjit_t)
 
     table.append([
         bench_name,
@@ -313,11 +315,11 @@ bench_names.each do |bench_name|
         100 * stddev(interp_t) / mean(interp_t),
         mean(yjit_t),
         100 * stddev(yjit_t) / mean(yjit_t),
-        mean(mjit_t),
-        100 * stddev(mjit_t) / mean(mjit_t),
+        #mean(mjit_t),
+        #100 * stddev(mjit_t) / mean(mjit_t),
         ratio,
         ratio_1st,
-        mjit_ratio,
+        #mjit_ratio,
     ])
 end
 
@@ -339,7 +341,7 @@ File.open(out_json_path, "w") do |file|
     out_data = {
         'metadata': metadata,
         'yjit': yjit_times,
-        'mjit': mjit_times,
+        #'mjit': mjit_times,
         'interp': interp_times,
     }
     json_str = JSON.generate(out_data)
