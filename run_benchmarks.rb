@@ -107,6 +107,7 @@ end
 def table_to_str(table_data, format)
     # Trim numbers to one decimal for console display
     # Keep two decimals for the speedup ratios
+
     table_data = table_data.first(1) + table_data.drop(1).map { |row|
         format.zip(row).map { |fmt, data| fmt % data }
     }
@@ -288,8 +289,8 @@ puts()
 # Table for the data we've gathered
 #table  = [["bench", "interp (ms)", "stddev (%)", "yjit (ms)", "stddev (%)", "mjit (ms)", "stddev (%)", "interp/yjit", "yjit 1st itr", "mjit/yjit"]]
 #format =  ["%s",    "%.1f",        "%.1f",       "%.1f",      "%.1f",       "%.1f",      "%.1f",       "%.2f",        "%.2f",         "%.2f"]
-table  = [["bench", "interp (ms)", "stddev (%)", "yjit (ms)", "stddev (%)", "mjit (ms)", "stddev (%)", "interp/yjit", "yjit 1st itr"]]
-format =  ["%s",    "%.1f",        "%.1f",       "%.1f",      "%.1f",       "%.1f",      "%.1f",       "%.2f",        "%.2f"]
+table  = [["bench", "interp (ms)", "stddev (%)", "yjit (ms)", "stddev (%)", "interp/yjit", "yjit 1st itr"]]
+format =  ["%s",    "%.1f",        "%.1f",       "%.1f",      "%.1f",        "%.2f",        "%.2f"]
 
 # Format the results table
 bench_names.each do |bench_name|
