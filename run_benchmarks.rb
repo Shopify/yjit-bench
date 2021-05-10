@@ -298,11 +298,11 @@ bench_names.each do |bench_name|
     #mjit_t = mjit_times[bench_name]
 
     yjit_t0 = yjit_t[0]
-    interp_t0 = interp_t[0]
-    mjit_t0 = mjit_t[0]
     yjit_t = yjit_t[WARMUP_ITRS..]
+    interp_t0 = interp_t[0]
     interp_t = interp_t[WARMUP_ITRS..]
-    mjit_t = mjit_t[WARMUP_ITRS..]
+    #mjit_t0 = mjit_t[0]
+    #mjit_t = mjit_t[WARMUP_ITRS..]
 
     ratio_1st = interp_t0 / yjit_t0
     ratio = mean(interp_t) / mean(yjit_t)
