@@ -163,6 +163,7 @@ GEM
       activesupport (>= 4.0)
       sprockets (>= 3.0.0)
     sqlite3 (1.4.2)
+    stackprof (0.2.17)
     thor (1.1.0)
     thread_safe (0.3.6)
     tilt (2.0.10)
@@ -193,6 +194,7 @@ GEM
 
 PLATFORMS
   x86_64-darwin-19
+  x86_64-darwin-20
   x86_64-linux
 
 DEPENDENCIES
@@ -207,6 +209,7 @@ DEPENDENCIES
   spring
   spring-watcher-listen (~> 2.0.0)
   sqlite3 (~> 1.4)
+  stackprof
   turbolinks (~> 5)
   tzinfo-data
   web-console (>= 3.3.0)
