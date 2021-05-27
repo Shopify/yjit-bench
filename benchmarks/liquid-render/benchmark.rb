@@ -1,3 +1,5 @@
+gem 'psych', '~> 3.3.2'
+
 require 'harness'
 
 #require 'benchmark/ips'

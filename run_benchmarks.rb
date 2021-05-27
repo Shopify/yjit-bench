@@ -7,16 +7,19 @@ require 'shellwords'
 require 'csv'
 require 'json'
 
+YJIT_CHRUBY_NAME = 'yjit-release'
+INTERP_CHRUBY_NAME='master-jitless'
 WARMUP_ITRS = 15
 
 def check_call(command)
     puts(command)
-    status = system(command)
-    raise RuntimeError unless status
+    pid = Process.spawn('/bin/bash', '-c', command)
+    _pid, status = Process.wait2(pid)
+    raise "child process failed" unless status.success?
 end
 
 def check_output(command)
-    IO.popen(command).read
+    IO.popen(['/bin/bash', '-c', command]).read
 end
 
 def build_yjit(repo_dir)
@@ -66,13 +69,13 @@ end
 
 def get_ruby_version(repo_dir)
     ruby_version = {}
-
-    ruby_version[:ruby_version] = check_output("ruby -v").strip.gsub("\n", " ")
-
     Dir.chdir(repo_dir) do
-        ruby_version[:git_branch] = check_output("git branch --show-current").strip
-        ruby_version[:git_commit] = check_output("git log --pretty=format:%h -n 1").strip
+        ruby_version[:yjit_branch] = check_output("git branch --show-current").strip
+        ruby_version[:yjit_commit] = check_output("git log --pretty=format:%h -n 1").strip
     end
+
+    ruby_version[:yjit_version] = check_output("#{chruby_command_fragment(YJIT_CHRUBY_NAME)} ruby -v").strip.gsub("\n", " ")
+    ruby_version[:interp_version] = check_output("#{chruby_command_fragment(INTERP_CHRUBY_NAME)} ruby -v").chomp
 
     return ruby_version
 end
@@ -172,8 +175,12 @@ def match_filter(name, filters)
     return false
 end
 
+def chruby_command_fragment(chruby_name)
+    "source /usr/local/share/chruby/chruby.sh && chruby #{chruby_name} &&"
+end
+
 # Run all the benchmarks and record execution times
-def run_benchmarks(ruby_opts, name_filters, out_path)
+def run_benchmarks(chruby_name, ruby_opts, name_filters, out_path)
     bench_times = {}
 
     # Get the list of benchmark files/directories matching name filters
@@ -199,6 +206,7 @@ def run_benchmarks(ruby_opts, name_filters, out_path)
 
         # Set up the benchmarking command
         cmd = [
+            chruby_command_fragment(chruby_name),
             # Disable address space randomization (for determinism)
             "setarch", "x86_64", "-R",
             # Pin the process to one given core to improve caching
@@ -257,7 +265,7 @@ end
 
 # Check that the chruby command was run
 # Note: we intentionally do this first
-check_chruby()
+# check_chruby()
 
 # Disable CPU frequency scaling
 set_bench_config()
@@ -269,15 +277,12 @@ check_pstate()
 FileUtils.mkdir_p(args.out_path)
 
 # Update and build YJIT
-build_yjit(args.repo_dir)
-
-# Get the ruby binary version string
-ruby_version = get_ruby_version(args.repo_dir)
+# build_yjit(args.repo_dir)
 
 # Benchmark with and without YJIT
 bench_start_time = Time.now.to_f
-yjit_times = run_benchmarks(ruby_opts="--yjit --yjit-call-threshold=10 #{args.yjit_opts}", name_filters=args.name_filters, out_path=args.out_path)
-interp_times = run_benchmarks(ruby_opts="--disable-yjit", name_filters=args.name_filters, out_path=args.out_path)
+yjit_times = run_benchmarks(YJIT_CHRUBY_NAME, ruby_opts="--yjit --yjit-call-threshold=10 #{args.yjit_opts}", name_filters=args.name_filters, out_path=args.out_path)
+interp_times = run_benchmarks(INTERP_CHRUBY_NAME, "", name_filters=args.name_filters, out_path=args.out_path)
 #mjit_times = run_benchmarks(ruby_opts="--disable-yjit --jit", name_filters=args.name_filters, out_path=args.out_path)
 bench_end_time = Time.now.to_f
 bench_names = yjit_times.keys.sort
@@ -332,9 +337,8 @@ metadata = {
     'yjit_opts': args.yjit_opts,
 }
 
-ruby_version.each do |k, v|
-    metadata[k] = v
-end
+# Get the ruby binary version string
+metadata.merge!(get_ruby_version(args.repo_dir))
 
 # Save the raw data as JSON
 out_json_path = File.join(args.out_path, "output_%03d.json" % file_no)
@@ -374,7 +378,7 @@ output_str += "\n"
 output_str += table_to_str(table, format) + "\n"
 output_str += "Legend:\n"
 output_str += "- interp/yjit: ratio of interp/yjit time. Higher is better. Above 1 represents a speedup.\n"
-output_str += "- mjit/yjit: ratio of mjit/yjit time. Higher is better. Above 1 represents a speedup.\n"
+# output_str += "- mjit/yjit: ratio of mjit/yjit time. Higher is better. Above 1 represents a speedup.\n"
 output_str += "- 1st itr: ratio of interp/yjit time for the first benchmarking iteration.\n"
 out_txt_path = File.join(args.out_path, "output_%03d.txt" % file_no)
 File.open(out_txt_path, "w") { |f| f.write output_str }
