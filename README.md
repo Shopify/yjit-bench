@@ -57,22 +57,24 @@ chruby ruby-yjit
 
 This runs for a few minutes and produces a table like this in the console (results below not up to date):
 ```
--------------  -----------  ----------  ---------  ----------  -----------  -------
-bench          interp (ms)  stddev (%)  yjit (ms)  stddev (%)  interp/yjit  1st itr
-30k_ifelse     2322.8       0.0         399.7      0.0         5.81         4.48
-30k_methods    6502.7       0.0         900.9      0.0         7.22         6.85
-binarytrees    440.1        2.0         387.3      2.1         1.14         1.14
-cfunc_itself   108.8        0.4         58.9       0.6         1.85         1.84
-fannkuchredux  4839.4       0.0         4786.5     0.1         1.01         1.01
-fib            240.9        0.1         76.3       0.1         3.16         3.16
-getivar        118.6        0.1         49.9       0.1         2.38         1.02
-lee            1300.4       0.6         1231.1     0.7         1.06         1.07
-liquid-render  204.9        3.3         187.3      1.1         1.09         1.08
-nbody          132.6        0.1         131.8      0.1         1.01         1.00
-optcarrot      6268.4       0.3         5493.2     0.2         1.14         1.13
-railsbench     3957.1       1.1         3989.5     0.9         0.99         0.97
-setivar        70.8         0.1         27.3       0.1         2.59         1.01
--------------  -----------  ----------  ---------  ----------  -----------  -------
+-------------  -----------  ----------  ---------  ----------  -----------  ------------
+bench          interp (ms)  stddev (%)  yjit (ms)  stddev (%)  interp/yjit  yjit 1st itr
+30k_ifelse     2372.0       0.0         447.6      0.1         5.30         4.16        
+30k_methods    6328.3       0.0         963.4      0.0         6.57         6.25        
+activerecord   171.7        0.8         144.2      0.7         1.19         1.15        
+binarytrees    445.8        2.1         389.5      2.5         1.14         1.14        
+cfunc_itself   105.7        0.2         58.7       0.7         1.80         1.80        
+fannkuchredux  6697.3       0.1         6714.4     0.1         1.00         1.00        
+fib            245.3        0.1         77.1       0.4         3.18         3.19        
+getivar        97.3         0.9         44.3       0.6         2.19         0.98        
+lee            1269.7       0.9         1172.9     1.0         1.08         1.08        
+liquid-render  204.5        1.0         172.4      1.3         1.19         1.18        
+nbody          121.9        0.1         121.6      0.3         1.00         1.00        
+optcarrot      6260.2       0.5         4723.1     0.3         1.33         1.33        
+railsbench     3827.9       0.9         3581.3     1.3         1.07         1.05        
+respond_to     259.0        0.6         197.1      0.4         1.31         1.31        
+setivar        73.1         0.2         53.3       0.7         1.37         1.00        
+-------------  -----------  ----------  ---------  ----------  -----------  ------------
 ```
 
 The `interp/yjit` column is the ratio of the average time taken by the interpreter over the
