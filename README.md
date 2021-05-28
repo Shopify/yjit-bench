@@ -55,7 +55,7 @@ chruby ruby-yjit
 ./run_benchmarks.rb
 ```
 
-This runs for a few minutes and produces a table like this in the console:
+This runs for a few minutes and produces a table like this in the console (results below not up to date):
 ```
 -------------  -----------  ----------  ---------  ----------  -----------  -------
 bench          interp (ms)  stddev (%)  yjit (ms)  stddev (%)  interp/yjit  1st itr
