@@ -9,10 +9,19 @@ require 'json'
 
 WARMUP_ITRS = 15
 
-def check_call(command)
-    puts(command)
-    status = system(command)
-    raise RuntimeError unless status
+# Checked system - error if the command fails
+def check_call(cmd, err, debug: false, verbose: false)
+  print "Running command: #{cmd.inspect}\n" if debug
+  if verbose
+    system(cmd, out: $stdout, err: :out)
+  else
+    out = `#{cmd}`
+  end
+  unless $?.success?
+    puts "Error running command:\n#{cmd.inspect}"
+    puts "Output:\n#{out}\n=====" if out
+    raise RuntimeError.new(err)
+  end
 end
 
 def check_output(command)
@@ -26,7 +35,7 @@ def build_yjit(repo_dir)
     end
 
     Dir.chdir(repo_dir) do
-        check_call("git pull")
+        check_call("git pull", "Could not 'git pull' in repo #{repo_dir.inspect}!")
 
         # Don't do a clone and configure every time
         # ./config.status --config => check that DRUBY_DEBUG is not in there
@@ -41,7 +50,7 @@ def build_yjit(repo_dir)
         #n_cores = os.cpu_count()
         n_cores = 32
         puts("Building YJIT with #{n_cores} processes")
-        check_call("make -j#{n_cores} install")
+        check_call("make -j#{n_cores} install", "Error building yjit in repo #{repo_dir.inspect}!")
     end
 end
 
@@ -49,8 +58,8 @@ def set_bench_config()
     # Only available on intel systems
     if File.exist?('/sys/devices/system/cpu/intel_pstate')
         # sudo requires the flag '-S' in order to take input from stdin
-        check_call("sudo -S sh -c 'echo 1 > /sys/devices/system/cpu/intel_pstate/no_turbo'")
-        check_call("sudo -S sh -c 'echo 100 > /sys/devices/system/cpu/intel_pstate/min_perf_pct'")
+        check_call("sudo -S sh -c 'echo 1 > /sys/devices/system/cpu/intel_pstate/no_turbo'", "Error when deactivating Turbo under /sys/devices")
+        check_call("sudo -S sh -c 'echo 100 > /sys/devices/system/cpu/intel_pstate/min_perf_pct'", "Error when setting minimum CPU perf percent in /sys/devices")
     end
 end
 
@@ -211,7 +220,7 @@ def run_benchmarks(ruby_opts, name_filters, out_path)
         ]
 
         # Do the benchmarking
-        check_call(cmd.join(' '))
+        check_call(cmd.join(' '), "Error when running benchmark #{entry.inspect}!")
 
         # Read the benchmark data
         # Convert times to ms
