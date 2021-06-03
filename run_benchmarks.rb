@@ -9,10 +9,20 @@ require 'json'
 
 WARMUP_ITRS = 15
 
-def check_call(command)
+# Checked system - error if the command fails
+def check_call(command, verbose: false)
     puts(command)
-    status = system(command)
-    raise RuntimeError unless status
+
+    if verbose
+        status = system(command, out: $stdout, err: :out)
+    else
+        status = system(command)
+    end
+
+    unless status
+        puts "Command #{command.inspect} failed in directory #{Dir.pwd}"
+        raise RuntimeError.new
+    end
 end
 
 def check_output(command)
