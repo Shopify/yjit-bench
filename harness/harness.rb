@@ -9,7 +9,7 @@ $MIN_BENCH_ITRS = 10
 # Minimum benchmarking time in seconds
 $MIN_BENCH_TIME = 10
 
-$out_csv_path = ENV.fetch('OUT_CSV_PATH', 'output.csv')
+$out_csv_path = File.expand_path(ENV.fetch('OUT_CSV_PATH', 'output.csv'))
 
 # Time one iteration of a benchmark
 def time_itr
