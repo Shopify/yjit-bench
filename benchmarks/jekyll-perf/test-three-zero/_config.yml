@@ -158,9 +158,9 @@ markdown_ext: "markdown,mkdown,mkdn,mkd,md"
 
 
 # Conversion
-# Kramdown does not work with TruffleRuby
-# markdown: kramdown
-markdown: Pandoc
+# Kramdown does not work with TruffleRuby - switch to Pandoc if you need TruffleRuby support
+markdown: kramdown
+# markdown: Pandoc
 highlighter: rouge
 lsi: false
 excerpt_separator: "\n\n"
@@ -168,15 +168,15 @@ incremental: false
 
 
 # Markdown Processing
-# kramdown:
-#   input: GFM
-#   hard_wrap: false
-#   auto_ids: true
-#   footnote_nr: 1
-#   entity_output: as_char
-#   toc_levels: 1..6
-#   smart_quotes: lsquo,rsquo,ldquo,rdquo
-#   enable_coderay: false
+kramdown:
+  input: GFM
+  hard_wrap: false
+  auto_ids: true
+  footnote_nr: 1
+  entity_output: as_char
+  toc_levels: 1..6
+  smart_quotes: lsquo,rsquo,ldquo,rdquo
+  enable_coderay: false
 
 
 # Collections
@@ -271,7 +271,6 @@ timezone: America/New_York # https://en.wikipedia.org/wiki/List_of_tz_database_t
 # Plugins (previously gems:)
 plugins:
   - jekyll-include-cache
-  - jekyll-pandoc
 
 
 
