@@ -286,7 +286,7 @@ ruby_version = get_ruby_version(args.repo_dir)
 
 # Benchmark with and without YJIT
 bench_start_time = Time.now.to_f
-yjit_times = run_benchmarks(ruby_opts="--yjit --yjit-call-threshold=10 #{args.yjit_opts}", name_filters=args.name_filters, out_path=args.out_path)
+yjit_times = run_benchmarks(ruby_opts="--yjit #{args.yjit_opts}", name_filters=args.name_filters, out_path=args.out_path)
 interp_times = run_benchmarks(ruby_opts="--disable-yjit", name_filters=args.name_filters, out_path=args.out_path)
 #mjit_times = run_benchmarks(ruby_opts="--disable-yjit --jit", name_filters=args.name_filters, out_path=args.out_path)
 bench_end_time = Time.now.to_f
