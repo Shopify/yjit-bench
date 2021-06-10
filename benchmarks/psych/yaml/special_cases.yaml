@@ -1,0 +1,6 @@
+---
+- true
+- false
+-
+- :a_symbol
+- :another symbol
