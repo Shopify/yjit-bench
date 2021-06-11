@@ -225,8 +225,8 @@ def run_benchmarks(ruby_opts, name_filters, out_path)
 
         # Read the benchmark data
         # Convert times to ms
-        rows = CSV.read(ENV["OUT_CSV_PATH"])
-        times = rows[0].map { |v| 1000 * v.to_f }
+        ruby_description, *times = File.readlines(ENV["OUT_CSV_PATH"])
+        times = times.map { |v| 1000 * Float(v) }
         bench_times[bench_name] = times
     end
 
