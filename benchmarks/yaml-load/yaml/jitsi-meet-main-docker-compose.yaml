@@ -1,3 +1,6 @@
+# This file is part of docker-jitsi-meet and is made available under the Apache
+# License version 2.0 (https://github.com/jitsi/docker-jitsi-meet/blob/master/LICENSE).
+
 version: '3'
 
 services:

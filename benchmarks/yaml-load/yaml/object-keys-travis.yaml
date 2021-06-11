@@ -1,3 +1,6 @@
+# This file is from the npm object-keys package (https://www.npmjs.com/package/object-keys)
+# and is made available under the MIT license.
+
 language: node_js
 os:
  - linux
