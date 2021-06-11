@@ -1,0 +1,13 @@
+GEM
+  remote: https://rubygems.org/
+  specs:
+    psych (4.0.1)
+
+PLATFORMS
+  x86_64-darwin-20
+
+DEPENDENCIES
+  psych (~> 4.0.0)
+
+BUNDLED WITH
+   2.3.0.dev
