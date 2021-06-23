@@ -1,5 +1,17 @@
 require 'harness'
 
+# Before we activate Bundler, make sure gems are installed.
+# And before we load ActiveRecord, let's make sure the
+# database exists and is up to date.
+# Note: db:migrate will create the DB if it doesn't exist,
+# and this app's db/seeds.rb will delete and repopulate
+# the database, so rows shouldn't accumulate.
+Dir.chdir(__dir__) do
+  unless system({ 'RAILS_ENV' => 'production' }, "bundle install && bin/rails db:migrate db:seed")
+    raise "Couldn't set up railsbench!"
+  end
+end
+
 ENV['RAILS_ENV'] ||= 'production'
 require_relative 'config/environment'
 
