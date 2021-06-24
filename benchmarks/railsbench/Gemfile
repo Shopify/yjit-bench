@@ -31,6 +31,11 @@ gem 'jbuilder', '~> 2.7'
 
 gem 'psych', '~> 3.3.2'
 
+# For Ruby 3.1.0 and higher, we need to include these gems ourselves:
+gem 'net-smtp', '~> 0.2.1'
+gem 'net-pop', '~> 0.1.1'
+gem 'net-imap', '~> 0.2.1'
+
 group :development, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console
   gem 'byebug', platforms: [:mri, :mingw, :x64_mingw]
