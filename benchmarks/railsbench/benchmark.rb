@@ -7,7 +7,10 @@ require 'harness'
 # and this app's db/seeds.rb will delete and repopulate
 # the database, so rows shouldn't accumulate.
 Dir.chdir(__dir__) do
-  unless system({ 'RAILS_ENV' => 'production' }, "bundle install && bin/rails db:migrate db:seed")
+  # Use the user's current shell and bash -i to make sure this works in Shopify Mac dev tools.
+  # Use bash -l to propagate non-Shopify-style chruby config.
+  # Note that this snippet can run in bash, fish or zsh, so expand it only with great care.
+  unless system({ 'RAILS_ENV' => 'production' }, "#{ENV['SHELL']} -il -c 'bundle install && bin/rails db:migrate db:seed'")
     raise "Couldn't set up railsbench!"
   end
 end
