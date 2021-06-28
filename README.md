@@ -44,8 +44,6 @@ chruby ruby-yjit
 gem install victor
 ```
 
-See the [railsbench README](benchmarks/railsbench/README.md) for setting up `railsbench`.
-
 ## Usage
 
 To run all the benchmarks and record the data:

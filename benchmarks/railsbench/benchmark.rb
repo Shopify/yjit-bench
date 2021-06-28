@@ -1,5 +1,20 @@
 require 'harness'
 
+# Before we activate Bundler, make sure gems are installed.
+# And before we load ActiveRecord, let's make sure the
+# database exists and is up to date.
+# Note: db:migrate will create the DB if it doesn't exist,
+# and this app's db/seeds.rb will delete and repopulate
+# the database, so rows shouldn't accumulate.
+Dir.chdir(__dir__) do
+  # Use the user's current shell and bash -i to make sure this works in Shopify Mac dev tools.
+  # Use bash -l to propagate non-Shopify-style chruby config.
+  # Note that this snippet can run in bash, fish or zsh, so expand it only with great care.
+  unless system({ 'RAILS_ENV' => 'production' }, "#{ENV['SHELL']} -il -c 'bundle install && bin/rails db:migrate db:seed'")
+    raise "Couldn't set up railsbench!"
+  end
+end
+
 ENV['RAILS_ENV'] ||= 'production'
 require_relative 'config/environment'
 
