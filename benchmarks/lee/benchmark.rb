@@ -12,7 +12,7 @@ Dir.chdir(__dir__) do
   # Use bash -l to propagate non-Shopify-style chruby config.
   # Note: the current Gemfile.lock for this benchmark is incompatible with Ruby 3.1 or higher
   # because of a dependency on minitest-5.14.2, which disallows it.
-  cmd = "/bin/bash -l -c '[ -f /opt/dev/dev.sh ] && . /opt/dev/dev.sh ]; #{chruby_stanza}gem install victor'"
+  cmd = "/bin/bash -l -c '[ -f /opt/dev/dev.sh ] && . /opt/dev/dev.sh; #{chruby_stanza}gem install victor'"
   puts "Command: #{cmd.inspect}"
   success = system(cmd, out: $stdout, err: $stderr)
   unless success

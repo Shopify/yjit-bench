@@ -15,7 +15,7 @@ Dir.chdir(__dir__) do
 
   # Source Shopify-located chruby if it exists to make sure this works in Shopify Mac dev tools.
   # Use bash -l to propagate non-Shopify-style chruby config.
-  success = system({ 'RAILS_ENV' => 'production' }, "/bin/bash -l -c '[ -f /opt/dev/dev.sh ] && . /opt/dev/dev.sh ]; #{chruby_stanza}bundle install && bin/rails db:migrate db:seed'")
+  success = system({ 'RAILS_ENV' => 'production' }, "/bin/bash -l -c '[ -f /opt/dev/dev.sh ] && . /opt/dev/dev.sh; #{chruby_stanza}bundle install && bin/rails db:migrate db:seed'")
   unless success
     raise "Couldn't set up railsbench!"
   end
