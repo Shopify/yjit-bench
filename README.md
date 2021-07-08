@@ -89,21 +89,18 @@ To benchmark YJIT with specific command-line options on specific benchmarks:
 ./run_benchmarks.rb --yjit_opts="--yjit-version-limit=10" fib lee optcarrot
 ```
 
-To run one individual benchmark without recording the data:
-```
-# For single-file microbenchmarks:
-ruby -I./harness benchmarks/fib.rb
-
-# For macro-benchmarks, there is a benchmark.rb file in each directory:
-ruby -I./harness benchmarks/lee/benchmark.rb
-```
-
-There is also a harness that is designed to run benchmarks for a fixed
-number of iterations, for example to use with the `perf stat` tool or
-with the `--yjit-stats` command-line option:
+There is also a harness to run benchmarks for a fixed
+number of iterations, for example to use with the `perf stat` tool:
 
 ```
 ruby --yjit-stats -I./harness-perf benchmarks/lee/benchmark.rb
+```
+
+And finally, there is a handy script for running benchmarks just
+once, for example with the `--yjit-stats` command-line option:
+
+```
+./run_once.sh --yjit-stats benchmarks/railsbench/benchmark.rb
 ```
 
 ## Disabling CPU Frequency Scaling
