@@ -45,6 +45,7 @@ module Optcarrot
       },
       profiling: {
         print_fps: { type: :switch, desc: "print fps of last 10 frames", default: false },
+        print_p95fps: { type: :switch, desc: "print 95th percentile fps", default: false },
         print_fps_history: { type: :switch, desc: "print all fps values for each frame", default: false },
         print_video_checksum: { type: :switch, desc: "print checksum of the last video output", default: false },
         stackprof: { shortcut: "--stackprof-mode=cpu", aliases: :p },
@@ -101,7 +102,7 @@ module Optcarrot
     # command-line option parser
     class Parser
       def initialize(argv)
-        @argv = argv
+        @argv = argv.dup
         @options = DEFAULT_OPTIONS.dup
         parse_option until @argv.empty?
         error "ROM file is not given" unless @options[:romfile]
