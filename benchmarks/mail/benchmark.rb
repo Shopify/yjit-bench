@@ -4,6 +4,7 @@ require "harness"
 gemfile do
   source "https://rubygems.org"
   gem "mail", "2.7.1"
+  gem "net-smtp", "0.2.1"
 end
 
 require "mail"
