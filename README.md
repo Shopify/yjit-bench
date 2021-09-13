@@ -18,9 +18,6 @@ CSV file written by the benchmarking harness. The output is written to
 an output CSV file at the end, so that results can be easily viewed or
 graphed in any spreadsheet editor.
 
-The `run_once.rb` script is a wrapper around run_benchmarks.rb that runs
-a single iteration of each benchmark for correctness-checking.
-
 ## Installation
 
 Install [chruby](https://github.com/postmodern/chruby)
