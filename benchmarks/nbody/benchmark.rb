@@ -1,9 +1,9 @@
 # The Computer Language Benchmarks Game
 # https://salsa.debian.org/benchmarksgame-team/benchmarksgame/
 #
-# Optimized for Ruby by Jesse Millikan
-# From version ported by Michael Neumann from the C gcc version,
-# which was written by Christoph Bauer.
+# ported by Michael Neumann from the Christoph Bauer's C program.
+# modified by Jesse Millikan
+# modified by Yusuke Endoh 
 
 SOLAR_MASS = 4 * Math::PI**2
 DAYS_PER_YEAR = 365.24
@@ -24,22 +24,26 @@ class Planet
    dy = @y - b2.y
    dz = @z - b2.z
 
-   distance = Math.sqrt(dx * dx + dy * dy + dz * dz)
-   mag = dt / (distance * distance * distance)
+   dsq = dx * dx + dy * dy + dz * dz
+   mag = dt / (dsq * Math.sqrt(dsq))
    b_mass_mag, b2_mass_mag = @mass * mag, b2.mass * mag
 
    @vx -= dx * b2_mass_mag
    @vy -= dy * b2_mass_mag
    @vz -= dz * b2_mass_mag
-   b2.vx += dx * b_mass_mag
-   b2.vy += dy * b_mass_mag
-   b2.vz += dz * b_mass_mag
+   b2.add_v(dx * b_mass_mag, dy * b_mass_mag, dz * b_mass_mag)
    i += 1
   end
 
   @x += dt * @vx
   @y += dt * @vy
   @z += dt * @vz
+ end
+
+ def add_v(dx, dy, dz)
+  @vx += dx
+  @vy += dy
+  @vz += dz
  end
 end
 
