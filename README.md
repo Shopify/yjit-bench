@@ -100,8 +100,10 @@ And finally, there is a handy script for running benchmarks just
 once, for example with the `--yjit-stats` command-line option:
 
 ```
-./run_once.sh --yjit-stats benchmarks/railsbench/benchmark.rb
+./run_once.sh --yjit --yjit-stats benchmarks/railsbench/benchmark.rb
 ```
+
+For YJIT, you may need to pass an appropriate parameter to enable JIT.
 
 ## Disabling CPU Frequency Scaling
 
