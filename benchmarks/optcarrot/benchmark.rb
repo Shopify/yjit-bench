@@ -1,8 +1,10 @@
 require 'harness'
 require_relative "lib/optcarrot"
 
+rom_path = File.join(__dir__, "examples/Lan_Master.nes")
+nes = Optcarrot::NES.new(["--headless", rom_path])
+nes.reset
+
 run_benchmark(5) do
-    rom_path = File.join(__dir__, "examples/Lan_Master.nes")
-    argv = ["--headless", "--frames", 200, "--no-print-video-checksum", rom_path]
-    nes = Optcarrot::NES.new(argv).run
+  200.times { nes.step }
 end
