@@ -24,6 +24,7 @@ end
 # The original timed several variations (low-level vs Composer interface; TTF vs non-TTF). We don't collect
 # a lot of individual variant data.
 
+require 'bundler/setup'
 require "hexapdf"
 require "fileutils"
 
