@@ -24,6 +24,8 @@ end
 # The original timed several variations (low-level vs Composer interface; TTF vs non-TTF). We don't collect
 # a lot of individual variant data.
 
+Dir.chdir __dir__
+
 require 'bundler/setup'
 require "hexapdf"
 require "fileutils"
@@ -34,8 +36,6 @@ HEIGHT = 1000
 
 EXPECTED_MIN_SIZE = 569800
 EXPECTED_MAX_SIZE = 569900
-
-Dir.chdir __dir__
 
 Dir["/tmp/hexapdf-result*.pdf"].each { |file| FileUtils.rm file }
 
