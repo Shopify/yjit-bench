@@ -9,6 +9,7 @@ GEM
 
 PLATFORMS
   ruby
+  universal-java-11
   x86_64-darwin-20
   x86_64-linux
 

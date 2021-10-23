@@ -3,11 +3,12 @@ git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 
 #ruby '3.0.0'
 
-gem 'stackprof', platforms: [:mri]
+gem 'stackprof', platforms: :mri
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails'
 gem 'rails', '~> 6.0.3', '>= 6.0.3.6'
 # Use sqlite3 as the database for Active Record
-gem 'sqlite3', '~> 1.4'
+gem 'sqlite3', '~> 1.4', platform: :ruby
+gem 'activerecord-jdbcsqlite3-adapter', '~> 60.4', platform: :jruby
 # Use webrick for the web server since it's easy to install.
 # The web server is not used during the benchmark.
 gem 'webrick', '~> 1.7.0'
