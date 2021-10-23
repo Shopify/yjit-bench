@@ -1,6 +1,8 @@
 require 'harness'
 
-def add(left:, right:) = left + right
+def add(left:, right:)
+  left + right
+end
 
 run_benchmark(50) do
     # 500K calls
