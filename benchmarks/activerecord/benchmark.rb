@@ -5,7 +5,8 @@ require "securerandom"
 gemfile do
   source "https://rubygems.org"
   gem "activerecord", "~> 6.0.3", ">= 6.0.3.6"
-  gem "sqlite3", "~> 1.4"
+  gem "sqlite3", "~> 1.4", platform: :ruby
+  gem "activerecord-jdbcsqlite3-adapter", "~> 60.4", platform: :jruby
 end
 
 require "active_record"

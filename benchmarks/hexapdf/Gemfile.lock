@@ -8,7 +8,10 @@ GEM
       geom2d (~> 0.3)
 
 PLATFORMS
+  ruby
+  universal-java-11
   x86_64-darwin-20
+  x86_64-linux
 
 DEPENDENCIES
   hexapdf
