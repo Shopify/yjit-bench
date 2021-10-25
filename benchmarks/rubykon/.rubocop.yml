@@ -1,0 +1,28 @@
+# Don't require new lines between one-liner methods
+Style/EmptyLineBetweenDefs:
+  AllowAdjacentOneLineDefs: true
+
+# We don't care if we do kind_of? or is_a?
+Style/ClassCheck:
+  Enabled: false
+
+# Don't ever try to take my `inject` from me, reduce is ok too
+Style/CollectionMethods:
+  PreferredMethods:
+    inject: 'inject'
+
+# We don't have a strong opinion on how you use spaces inside braces
+Style/SpaceInsideHashLiteralBraces:
+  Enabled: false
+
+# We like to be flexible if we want to add in interpolation
+Style/StringLiterals:
+  Enabled: false
+
+# We like the flexibility of adding additional items to the hash
+Style/TrailingComma:
+  Enabled: false
+
+# We don't care if you use %w or literal string arrays
+Style/WordArray:
+  Enabled: false

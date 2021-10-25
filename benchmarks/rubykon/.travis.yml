@@ -1,0 +1,26 @@
+language: ruby
+rvm:
+  - 2.0.0
+  - 2.2.3
+  - 2.3.3
+  - 2.4.10
+  - 2.5.8
+  - 2.6.6
+  - 2.7.1
+  - jruby-9.1.17.0
+  - jruby-9.2.11.1
+  - jruby-head
+  - ruby-head
+before_script:
+  - bundle update
+matrix:
+  allow_failures:
+    - rvm: jruby-head
+    - rvm: ruby-head
+  fast_finish: true
+script: bundle exec rspec spec
+sudo: false
+cache: bundler
+addons:
+  code_climate:
+    repo_token: fab8afb587984cc2f6100be9c660e966ac3fb5e113458fb381267bfffcef15fe
