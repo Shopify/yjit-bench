@@ -6,8 +6,28 @@ require 'fileutils'
 require 'shellwords'
 require 'csv'
 require 'json'
+require 'rbconfig'
 
 WARMUP_ITRS = 15
+
+# Check which OS we are running
+def os
+    @os ||= (
+        host_os = RbConfig::CONFIG['host_os']
+        case host_os
+        when /mswin|msys|mingw|cygwin|bccwin|wince|emc/
+            :windows
+        when /darwin|mac os/
+            :macosx
+        when /linux/
+            :linux
+        when /solaris|bsd/
+            :unix
+        else
+            raise "unknown os: #{host_os.inspect}"
+        end
+    )
+end
 
 # Checked system - error if the command fails
 def check_call(command, verbose: false)
@@ -43,8 +63,8 @@ def build_yjit(repo_dir)
         config_out = check_output("./config.status --config")
 
         if config_out.include?("DRUBY_DEBUG")
-            puts("You should configure YJIT in release mode for benchmarking")
-            exit(-1)
+            puts("WARNING: You should configure YJIT in release mode for benchmarking")
+            #exit(-1)
         end
 
         # Build in parallel
@@ -65,7 +85,7 @@ def set_bench_config()
 end
 
 def check_chruby()
-    ruby_version = check_output("ruby -v").strip
+    ruby_version = check_output("ruby -v --yjit").strip
 
     if !ruby_version.downcase.include?("yjit")
         puts("You forgot to chruby to ruby-yjit:")
@@ -208,16 +228,20 @@ def run_benchmarks(ruby_opts, name_filters, out_path)
         ENV["WARMUP_ITRS"] = WARMUP_ITRS.to_s
 
         # Set up the benchmarking command
-        cmd = [
-            # Disable address space randomization (for determinism)
-            "setarch", "x86_64", "-R",
-            # Pin the process to one given core to improve caching
-            "taskset", "-c", "11",
-            # Run the benchmark
+        cmd = []
+        if os == :linux
+            cmd += [
+                # Disable address space randomization (for determinism)
+                "setarch", "x86_64", "-R",
+                # Pin the process to one given core to improve caching
+                "taskset", "-c", "11",
+            ]
+        end
+        cmd += [
             "ruby",
             "-I", "./harness",
             ruby_opts,
-            script_path
+            script_path,
         ]
 
         # Do the benchmarking
@@ -278,9 +302,6 @@ check_pstate()
 # Create the output directory
 FileUtils.mkdir_p(args.out_path)
 
-# Update and build YJIT
-build_yjit(args.repo_dir)
-
 # Get the ruby binary version string
 ruby_version = get_ruby_version(args.repo_dir)
 
@@ -288,7 +309,6 @@ ruby_version = get_ruby_version(args.repo_dir)
 bench_start_time = Time.now.to_f
 yjit_times = run_benchmarks(ruby_opts="--yjit #{args.yjit_opts}", name_filters=args.name_filters, out_path=args.out_path)
 interp_times = run_benchmarks(ruby_opts="--disable-yjit", name_filters=args.name_filters, out_path=args.out_path)
-#mjit_times = run_benchmarks(ruby_opts="--disable-yjit --jit", name_filters=args.name_filters, out_path=args.out_path)
 bench_end_time = Time.now.to_f
 bench_names = yjit_times.keys.sort
 
@@ -297,8 +317,6 @@ puts("Total time spent benchmarking: #{bench_total_time}s")
 puts()
 
 # Table for the data we've gathered
-#table  = [["bench", "interp (ms)", "stddev (%)", "yjit (ms)", "stddev (%)", "mjit (ms)", "stddev (%)", "interp/yjit", "yjit 1st itr", "mjit/yjit"]]
-#format =  ["%s",    "%.1f",        "%.1f",       "%.1f",      "%.1f",       "%.1f",      "%.1f",       "%.2f",        "%.2f",         "%.2f"]
 table  = [["bench", "interp (ms)", "stddev (%)", "yjit (ms)", "stddev (%)", "interp/yjit", "yjit 1st itr"]]
 format =  ["%s",    "%.1f",        "%.1f",       "%.1f",      "%.1f",        "%.2f",        "%.2f"]
 
@@ -306,19 +324,13 @@ format =  ["%s",    "%.1f",        "%.1f",       "%.1f",      "%.1f",        "%.
 bench_names.each do |bench_name|
     yjit_t = yjit_times[bench_name]
     interp_t = interp_times[bench_name]
-    #mjit_t = mjit_times[bench_name]
 
     yjit_t0 = yjit_t[0]
     yjit_t = yjit_t[WARMUP_ITRS..]
     interp_t0 = interp_t[0]
     interp_t = interp_t[WARMUP_ITRS..]
-    #mjit_t0 = mjit_t[0]
-    #mjit_t = mjit_t[WARMUP_ITRS..]
-
     ratio_1st = interp_t0 / yjit_t0
     ratio = mean(interp_t) / mean(yjit_t)
-
-    #mjit_ratio = mean(mjit_t) / mean(yjit_t)
 
     table.append([
         bench_name,
@@ -326,11 +338,8 @@ bench_names.each do |bench_name|
         100 * stddev(interp_t) / mean(interp_t),
         mean(yjit_t),
         100 * stddev(yjit_t) / mean(yjit_t),
-        #mean(mjit_t),
-        #100 * stddev(mjit_t) / mean(mjit_t),
         ratio,
         ratio_1st,
-        #mjit_ratio,
     ])
 end
 
@@ -352,7 +361,6 @@ File.open(out_json_path, "w") do |file|
     out_data = {
         'metadata': metadata,
         'yjit': yjit_times,
-        #'mjit': mjit_times,
         'interp': interp_times,
     }
     json_str = JSON.generate(out_data)
@@ -384,7 +392,6 @@ output_str += "\n"
 output_str += table_to_str(table, format) + "\n"
 output_str += "Legend:\n"
 output_str += "- interp/yjit: ratio of interp/yjit time. Higher is better. Above 1 represents a speedup.\n"
-output_str += "- mjit/yjit: ratio of mjit/yjit time. Higher is better. Above 1 represents a speedup.\n"
 output_str += "- 1st itr: ratio of interp/yjit time for the first benchmarking iteration.\n"
 out_txt_path = File.join(args.out_path, "output_%03d.txt" % file_no)
 File.open(out_txt_path, "w") { |f| f.write output_str }
