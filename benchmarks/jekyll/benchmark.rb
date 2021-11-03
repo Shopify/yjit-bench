@@ -1,15 +1,28 @@
 require 'harness'
 
-require 'fileutils'
+# Before we activate Bundler, make sure gems are installed.
+Dir.chdir(__dir__ + "/test-three-zero") do
+  chruby_stanza = ""
+  if ENV['RUBY_ROOT']
+    ruby_name = ENV['RUBY_ROOT'].split("/")[-1]
+    chruby_stanza = "chruby && chruby #{ruby_name} && "
+  end
+
+  # Source Shopify-located chruby if it exists to make sure this works in Shopify Mac dev tools.
+  # Use bash -l to propagate non-Shopify-style chruby config.
+  cmd = "/bin/bash -l -c '[ -f /opt/dev/dev.sh ] && . /opt/dev/dev.sh; #{chruby_stanza}bundle install'"
+  puts "Command: #{cmd}"
+  success = system(cmd)
+  unless success
+    raise "Couldn't set up benchmark!"
+  end
+end
 
 Dir.chdir(__dir__ + "/test-three-zero")
 
-require 'bundler/inline'
-gemfile do
-    eval File.read("./Gemfile")
-end
-
+require 'bundler/setup'
 require "jekyll"
+require "fileutils"
 
 # Jekyll isn't designed to be used in quite this way, and doesn't seem to handle the same
 # process cleaning and then building repeatedly in the obvious way. Rather than try to

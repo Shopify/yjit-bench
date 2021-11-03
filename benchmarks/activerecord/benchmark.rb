@@ -1,14 +1,26 @@
 require "harness"
-require "bundler/inline"
 require "securerandom"
 
-gemfile do
-  source "https://rubygems.org"
-  gem "activerecord", "~> 6.0.3", ">= 6.0.3.6"
-  gem "sqlite3", "~> 1.4", platform: :ruby
-  gem "activerecord-jdbcsqlite3-adapter", "~> 60.4", platform: :jruby
+# Before we activate Bundler, make sure gems are installed.
+Dir.chdir(__dir__) do
+  chruby_stanza = ""
+  if ENV['RUBY_ROOT']
+    ruby_name = ENV['RUBY_ROOT'].split("/")[-1]
+    chruby_stanza = "chruby && chruby #{ruby_name} && "
+  end
+
+  # Source Shopify-located chruby if it exists to make sure this works in Shopify Mac dev tools.
+  # Use bash -l to propagate non-Shopify-style chruby config.
+  cmd = "/bin/bash -l -c '[ -f /opt/dev/dev.sh ] && . /opt/dev/dev.sh; #{chruby_stanza}bundle install'"
+  puts "Command: #{cmd}"
+  success = system(cmd)
+  unless success
+    raise "Couldn't set up benchmark!"
+  end
 end
 
+Dir.chdir __dir__
+require "bundler/setup"
 require "active_record"
 
 ActiveRecord::Base.establish_connection adapter: "sqlite3", database: ":memory:"
