@@ -1,5 +1,5 @@
 require 'harness'
-
+Dir.chdir __dir__
 use_gemfile
 
 # Based on https://github.com/gettalong/hexapdf/blob/master/benchmark/line_wrapping/hexapdf_composer.rb

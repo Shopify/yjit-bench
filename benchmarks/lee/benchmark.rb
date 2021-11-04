@@ -1,7 +1,5 @@
 # Solves a board using Lee but sequentially.
 
-use_gemfile
-
 # Note: we probably do not *want* to set up Bundler here, for roughly the same reason
 # we don't run "bundle install" above.
 
@@ -85,7 +83,9 @@ def lay(depth, solution)
   end
 end
 
-require 'harness'
+require "harness"
+Dir.chdir __dir__
+use_gemfile
 
 run_benchmark(20) do
     depth = Lee::Matrix.new(board.height, board.width)

@@ -1,6 +1,7 @@
 require 'harness'
 
-use_gemfile in_dir: (__dir__ + "/test-three-zero")
+Dir.chdir(__dir__ + "/test-three-zero")
+use_gemfile
 
 require "jekyll"
 require "fileutils"

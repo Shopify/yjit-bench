@@ -1,6 +1,7 @@
 require "harness"
 require "securerandom"
 
+Dir.chdir __dir__
 use_gemfile
 
 require "active_record"

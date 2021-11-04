@@ -5,6 +5,7 @@ require 'harness'
 # Note: db:migrate will create the DB if it doesn't exist,
 # and this app's db/seeds.rb will delete and repopulate
 # the database, so rows shouldn't accumulate.
+Dir.chdir __dir__
 use_gemfile extra_bundled_setup: "bin/rails db:migrate db:seed"
 
 ENV['RAILS_ENV'] ||= 'production'

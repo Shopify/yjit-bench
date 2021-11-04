@@ -1,5 +1,6 @@
 require "harness"
 
+Dir.chdir __dir__
 use_gemfile
 require "mail"
 
