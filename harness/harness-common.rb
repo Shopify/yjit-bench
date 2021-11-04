@@ -1,5 +1,5 @@
 # Set up a Gemfile, install gems and do extra setup
-def use_gemfile(extra_bundled_setup: nil)
+def use_gemfile(extra_setup_cmd: nil)
   # Benchmarks should normally set their current directory and then call this method.
 
   chruby_stanza = ""
@@ -11,8 +11,8 @@ def use_gemfile(extra_bundled_setup: nil)
   # Source Shopify-located chruby if it exists to make sure this works in Shopify Mac dev tools.
   # Use bash -l to propagate non-Shopify-style chruby config.
   cmd = "/bin/bash -l -c '[ -f /opt/dev/dev.sh ] && . /opt/dev/dev.sh; #{chruby_stanza}bundle install'"
-  if extra_bundled_setup
-    cmd += " && #{extra_bundled_setup}"
+  if extra_setup_cmd
+    cmd += " && #{extra_setup_cmd}"
   end
   puts "Command: #{cmd}"
   success = system(cmd)
