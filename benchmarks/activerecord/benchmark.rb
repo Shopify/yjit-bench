@@ -1,13 +1,8 @@
 require "harness"
-require "bundler/inline"
 require "securerandom"
 
-gemfile do
-  source "https://rubygems.org"
-  gem "activerecord", "~> 6.0.3", ">= 6.0.3.6"
-  gem "sqlite3", "~> 1.4", platform: :ruby
-  gem "activerecord-jdbcsqlite3-adapter", "~> 60.4", platform: :jruby
-end
+Dir.chdir __dir__
+use_gemfile
 
 require "active_record"
 

@@ -1,5 +1,7 @@
 require 'harness'
 
+Dir.chdir __dir__
+use_gemfile
 require 'psych'
 
 test_yaml_files = Dir["#{__dir__}/yaml/*.yaml"].to_a

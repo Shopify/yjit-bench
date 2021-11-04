@@ -1,15 +1,10 @@
 require 'harness'
 
-require 'fileutils'
-
 Dir.chdir(__dir__ + "/test-three-zero")
-
-require 'bundler/inline'
-gemfile do
-    eval File.read("./Gemfile")
-end
+use_gemfile
 
 require "jekyll"
+require "fileutils"
 
 # Jekyll isn't designed to be used in quite this way, and doesn't seem to handle the same
 # process cleaning and then building repeatedly in the obvious way. Rather than try to

@@ -1,3 +1,5 @@
+require_relative "../harness/harness-common"
+
 # This harness is meant for use with perf stat
 # All it does is run the benchmark a number of times
 
