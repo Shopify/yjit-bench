@@ -1,24 +1,6 @@
 # Solves a board using Lee but sequentially.
 
-# Before we activate Bundler, make sure gems are installed.
-Dir.chdir(__dir__) do
-  chruby_stanza = ""
-  if ENV['RUBY_ROOT']
-    ruby_name = ENV['RUBY_ROOT'].split("/")[-1]
-    chruby_stanza = "chruby #{ruby_name} && "
-  end
-
-  # Source Shopify-located chruby if it exists to make sure this works in Shopify Mac dev tools.
-  # Use bash -l to propagate non-Shopify-style chruby config.
-  # Note: the current Gemfile.lock for this benchmark is incompatible with Ruby 3.1 or higher
-  # because of a dependency on minitest-5.14.2, which disallows it.
-  cmd = "/bin/bash -l -c '[ -f /opt/dev/dev.sh ] && . /opt/dev/dev.sh; #{chruby_stanza}gem install victor'"
-  puts "Command: #{cmd.inspect}"
-  success = system(cmd, out: $stdout, err: $stderr)
-  unless success
-    raise "Couldn't install gems for Lee benchmark!"
-  end
-end
+use_gemfile
 
 # Note: we probably do not *want* to set up Bundler here, for roughly the same reason
 # we don't run "bundle install" above.
