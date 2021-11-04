@@ -1,3 +1,5 @@
+require_relative "./harness-common"
+
 puts RUBY_DESCRIPTION
 
 def run_benchmark(_)

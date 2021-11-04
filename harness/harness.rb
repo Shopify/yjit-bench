@@ -1,4 +1,5 @@
 require 'benchmark'
+require_relative "./harness-common"
 
 # Warmup iterations
 WARMUP_ITRS = ENV.fetch('WARMUP_ITRS', 15).to_i
