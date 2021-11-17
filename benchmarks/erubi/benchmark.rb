@@ -12,7 +12,7 @@ IMPL = "erb"
 require IMPL
 
 EXPECTED_ERB_TEXT_SIZE = 1001
-EXPECTED_ERUBI_TEXT_SIZE = 900 # Why different?
+EXPECTED_ERUBI_TEXT_SIZE = 900 # different newline handling means different final size...
 EXPECTED_ERB_SOURCE_SIZE = 174
 EXPECTED_ERUBI_SOURCE_SIZE = 143
 
