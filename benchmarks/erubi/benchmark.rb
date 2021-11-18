@@ -2,19 +2,24 @@ require 'harness'
 Dir.chdir __dir__
 use_gemfile
 
+# The current version is index.erb for the "gem server" command.
+# I got it from https://github.com/jnewland/sinatra-rubygems, a
+# reimplementation in Sinatra.
 TEMPLATE_FILE = "simple_template.erb"
 
-require "date"
+require "json"
 
-IMPL = "erb"
-#IMPL = "erubi"
+#IMPL = "erb"
+IMPL = "erubi"
 
 require IMPL
 
-EXPECTED_ERB_TEXT_SIZE = 1001
-EXPECTED_ERUBI_TEXT_SIZE = 900 # different newline handling means different final size...
-EXPECTED_ERB_SOURCE_SIZE = 174
-EXPECTED_ERUBI_SOURCE_SIZE = 143
+EXPECTED_ERB_TEXT_SIZE = 190579
+EXPECTED_ERB_SOURCE_SIZE = 3181
+
+# different newline handling means different final size...
+EXPECTED_ERUBI_TEXT_SIZE = 174878
+EXPECTED_ERUBI_SOURCE_SIZE = 2805
 
 def generate_source(template_text)
   if IMPL == "erubi"
@@ -35,24 +40,19 @@ def check_result_size(result)
   end
 end
 
-def evaluate_erubi(view_stub)
-  @template ||= File.read TEMPLATE_FILE
-  src = Erubi::Engine.new(@template).src
-  view_stub.instance_eval(src)
-end
-
-def erubi_source
-  @template ||= File.read TEMPLATE_FILE
-  Erubi::Engine.new(@template).src
-end
-
 template = File.read TEMPLATE_FILE
 source = generate_source(template)
 
+# Create a method with the generated source
 eval "def run_erb; #{source}; end"
 
+# This is taken from actual "gem server" data
+@values = JSON.load(File.read "gem_specs.json")
+result = run_erb
+check_result_size(result)
+
 run_benchmark(10) do
-  500.times do
+  250.times do
     #result = eval source
     result = run_erb
     #check_result_size(result)
