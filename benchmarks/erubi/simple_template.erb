@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html
+     PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>RubyGems Documentation Index</title>
+  <link rel="stylesheet" href="gem-server-rdoc-style.css" type="text/css" media="screen" />
+</head>
+<body>
+  <div id="fileHeader">
+    <h1>RubyGems Documentation Index</h1>
+  </div>
+  <!-- banner header -->
+
+<div id="bodyContent">
+  <div id="contextContent">
+    <div id="description">
+      <h1>Summary</h1>
+<p>There are <%= @values["gem_count"]%> gems installed:</p>
+<p>
+<%= @values["specs"].map { |v| "<a href=\"##{v["name"]}\">#{v["name"]}</a>" }.join ', ' %>.
+<h1>Gems</h1>
+
+<dl>
+<% @values["specs"].each do |spec| %>
+  <dt>
+  <% if spec["first_name_entry"] then %>
+    <a name="<%=spec["name"]%>"></a>
+  <% end %>
+
+  <b><%=spec["name"]%> <%=spec["version"]%></b>
+
+  <% if spec["rdoc_installed"] then %>
+    <a href="<%=spec["doc_path"]%>">[rdoc]</a>
+  <% else %>
+    <span title="rdoc not installed">[rdoc]</span>
+  <% end %>
+
+  <% if spec["homepage"] then %>
+    <a href="<%=spec["homepage"]%>" title="<%=spec["homepage"]%>">[www]</a>
+  <% else %>
+    <span title="no homepage available">[www]</span>
+  <% end %>
+
+  <% if spec["has_deps"] then %>
+   - depends on
+    <%= spec["dependencies"].map { |v| "<a href=\"##{v["name"]}\">#{v["name"]}</a>" }.join ', ' %>.
+  <% end %>
+  </dt>
+  <dd>
+  <%=spec["summary"]%>
+  <% if spec["executables"] then %>
+    <br/>
+
+    <% if spec["only_one_executable"] then %>
+        Executable is
+    <% else %>
+        Executables are
+    <%end%>
+
+    <%= spec["executables"].map { |v| "<span class=\"context-item-name\">#{v["executable"]}</span>"}.join ', ' %>.
+
+  <%end%>
+  <br/>
+  <br/>
+  </dd>
+<% end %>
+</dl>
+
+    </div>
+   </div>
+  </div>
+<div id="validator-badges">
+  <p><small><a href="http://validator.w3.org/check/referer">[Validate]</a></small></p>
+</div>
+</body>
+</html>
