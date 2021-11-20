@@ -18,8 +18,8 @@ EXPECTED_ERB_TEXT_SIZE = 190579
 EXPECTED_ERB_SOURCE_SIZE = 3181
 
 # different newline handling means different final size...
-EXPECTED_ERUBI_TEXT_SIZE = 174878
-EXPECTED_ERUBI_SOURCE_SIZE = 2805
+EXPECTED_ERUBI_TEXT_SIZE = 166563
+EXPECTED_ERUBI_SOURCE_SIZE = 2666
 
 def generate_source(template_text)
   if IMPL == "erubi"
