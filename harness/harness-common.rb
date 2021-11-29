@@ -1,21 +1,15 @@
+def run_cmd(*args)
+  puts "Command: #{args.join(" ")}"
+  system(*args)
+end
+
 # Set up a Gemfile, install gems and do extra setup
 def use_gemfile(extra_setup_cmd: nil)
   # Benchmarks should normally set their current directory and then call this method.
 
-  chruby_stanza = ""
-  if ENV['RUBY_ROOT']
-    ruby_name = ENV['RUBY_ROOT'].split("/")[-1]
-    chruby_stanza = "chruby && chruby #{ruby_name} && "
-  end
-
-  # Source Shopify-located chruby if it exists to make sure this works in Shopify Mac dev tools.
-  # Use bash -l to propagate non-Shopify-style chruby config.
-  cmd = "/bin/bash -l -c '[ -f /opt/dev/dev.sh ] && . /opt/dev/dev.sh; #{chruby_stanza}bundle install'"
-  if extra_setup_cmd
-    cmd += " && #{extra_setup_cmd}"
-  end
-  puts "Command: #{cmd}"
-  success = system(cmd)
+  success = true
+  success &&= run_cmd("#{RbConfig.ruby} -S bundle install")
+  success &&= run_cmd("#{RbConfig.ruby} -S #{extra_setup_cmd}") if extra_setup_cmd
   unless success
     raise "Couldn't set up benchmark in #{Dir.pwd.inspect}!"
   end
