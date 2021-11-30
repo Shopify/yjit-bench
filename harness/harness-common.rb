@@ -10,7 +10,21 @@ def use_gemfile(extra_setup_cmd: nil)
 
   # Source Shopify-located chruby if it exists to make sure this works in Shopify Mac dev tools.
   # Use bash -l to propagate non-Shopify-style chruby config.
-  cmd = "/bin/bash -l -c '[ -f /opt/dev/dev.sh ] && . /opt/dev/dev.sh; #{chruby_stanza}bundle install'"
+  add_shopify_env = if File.exists?("/opt/dev/dev.sh")
+                      case ENV["SHELL"]
+                      when /\/bash\Z/
+                        ". /opt/dev/dev.sh;"
+                      when /\/fish\Z/
+                        ". /opt/dev/dev.fish;"
+                      else
+                        raise "Unknown shell #{ENV["SHELL"]}"
+                      end
+                    else
+                      ""
+                    end
+
+  cmd = "#{ENV["SHELL"]} -l -c '#{add_shopify_env} #{chruby_stanza} bundle install'"
+
   if extra_setup_cmd
     cmd += " && #{extra_setup_cmd}"
   end
