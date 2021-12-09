@@ -99,7 +99,7 @@ end
 def get_ruby_version(repo_dir)
     ruby_version = {}
 
-    ruby_version[:ruby_version] = check_output("#{RbConfig.ruby} -v").strip.gsub("\n", " ")
+    ruby_version[:ruby_version] = RUBY_DESCRIPTION
 
     Dir.chdir(repo_dir) do
         ruby_version[:git_branch] = check_output("git branch --show-current").strip
