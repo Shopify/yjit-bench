@@ -85,19 +85,21 @@ def set_bench_config()
 end
 
 def check_chruby()
-    ruby_version = check_output("ruby -v --yjit").strip
+  ruby = RbConfig.ruby
+  ruby_version = check_output("#{ruby} -v --yjit").strip
 
-    if !ruby_version.downcase.include?("yjit")
-        puts("You forgot to chruby to ruby-yjit:")
-        puts("  chruby ruby-yjit")
-        exit(-1)
-    end
+  if !ruby_version.downcase.include?("yjit")
+    puts "Your current Ruby (#{ruby}) doesn't seem to include YJIT."
+    puts "Maybe you need to chruby to ruby-yjit?"
+    puts "  chruby ruby-yjit"
+    exit(-1)
+  end
 end
 
 def get_ruby_version(repo_dir)
     ruby_version = {}
 
-    ruby_version[:ruby_version] = check_output("ruby -v").strip.gsub("\n", " ")
+    ruby_version[:ruby_version] = check_output("#{RbConfig.ruby} -v").strip.gsub("\n", " ")
 
     Dir.chdir(repo_dir) do
         ruby_version[:git_branch] = check_output("git branch --show-current").strip
