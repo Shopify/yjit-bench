@@ -225,6 +225,7 @@ PLATFORMS
   x86_64-linux
 
 DEPENDENCIES
+  activerecord-jdbcsqlite3-adapter (~> 61)
   byebug
   capybara (>= 3.26)
   jbuilder (~> 2.7)
