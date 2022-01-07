@@ -44,7 +44,7 @@ template = File.read TEMPLATE_FILE
 source = generate_source(template)
 
 # Create a method with the generated source
-eval "def run_erb; #{source}; end"
+eval "# frozen_string_literal: true\ndef run_erb; #{source}; end"
 
 # This is taken from actual "gem server" data
 @values = JSON.load(File.read "gem_specs.json")
