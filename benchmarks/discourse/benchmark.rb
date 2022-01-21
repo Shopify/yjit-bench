@@ -109,6 +109,21 @@ gc.sub!(/^gem 'nokogiri'$/, "gem 'nokogiri', git: #{NOKOGIRI_GIT_URL.inspect}, t
 gc.sub!(/^gem 'mini_racer'$/, "gem 'mini_racer', git: #{MINI_RACER_GIT_URL.inspect}, tag: #{MINI_RACER_GIT_TAG.inspect}")
 gc.sub!(/^gem 'cppjieba_rb', require: false$/, "gem 'cppjieba_rb', git: #{CPPJIEBA_RB_GIT_URL.inspect}, tag: #{CPPJIEBA_RB_GIT_TAG.inspect}, submodules: true, require: false")
 gc.sub!(/^gem 'pg'$/, "gem 'pg', git: #{PG_GIT_URL.inspect}, tag: #{PG_GIT_TAG.inspect}")
+
+unless gc["net-imap"]
+    net_gems_block = <<~NET_GEMS_BLOCK
+        #gem "psych", "=3.3.2", require: false
+        if RUBY_VERSION >= "3.1"
+            # net-smtp, net-imap and net-pop were removed from default gems in Ruby 3.1
+            gem "net-smtp", "~> 0.2.1", require: false
+            gem "net-imap", "~> 0.2.1", require: false
+            gem "net-pop", "~> 0.1.1", require: false
+            gem "digest", "3.0.0", require: false
+        end
+    NET_GEMS_BLOCK
+    gc.sub!("json_schemer'\n", "json_schemer'\n#{net_gems_block}")
+end
+
 File.open("Gemfile", "w") { |f| f.write(gc) }
 
 # This is horrible and I'm a bad person for doing it. FORCE_BUNDLER_VERSION is yjit-metrics-specific.
