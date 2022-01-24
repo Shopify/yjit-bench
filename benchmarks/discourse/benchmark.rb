@@ -48,10 +48,6 @@ PG_DIR = File.expand_path "#{CLONE_ROOT}/pg"
 PG_GIT_URL = "https://github.com/ged/ruby-pg.git"
 PG_GIT_TAG = "master"
 
-CPPJIEBA_RB_DIR = File.expand_path "#{CLONE_ROOT}/cppjieba_rb"
-CPPJIEBA_RB_GIT_URL = "https://github.com/erickguan/cppjieba_rb.git"
-CPPJIEBA_RB_GIT_TAG = "master"
-
 def clone_and_set_tag(git_url, git_tag, dir)
     run_cmd("git clone #{git_url} #{dir}") unless File.exist?(dir)
 
@@ -61,10 +57,6 @@ def clone_and_set_tag(git_url, git_tag, dir)
 end
 
 clone_and_set_tag(DISCOURSE_GIT_URL, DISCOURSE_GIT_TAG, DISCOURSE_DIR)
-#clone_and_set_tag(NOKOGIRI_GIT_URL, NOKOGIRI_GIT_TAG, NOKOGIRI_DIR)
-#clone_and_set_tag(MINI_RACER_GIT_URL, MINI_RACER_GIT_TAG, MINI_RACER_DIR)
-#clone_and_set_tag(PG_GIT_URL, PG_GIT_TAG, PG_DIR)
-#clone_and_set_tag(CPPJIEBA_RB_GIT_URL, CPPJIEBA_RB_GIT_TAG, CPPJIEBA_RB_DIR)
 
 # Pre-bundle-exec setup
 unless File.exist?(SETUP_DONE_FILE)
@@ -108,7 +100,6 @@ Dir.chdir DISCOURSE_DIR
 gc = File.read("Gemfile")
 gc.sub!(/^gem 'nokogiri'$/, "gem 'nokogiri', git: #{NOKOGIRI_GIT_URL.inspect}, tag: #{NOKOGIRI_GIT_TAG.inspect}")
 gc.sub!(/^gem 'mini_racer'$/, "gem 'mini_racer', git: #{MINI_RACER_GIT_URL.inspect}, tag: #{MINI_RACER_GIT_TAG.inspect}")
-gc.sub!(/^gem 'cppjieba_rb', require: false$/, "gem 'cppjieba_rb', git: #{CPPJIEBA_RB_GIT_URL.inspect}, tag: #{CPPJIEBA_RB_GIT_TAG.inspect}, submodules: true, require: false")
 gc.sub!(/^gem 'pg'$/, "gem 'pg', git: #{PG_GIT_URL.inspect}, tag: #{PG_GIT_TAG.inspect}")
 
 unless gc["net-imap"]
