@@ -100,6 +100,7 @@ unless File.exist?(SETUP_DONE_FILE)
     # These shouldn't be setup_cmds, because we need to *not* require the harness yet
     cmds.each { |c| run_cmd c }
 
+    require "fileutils"
     FileUtils.touch SETUP_DONE_FILE
 end
 
