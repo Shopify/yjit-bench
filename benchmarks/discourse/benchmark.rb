@@ -32,8 +32,8 @@ end
 CLONE_ROOT = File.expand_path "#{__dir__}/../../.."
 
 DISCOURSE_DIR = "#{CLONE_ROOT}/discourse"
-DISCOURSE_GIT_URL = "https://github.com/discourse/discourse.git"
-DISCOURSE_GIT_TAG = "main" #"v2.7.13" Version 2.7.13 is broken on Ruby after 3.1
+DISCOURSE_GIT_URL = "https://github.com/noahgibbs/discourse.git"
+DISCOURSE_GIT_TAG = "ruby_32_changes" # It'd be nice to use a real version, but none of them work with Ruby 3.2+
 SETUP_DONE_FILE = File.expand_path "#{__dir__}/setup_done.txt"
 
 NOKOGIRI_DIR = File.expand_path "#{CLONE_ROOT}/nokogiri"
