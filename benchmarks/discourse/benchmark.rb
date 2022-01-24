@@ -49,8 +49,8 @@ PG_GIT_URL = "https://github.com/ged/ruby-pg.git"
 PG_GIT_TAG = "master"
 
 CPPJIEBA_RB_DIR = File.expand_path "#{CLONE_ROOT}/cppjieba_rb"
-CPPJIEBA_RB_GIT_URL = "https://github.com/flavorjones/cppjieba_rb.git" # "https://github.com/erickguan/cppjieba_rb.git"
-CPPJIEBA_RB_GIT_TAG = "flavorjones-support-ruby-3-2" #"master"
+CPPJIEBA_RB_GIT_URL = "https://github.com/erickguan/cppjieba_rb.git"
+CPPJIEBA_RB_GIT_TAG = "master"
 
 def clone_and_set_tag(git_url, git_tag, dir)
     run_cmd("git clone #{git_url} #{dir}") unless File.exist?(dir)
