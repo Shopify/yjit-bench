@@ -151,7 +151,7 @@ require 'harness'
 setup_cmds([
     "bin/rails db:migrate",
     "bundle exec ruby script/profile_db_generator.rb",
-    "bundle exec rake assets:precompile",
+    #"bundle exec rake assets:precompile",   # We can skip this one for this benchmark
 ])
 
 puts "Getting api key"
