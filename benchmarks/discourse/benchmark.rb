@@ -164,10 +164,11 @@ require "#{DISCOURSE_DIR}/config/environment"
 
 app = Rails.application
 
+# TODO: something more interesting with routes
 routes = [ "/categories" ]
 
 run_benchmark(10) do
-    env = Rack::MockRequest::env_for("http://localhost#{path}", headers: headers)
+    env = Rack::MockRequest::env_for("http://localhost#{routes[0]}", headers: headers)
     response_array = app.call(env)
     unless response_array[0] == 200
         raise "HTTP response is #{response_array.first} instead of 200. Is the benchmark app properly set up? See README.md."
