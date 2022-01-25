@@ -36,18 +36,6 @@ DISCOURSE_GIT_URL = "https://github.com/noahgibbs/discourse.git"
 DISCOURSE_GIT_TAG = "ruby_32_changes" # It'd be nice to use a real version, but none of them work with Ruby 3.2+
 SETUP_DONE_FILE = File.expand_path "#{__dir__}/setup_done.txt"
 
-NOKOGIRI_DIR = File.expand_path "#{CLONE_ROOT}/nokogiri"
-NOKOGIRI_GIT_URL = "https://github.com/sparklemotion/nokogiri.git"
-NOKOGIRI_GIT_TAG = "main" #"v1.13.1"
-
-MINI_RACER_DIR = File.expand_path "#{CLONE_ROOT}/mini_racer"
-MINI_RACER_GIT_URL = "https://github.com/rubyjs/mini_racer.git"
-MINI_RACER_GIT_TAG = "v0.6.2"
-
-PG_DIR = File.expand_path "#{CLONE_ROOT}/pg"
-PG_GIT_URL = "https://github.com/ged/ruby-pg.git"
-PG_GIT_TAG = "master"
-
 def clone_and_set_tag(git_url, git_tag, dir)
     run_cmd("git clone #{git_url} #{dir}") unless File.exist?(dir)
 
@@ -97,26 +85,6 @@ unless File.exist?(SETUP_DONE_FILE)
 end
 
 Dir.chdir DISCOURSE_DIR
-gc = File.read("Gemfile")
-gc.sub!(/^gem 'nokogiri'$/, "gem 'nokogiri', git: #{NOKOGIRI_GIT_URL.inspect}, tag: #{NOKOGIRI_GIT_TAG.inspect}")
-gc.sub!(/^gem 'mini_racer'$/, "gem 'mini_racer', git: #{MINI_RACER_GIT_URL.inspect}, tag: #{MINI_RACER_GIT_TAG.inspect}")
-gc.sub!(/^gem 'pg'$/, "gem 'pg', git: #{PG_GIT_URL.inspect}, tag: #{PG_GIT_TAG.inspect}")
-
-unless gc["net-imap"]
-    net_gems_block = <<~NET_GEMS_BLOCK
-        #gem "psych", "=3.3.2", require: false
-        if RUBY_VERSION >= "3.1"
-            # net-smtp, net-imap and net-pop were removed from default gems in Ruby 3.1
-            gem "net-smtp", "~> 0.2.1", require: false
-            gem "net-imap", "~> 0.2.1", require: false
-            gem "net-pop", "~> 0.1.1", require: false
-            gem "digest", "3.0.0", require: false
-        end
-    NET_GEMS_BLOCK
-    gc.sub!("json_schemer'\n", "json_schemer'\n#{net_gems_block}")
-end
-
-File.open("Gemfile", "w") { |f| f.write(gc) }
 
 # This is horrible and I'm a bad person for doing it. FORCE_BUNDLER_VERSION is yjit-metrics-specific.
 # Unfortunately, if the wrong version of Bundler gets activated first, we're completely screwed.
@@ -127,8 +95,6 @@ if ENV["FORCE_BUNDLER_VERSION"]
     bundle_cmd = "bundle _#{ENV["FORCE_BUNDLER_VERSION"]}_"
     gem "bundler", ENV["FORCE_BUNDLER_VERSION"]
 end
-
-run_cmd("#{bundle_cmd} update nokogiri mini_racer cppjieba_rb pg")
 
 # This isn't going to honor the current FORCE_BUNDLER setting, which it would if run via setup_cmds
 #run_cmd("#{bundle_cmd} update sanitize")
