@@ -2,3 +2,4 @@ data
 *.csv
 
 __pycache__
+benchmarks/discourse
