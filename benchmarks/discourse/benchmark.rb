@@ -129,6 +129,7 @@ headers = { 'Api-Key' => api_key,
 require "#{DISCOURSE_DIR}/config/environment"
 
 app = Rails.application
+RateLimiter.disable
 
 # TODO: something more interesting with routes
 routes = [ "/categories" ]
