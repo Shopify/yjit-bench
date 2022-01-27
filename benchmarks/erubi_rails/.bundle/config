@@ -1,2 +1,4 @@
 ---
+# To work correctly with native extensions and prerelease Ruby, we'll
+# want to always build all native extensions from source, never prebuilt.
 BUNDLE_FORCE_RUBY_PLATFORM: "true"
