@@ -236,7 +236,7 @@ def run_benchmarks(ruby_opts, name_filters, out_path)
                 # Disable address space randomization (for determinism)
                 "setarch", "x86_64", "-R",
                 # Pin the process to one given core to improve caching
-                "taskset", "-c", "11",
+                "taskset", "-c", "#{Etc.nprocessors - 1}",
             ]
         end
         cmd += [
