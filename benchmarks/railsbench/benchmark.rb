@@ -1,5 +1,7 @@
 require 'harness'
 
+ENV['RAILS_ENV'] ||= 'production'
+
 # Before we load ActiveRecord, let's make sure the
 # database exists and is up to date.
 # Note: db:migrate will create the DB if it doesn't exist,
@@ -8,7 +10,6 @@ require 'harness'
 Dir.chdir __dir__
 use_gemfile extra_setup_cmd: "bin/rails db:migrate db:seed"
 
-ENV['RAILS_ENV'] ||= 'production'
 require_relative 'config/environment'
 
 app = Rails.application
