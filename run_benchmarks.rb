@@ -7,6 +7,7 @@ require 'shellwords'
 require 'csv'
 require 'json'
 require 'rbconfig'
+require 'etc'
 
 WARMUP_ITRS = 15
 
