@@ -18,12 +18,13 @@ GEM
     minitest (5.14.4)
     sqlite3 (1.4.2)
     thread_safe (0.3.6)
-    tzinfo (1.2.9)
+    tzinfo (1.2.10)
       thread_safe (~> 0.1)
     zeitwerk (2.5.1)
 
 PLATFORMS
   x86_64-darwin-20
+  x86_64-linux
 
 DEPENDENCIES
   activerecord (~> 6.0.3, >= 6.0.3.6)
