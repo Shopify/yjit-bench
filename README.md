@@ -27,16 +27,7 @@ Clone this repository:
 git clone https://github.com/Shopify/yjit-bench.git yjit-bench
 ```
 
-Build YJIT with the name ruby-yjit:
-
-```
-sudo apt-get install sqlite3 libsqlite3-dev
-git clone https://github.com/Shopify/yjit.git yjit
-cd yjit
-./autogen.sh
-./configure --disable-install-doc --disable--install-rdoc --prefix=$HOME/.rubies/ruby-yjit
-make -j16 install
-```
+Follow [these instructions](https://github.com/ruby/ruby/blob/master/doc/yjit/yjit.md#building-yjit) to build and install YJIT with the name ruby-yjit.
 
 ## Usage
 
