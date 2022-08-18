@@ -6,9 +6,10 @@ GEM
 PLATFORMS
   x86_64-darwin-20
   x86_64-darwin-21
+  x86_64-linux
 
 DEPENDENCIES
   erubi
 
 BUNDLED WITH
-   2.3.0.dev
+   2.4.0.dev

@@ -2,7 +2,6 @@ GEM
   remote: https://rubygems.org/
   specs:
     benchmark-ips (2.8.3)
-    minitest (5.14.2)
     victor (0.3.2)
 
 PLATFORMS
@@ -11,7 +10,6 @@ PLATFORMS
 
 DEPENDENCIES
   benchmark-ips (~> 2.8.3)
-  minitest (~> 5.14.2)
   victor (~> 0.3.2)
 
 BUNDLED WITH
