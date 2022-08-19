@@ -41,6 +41,6 @@ def run_benchmark(num_itrs_hint)
   non_warmups = times[WARMUP_ITRS..-1]
   if non_warmups.size > 1
     non_warmups_ms = ((non_warmups.sum / non_warmups.size) * 1000.0).to_i
-    puts "Average of #{non_warmups.size} non-warmup iters: #{non_warmups_ms}ms"
+    puts "Average of last #{non_warmups.size}, non-warmup iters: #{non_warmups_ms}ms"
   end
 end
