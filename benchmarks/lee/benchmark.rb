@@ -88,28 +88,28 @@ Dir.chdir __dir__
 use_gemfile
 
 run_benchmark(20) do
-    depth = Lee::Matrix.new(board.height, board.width)
+  depth = Lee::Matrix.new(board.height, board.width)
 
-    solutions = {}
+  solutions = {}
 
-    board.routes.each do |route|
-      cost = expand(board, obstructed, depth, route)
-      solution = solve(board, route, cost)
+  board.routes.each do |route|
+    cost = expand(board, obstructed, depth, route)
+    solution = solve(board, route, cost)
 
-      if expansions_dir
-        Lee.draw board, solutions.values, [[cost.keys, solution]], File.join(expansions_dir, "expansion-#{route.object_id}.svg")
-      end
-
-      lay depth, solution
-      solutions[route] = solution
+    if expansions_dir
+      Lee.draw board, solutions.values, [[cost.keys, solution]], File.join(expansions_dir, "expansion-#{route.object_id}.svg")
     end
 
-    raise 'invalid solution' unless Lee.solution_valid?(board, solutions)
+    lay depth, solution
+    solutions[route] = solution
+  end
 
-    cost, depth = Lee.cost_solutions(board, solutions)
-    #puts "routes: #{board.routes.size}"
-    #puts "cost:   #{cost}"
-    #puts "depth:  #{depth}"
+  raise 'invalid solution' unless Lee.solution_valid?(board, solutions)
 
-    Lee.draw board, solutions.values, output_filename if output_filename
+  cost, depth = Lee.cost_solutions(board, solutions)
+  #puts "routes: #{board.routes.size}"
+  #puts "cost:   #{cost}"
+  #puts "depth:  #{depth}"
+
+  Lee.draw board, solutions.values, output_filename if output_filename
 end

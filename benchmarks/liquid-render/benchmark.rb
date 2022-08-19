@@ -8,9 +8,9 @@ profiler = ThemeRunner.new
 profiler.compile
 
 run_benchmark(150) do
-    # This benchmark is very quick
-    # Run it multiple times to reduce time measurement noise
-    20.times do
-        profiler.render
-    end
+  # This benchmark is very quick
+  # Run it multiple times to reduce time measurement noise
+  20.times do
+    profiler.render
+  end
 end
