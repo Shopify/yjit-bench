@@ -14,5 +14,5 @@ game_state_19 = Rubykon::GameState.new Rubykon::Game.new(19)
 mcts = MCTS::MCTS.new
 
 run_benchmark(10) do
-    mcts.start game_state_19, ITERATIONS
+  mcts.start game_state_19, ITERATIONS
 end
