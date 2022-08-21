@@ -50,32 +50,6 @@ def check_output(command)
   IO.popen(command).read
 end
 
-def build_yjit(repo_dir)
-  if !File.exist?(repo_dir)
-    puts("Directory does not exist \"#{repo_dir}\"")
-    exit(-1)
-  end
-
-  Dir.chdir(repo_dir) do
-    check_call("git pull")
-
-    # Don't do a clone and configure every time
-    # ./config.status --config => check that DRUBY_DEBUG is not in there
-    config_out = check_output("./config.status --config")
-
-    if config_out.include?("DRUBY_DEBUG")
-      puts("WARNING: You should configure YJIT in release mode for benchmarking")
-      #exit(-1)
-    end
-
-    # Build in parallel
-    #n_cores = os.cpu_count()
-    n_cores = 32
-    puts("Building YJIT with #{n_cores} processes")
-    check_call("make -j#{n_cores} install")
-  end
-end
-
 def set_bench_config()
   # Only available on intel systems
   if File.exist?('/sys/devices/system/cpu/intel_pstate')
@@ -95,19 +69,6 @@ def check_chruby()
     puts "  chruby ruby-yjit"
     exit(-1)
   end
-end
-
-def get_ruby_version(repo_dir)
-  ruby_version = {}
-
-  ruby_version[:ruby_version] = RUBY_DESCRIPTION
-
-  Dir.chdir(repo_dir) do
-    ruby_version[:git_branch] = check_output("git branch --show-current").strip
-    ruby_version[:git_commit] = check_output("git log --pretty=format:%h -n 1").strip
-  end
-
-  return ruby_version
 end
 
 def check_pstate()
@@ -262,18 +223,12 @@ end
 
 # Default values for command-line arguments
 args = OpenStruct.new({
-  repo_dir: "../yjit",
   out_path: "./data",
   yjit_opts: "",
   name_filters: []
 })
 
 OptionParser.new do |opts|
-  #opts.banner = "Usage: example.rb [options]"
-  opts.on("--repo_dir=REPO_DIR") do |v|
-    args.repo_dir = v
-  end
-
   opts.on("--out_path=OUT_PATH", "directory where to store output data files") do |v|
     args.out_path = v
   end
@@ -304,9 +259,6 @@ check_pstate()
 
 # Create the output directory
 FileUtils.mkdir_p(args.out_path)
-
-# Get the ruby binary version string
-ruby_version = get_ruby_version(args.repo_dir)
 
 # Benchmark with and without YJIT
 bench_start_time = Time.now.to_f
@@ -350,13 +302,10 @@ end
 file_no = free_file_no(args.out_path)
 
 metadata = {
-  'end_time': Time.now.strftime("%Y-%m-%d %H:%M:%S %Z (%z)"),
-  'yjit_opts': args.yjit_opts,
+  end_time: Time.now.strftime("%Y-%m-%d %H:%M:%S %Z (%z)"),
+  yjit_opts: args.yjit_opts,
+  ruby_version: RUBY_DESCRIPTION,
 }
-
-ruby_version.each do |k, v|
-    metadata[k] = v
-end
 
 # Save the raw data as JSON
 out_json_path = File.join(args.out_path, "output_%03d.json" % file_no)
@@ -389,7 +338,7 @@ end
 # Save the output in a text file that we can easily refer to
 output_str = ""
 metadata.each do |key, value|
-  output_str += "#{key}=\"#{value}\"\n"
+  output_str << "#{key}: #{value}\n"
 end
 output_str += "\n"
 output_str += table_to_str(table, format) + "\n"
