@@ -31,13 +31,13 @@ def os
 end
 
 # Checked system - error if the command fails
-def check_call(command, verbose: false)
+def check_call(command, verbose: false, env: {})
   puts(command)
 
   if verbose
-    status = system(command, out: $stdout, err: :out)
+    status = system(env, command, out: $stdout, err: :out)
   else
-    status = system(command)
+    status = system(env, command)
   end
 
   unless status
@@ -207,8 +207,16 @@ def run_benchmarks(ruby:, name_filters:, out_path:)
       script_path,
     ]
 
+    # When the Ruby running this script is not the first Ruby in PATH, shell commands
+    # like `bundle install` in a child process will not use the Ruby being benchmarked.
+    # It overrides PATH to guarantee the commands of the benchmarked Ruby will be used.
+    env = {}
+    if `#{ruby.first} -e 'print RbConfig.ruby'` != RbConfig.ruby
+      env["PATH"] = "#{File.dirname(ruby.first)}:#{ENV["PATH"]}"
+    end
+
     # Do the benchmarking
-    check_call(cmd.join(' '))
+    check_call(cmd.shelljoin, env: env)
 
     # Read the benchmark data
     # Convert times to ms

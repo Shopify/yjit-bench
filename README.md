@@ -64,15 +64,38 @@ The `interp/yjit` column is the ratio of the average time taken by the interpret
 average time taken by YJIT after a number of warmup iterations. Results above 1 represent
 speedups. For instance, 1.14 means "YJIT is 1.14 times as fast as the interpreter".
 
+### Specific benchmarks
+
 To run one or more specific benchmarks and record the data:
 ```
 ./run_benchmarks.rb fib lee optcarrot
 ```
 
+### YJIT options
+
 To benchmark YJIT with specific command-line options on specific benchmarks:
 ```
 ./run_benchmarks.rb --yjit_opts="--yjit-version-limit=10" fib lee optcarrot
 ```
+
+### Ruby commands
+
+By default, yjit-bench compares two Ruby commands, `-e "interp::ruby"` and
+`-e "yjit::ruby --yjit $yjit_opts"`, with the Ruby used for `run_benchmarks.rb`.
+However, if you specify `-e` yourself, you can override what Ruby is benchmarked.
+
+```sh
+# "xxx::" prefix can be used to specify a shorter name/alias, but it's optional.
+./run_benchmarks.rb -e "mjit::ruby --mjit" -e "truffleruby"
+```
+
+You could also measure only a single Ruby.
+
+```
+./run_benchmarks.rb -e "ruby"
+```
+
+### Using perf
 
 There is also a harness to run benchmarks for a fixed
 number of iterations, for example to use with the `perf stat` tool:
@@ -80,6 +103,8 @@ number of iterations, for example to use with the `perf stat` tool:
 ```
 ruby --yjit-stats -I./harness-perf benchmarks/lee/benchmark.rb
 ```
+
+### Harnesses
 
 And finally, there is a handy script for running benchmarks just
 once, for example with the `--yjit-stats` command-line option:
