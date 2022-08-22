@@ -47,7 +47,7 @@ def check_call(command, verbose: false)
 end
 
 def check_output(command)
-  IO.popen(command).read
+  IO.popen(command, &:read)
 end
 
 def set_bench_config()
@@ -167,7 +167,7 @@ def match_filter(name, filters)
 end
 
 # Run all the benchmarks and record execution times
-def run_benchmarks(ruby_opts, name_filters, out_path)
+def run_benchmarks(ruby:, name_filters:, out_path:)
   bench_times = {}
 
   # Get the list of benchmark files/directories matching name filters
@@ -202,9 +202,8 @@ def run_benchmarks(ruby_opts, name_filters, out_path)
       ]
     end
     cmd += [
-      "ruby",
+      *ruby,
       "-I", "./harness",
-      ruby_opts,
       script_path,
     ]
 
@@ -223,12 +222,21 @@ end
 
 # Default values for command-line arguments
 args = OpenStruct.new({
+  executables: {},
   out_path: "./data",
   yjit_opts: "",
   name_filters: []
 })
 
 OptionParser.new do |opts|
+  opts.on("-e=NAME::RUBY_PATH OPTIONS", "ruby executable and options to be be benchmarked (default: interp, yjit)") do |v|
+    name, executable = v.split("::", 2)
+    if executable.nil?
+      executable = name # allow skipping `NAME::`
+    end
+    args.executables[name] = executable.shellsplit
+  end
+
   opts.on("--out_path=OUT_PATH", "directory where to store output data files") do |v|
     args.out_path = v
   end
@@ -237,7 +245,7 @@ OptionParser.new do |opts|
     args.name_filters = list
   end
 
-  opts.on("--yjit_opts=OPT_STRING", "string of command-line options to run YJIT with") do |str|
+  opts.on("--yjit_opts=OPT_STRING", "string of command-line options to run YJIT with (ignored if you use -e)") do |str|
     args.yjit_opts=str
   end
 end.parse!
@@ -247,9 +255,15 @@ if ARGV.length > 0
   args.name_filters += ARGV
 end
 
-# Check that the chruby command was run
-# Note: we intentionally do this first
-check_chruby()
+# If -e is not specified, compare the interpreter and YJIT of the current Ruby
+if args.executables.empty?
+  args.executables["interp"] = [RbConfig.ruby]
+  args.executables["yjit"] = [RbConfig.ruby, "--yjit", *args.yjit_opts.shellsplit]
+
+  # Check that the chruby command was run
+  # Note: we intentionally do this first
+  check_chruby()
+end
 
 # Disable CPU frequency scaling
 set_bench_config()
@@ -262,40 +276,50 @@ FileUtils.mkdir_p(args.out_path)
 
 # Benchmark with and without YJIT
 bench_start_time = Time.now.to_f
-yjit_times = run_benchmarks(ruby_opts="--yjit #{args.yjit_opts}", name_filters=args.name_filters, out_path=args.out_path)
-interp_times = run_benchmarks(ruby_opts="--disable-yjit", name_filters=args.name_filters, out_path=args.out_path)
+bench_times = {}
+args.executables.each do |name, executable|
+  bench_times[name] = run_benchmarks(ruby: executable, name_filters: args.name_filters, out_path: args.out_path)
+end
 bench_end_time = Time.now.to_f
-bench_names = yjit_times.keys.sort
+bench_names = bench_times.first.last.keys.sort
 
 bench_total_time = (bench_end_time - bench_start_time).to_i
 puts("Total time spent benchmarking: #{bench_total_time}s")
 puts()
 
 # Table for the data we've gathered
-table  = [["bench", "interp (ms)", "stddev (%)", "yjit (ms)", "stddev (%)", "interp/yjit", "yjit 1st itr"]]
-format =  ["%s",    "%.1f",        "%.1f",       "%.1f",      "%.1f",        "%.2f",        "%.2f"]
+base_name, *other_names = args.executables.keys
+table  = [["bench", "#{base_name} (ms)", "stddev (%)"]]
+format =  ["%s",    "%.1f",              "%.1f"]
+other_names.each do |name|
+  table[0] += ["#{name} (ms)", "stddev (%)"]
+  format   += ["%.1f",         "%.1f"]
+end
+other_names.each do |name|
+  table[0] += ["#{base_name}/#{name} (ms)", "#{name} 1st itr"]
+  format   += ["%.2f",                      "%.2f"]
+end
 
 # Format the results table
 bench_names.each do |bench_name|
-  yjit_t = yjit_times[bench_name]
-  interp_t = interp_times[bench_name]
+  other_ts = other_names.map { |other_name| bench_times[other_name][bench_name] }
+  base_t = bench_times[base_name][bench_name]
 
-  yjit_t0 = yjit_t[0]
-  yjit_t = yjit_t[WARMUP_ITRS..]
-  interp_t0 = interp_t[0]
-  interp_t = interp_t[WARMUP_ITRS..]
-  ratio_1st = interp_t0 / yjit_t0
-  ratio = mean(interp_t) / mean(yjit_t)
+  other_t0s = other_ts.map { |other_t| other_t[0] }
+  other_ts = other_ts.map { |other_t| other_t[WARMUP_ITRS..] }
+  base_t0 = base_t[0]
+  base_t = base_t[WARMUP_ITRS..]
+  ratio_1sts = other_t0s.map { |other_t0| base_t0 / other_t0 }
+  ratios = other_ts.map { |other_t| mean(base_t) / mean(other_t) }
 
-  table.append([
-    bench_name,
-    mean(interp_t),
-    100 * stddev(interp_t) / mean(interp_t),
-    mean(yjit_t),
-    100 * stddev(yjit_t) / mean(yjit_t),
-    ratio,
-    ratio_1st,
-  ])
+  row = [bench_name, mean(base_t), 100 * stddev(base_t) / mean(base_t)]
+  other_ts.each do |other_t|
+    row += [mean(other_t), 100 * stddev(other_t) / mean(other_t)]
+  end
+  ratios.zip(ratio_1sts).each do |ratio, ratio_1st|
+    row += [ratio, ratio_1st]
+  end
+  table.append(row)
 end
 
 # Find a free file index for the output files
@@ -303,18 +327,18 @@ file_no = free_file_no(args.out_path)
 
 metadata = {
   end_time: Time.now.strftime("%Y-%m-%d %H:%M:%S %Z (%z)"),
-  yjit_opts: args.yjit_opts,
-  ruby_version: RUBY_DESCRIPTION,
 }
+args.executables.each do |name, executable|
+  metadata[name] = check_output([*executable, "-v"]).chomp
+end
 
 # Save the raw data as JSON
 out_json_path = File.join(args.out_path, "output_%03d.json" % file_no)
 File.open(out_json_path, "w") do |file|
   out_data = {
     'metadata': metadata,
-    'yjit': yjit_times,
-    'interp': interp_times,
   }
+  out_data.merge!(bench_times)
   json_str = JSON.generate(out_data)
   file.write json_str
 end
@@ -342,9 +366,13 @@ metadata.each do |key, value|
 end
 output_str += "\n"
 output_str += table_to_str(table, format) + "\n"
-output_str += "Legend:\n"
-output_str += "- interp/yjit: ratio of interp/yjit time. Higher is better. Above 1 represents a speedup.\n"
-output_str += "- 1st itr: ratio of interp/yjit time for the first benchmarking iteration.\n"
+unless other_names.empty?
+  output_str << "Legend:\n"
+  other_names.each do |name|
+    output_str << "- #{base_name}/#{name}: ratio of #{base_name}/#{name} time. Higher is better for #{name}. Above 1 represents a speedup.\n"
+    output_str << "- #{name} 1st itr: ratio of #{base_name}/#{name} time for the first benchmarking iteration.\n"
+  end
+end
 out_txt_path = File.join(args.out_path, "output_%03d.txt" % file_no)
 File.open(out_txt_path, "w") { |f| f.write output_str }
 
