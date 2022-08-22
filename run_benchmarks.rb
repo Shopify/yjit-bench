@@ -207,7 +207,7 @@ def run_benchmarks(ruby:, name_filters:, out_path:)
       script_path,
     ]
 
-    # When the Ruby running this script is not the frist Ruby in PATH, shell commands
+    # When the Ruby running this script is not the first Ruby in PATH, shell commands
     # like `bundle install` in a child process will not use the Ruby being benchmarked.
     # It overrides PATH to guarantee the commands of the benchmarked Ruby will be used.
     env = {}
