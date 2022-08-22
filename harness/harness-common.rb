@@ -1,7 +1,8 @@
-# Ensure the ruby in PATH is the ruby running this, so we can safely shell out to other commands
-ruby_in_path = `ruby -e 'print RbConfig.ruby'`
-unless ruby_in_path == RbConfig.ruby
-  abort "The ruby running this script (#{RbConfig.ruby}) is not the first ruby in PATH (#{ruby_in_path})"
+# Ensure we can safely shell out to other commands
+ruby_in_path = proc { `ruby -e 'print RbConfig.ruby'` }
+unless ruby_in_path.call == RbConfig.ruby
+  ENV["PATH"] = "#{File.dirname(RbConfig.ruby)}:#{ENV["PATH"]}"
+  raise unless ruby_in_path.call == RbConfig.ruby
 end
 
 def run_cmd(*args)
