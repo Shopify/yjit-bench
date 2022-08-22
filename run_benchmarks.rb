@@ -207,7 +207,9 @@ def run_benchmarks(ruby:, name_filters:, out_path:)
       script_path,
     ]
 
-    # Allow shell-out with the benchmarked Ruby
+    # When the Ruby running this script is not the frist Ruby in PATH, shell commands
+    # like `bundle install` in a child process will not use the Ruby being benchmarked.
+    # It overrides PATH to guarantee the commands of the benchmarked Ruby will be used.
     env = {}
     if `#{ruby.first} -e 'print RbConfig.ruby'` != RbConfig.ruby
       env["PATH"] = "#{File.dirname(ruby.first)}:#{ENV["PATH"]}"
