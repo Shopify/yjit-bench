@@ -214,7 +214,7 @@ def run_benchmarks(ruby:, name_filters:, out_path:)
     end
 
     # Do the benchmarking
-    check_call(cmd.join(' '), env: env)
+    check_call(cmd.shelljoin, env: env)
 
     # Read the benchmark data
     # Convert times to ms
