@@ -304,8 +304,8 @@ other_names.each do |name|
   format   += ["%.1f",         "%.1f"]
 end
 other_names.each do |name|
-  table[0] += ["#{base_name}/#{name} (ms)", "#{name} 1st itr"]
-  format   += ["%.2f",                      "%.2f"]
+  table[0] += ["#{base_name}/#{name}", "#{name} 1st itr"]
+  format   += ["%.2f",                 "%.2f"]
 end
 
 # Format the results table
