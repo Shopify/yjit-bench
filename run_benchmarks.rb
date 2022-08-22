@@ -31,13 +31,13 @@ def os
 end
 
 # Checked system - error if the command fails
-def check_call(command, verbose: false)
+def check_call(command, verbose: false, env: {})
   puts(command)
 
   if verbose
-    status = system(command, out: $stdout, err: :out)
+    status = system(env, command, out: $stdout, err: :out)
   else
-    status = system(command)
+    status = system(env, command)
   end
 
   unless status
@@ -207,8 +207,14 @@ def run_benchmarks(ruby:, name_filters:, out_path:)
       script_path,
     ]
 
+    # Allow shell-out with the benchmarked Ruby
+    env = {}
+    if `#{ruby.first} -e 'print RbConfig.ruby'` != RbConfig.ruby
+      env["PATH"] = "#{File.dirname(ruby.first)}:#{ENV["PATH"]}"
+    end
+
     # Do the benchmarking
-    check_call(cmd.join(' '))
+    check_call(cmd.join(' '), env: env)
 
     # Read the benchmark data
     # Convert times to ms
