@@ -99,7 +99,7 @@ There is also a robust but complex CI harness in [the yjit-metrics repo](https:/
 
 ## Disabling CPU Frequency Scaling
 
-To disable CPU frequency scaling on your AWS instance, edit `/etc/default/grub.d/50-cloudimg-settings.cfg` and add `intel_pstate=no_hwp` to `GRUB_CMDLINE_LINUX_DEFAULT`. It’s a space-separated list.
+To disable CPU frequency scaling on an AWS instance with an Intel CPU, edit `/etc/default/grub.d/50-cloudimg-settings.cfg` and add `intel_pstate=no_hwp` to `GRUB_CMDLINE_LINUX_DEFAULT`. It’s a space-separated list.
 
 Then:
 ```
