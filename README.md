@@ -85,7 +85,7 @@ By default, yjit-bench compares two Ruby commands, `-e "interp::ruby"` and
 However, if you specify `-e` yourself, you can override what Ruby is benchmarked.
 
 ```sh
-# "xxx::" prefix can give a shorter name, but it's optional.
+# "xxx::" prefix can be used to specify a shorter name/alias, but it's optional.
 ./run_benchmarks.rb -e "mjit::ruby --mjit" -e "truffleruby"
 ```
 
