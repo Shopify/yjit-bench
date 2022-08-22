@@ -104,7 +104,7 @@ number of iterations, for example to use with the `perf stat` tool:
 ruby --yjit-stats -I./harness-perf benchmarks/lee/benchmark.rb
 ```
 
-### Running only once
+### Harnesses
 
 And finally, there is a handy script for running benchmarks just
 once, for example with the `--yjit-stats` command-line option:
