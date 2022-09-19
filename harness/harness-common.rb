@@ -4,6 +4,9 @@ unless ruby_in_path == RbConfig.ruby
   abort "The ruby running this script (#{RbConfig.ruby}) is not the first ruby in PATH (#{ruby_in_path})"
 end
 
+# Seed the global random number generator for repeatability between runs
+Random.srand(1337)
+
 def run_cmd(*args)
   puts "Command: #{args.join(" ")}"
   system(*args)
