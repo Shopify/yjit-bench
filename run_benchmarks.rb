@@ -304,8 +304,12 @@ other_names.each do |name|
   format   += ["%.1f",         "%.1f"]
 end
 other_names.each do |name|
-  table[0] += ["#{base_name}/#{name}", "#{name} 1st itr"]
-  format   += ["%.2f",                 "%.2f"]
+  table[0] += ["#{base_name}/#{name}"]
+  format   += ["%.2f"]
+end
+other_names.each do |name|
+  table[0] += ["#{name} 1st itr"]
+  format   += ["%.2f"]
 end
 
 # Format the results table
@@ -324,9 +328,9 @@ bench_names.each do |bench_name|
   other_ts.each do |other_t|
     row += [mean(other_t), 100 * stddev(other_t) / mean(other_t)]
   end
-  ratios.zip(ratio_1sts).each do |ratio, ratio_1st|
-    row += [ratio, ratio_1st]
-  end
+
+  row += ratios + ratio_1sts
+
   table.append(row)
 end
 
