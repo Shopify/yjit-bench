@@ -1,10 +1,11 @@
 # frozen_string_literal: true
 
 require "harness"
-require "ruby_lsp/internal"
 
 Dir.chdir(__dir__)
 use_gemfile
+
+require "ruby_lsp/internal"
 
 file_path = File.expand_path("fixture.rb", __dir__)
 file_uri = "file://#{file_path}"
