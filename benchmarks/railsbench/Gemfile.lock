@@ -168,7 +168,7 @@ GEM
     stackprof (0.2.17)
     strscan (3.0.4)
     strscan (3.0.4-java)
-    thor (1.1.0)
+    thor (1.2.1)
     thread_safe (0.3.6)
     thread_safe (0.3.6-java)
     tilt (2.0.10)
