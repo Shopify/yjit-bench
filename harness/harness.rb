@@ -1,5 +1,4 @@
 require 'benchmark'
-require 'fileutils'
 require_relative "./harness-common"
 
 # Warmup iterations
@@ -14,7 +13,7 @@ MIN_BENCH_TIME = ENV.fetch('MIN_BENCH_TIME', 10).to_i
 default_path = "data/results-#{RUBY_ENGINE}-#{RUBY_ENGINE_VERSION}-#{Time.now.strftime('%F-%H%M%S')}.csv"
 OUT_CSV_PATH = File.expand_path(ENV.fetch('OUT_CSV_PATH', default_path))
 
-FileUtils.mkdir_p(File.dirname(OUT_CSV_PATH))
+system('mkdir', '-p', File.dirname(OUT_CSV_PATH))
 
 puts RUBY_DESCRIPTION
 
