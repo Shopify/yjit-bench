@@ -10,8 +10,10 @@ MIN_BENCH_ITRS = ENV.fetch('MIN_BENCH_ITRS', 10).to_i
 # Minimum benchmarking time in seconds
 MIN_BENCH_TIME = ENV.fetch('MIN_BENCH_TIME', 10).to_i
 
-default_path = "results-#{RUBY_ENGINE}-#{RUBY_ENGINE_VERSION}-#{Time.now.strftime('%F-%H%M%S')}.csv"
+default_path = "data/results-#{RUBY_ENGINE}-#{RUBY_ENGINE_VERSION}-#{Time.now.strftime('%F-%H%M%S')}.csv"
 OUT_CSV_PATH = File.expand_path(ENV.fetch('OUT_CSV_PATH', default_path))
+
+system('mkdir', '-p', File.dirname(OUT_CSV_PATH))
 
 puts RUBY_DESCRIPTION
 
