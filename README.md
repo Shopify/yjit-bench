@@ -95,20 +95,21 @@ You could also measure only a single Ruby.
 ./run_benchmarks.rb -e "ruby"
 ```
 
-
 ### Running pre-init code
 
-Occasionally it may be necessary to run code for each benchmark, but
-before the benchmark starts. This can be done with the
-`--with-pre-init` option.
+It is possible to use `run_benchmarks.rb` to run arbitrary code before
+each benchmark run using the `--with-pre-init` option.
 
-For example: to run benchmarks with `GC.auto_compact` enabled, create
-a `pre-init.rb` file containing `GC.auto_compact=true` and then run
-the benchmarks, passing the path to the pre-init file:
+For example: to run benchmarks with `GC.auto_compact` enabled a
+`pre-init.rb` file can be created, containing `GC.auto_compact=true`,
+and this can be passed into the benchmarks in the following way:
 
 ```
 ./run_benchmarks.rb --with-pre-init=./pre-init.rb
 ```
+
+This file will then be passed to the underlying Ruby interpreter with
+`-r`.
 
 ### Using perf
 
