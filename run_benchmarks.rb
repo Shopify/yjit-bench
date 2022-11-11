@@ -142,13 +142,12 @@ def stddev(values)
 end
 
 def free_file_no(prefix)
-  (1..1000).each do |file_no|
+  (1..).each do |file_no|
     out_path = File.join(prefix, "output_%03d.csv" % file_no)
     if !File.exist?(out_path)
       return file_no
     end
   end
-  assert false
 end
 
 # Check if the name matches any of the names in a list of filters
