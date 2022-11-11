@@ -2,6 +2,7 @@
 
 require 'optparse'
 require 'ostruct'
+require 'pathname'
 require 'fileutils'
 require 'shellwords'
 require 'csv'
@@ -166,8 +167,31 @@ def match_filter(name, filters)
   return false
 end
 
+# Resolve the pre_init file path into a form that can be required
+def expand_pre_init(path)
+  path = Pathname.new(path)
+
+  unless path.exist?
+    puts "--with-pre-init called with non-existent file!"
+    exit(-1)
+  end
+
+  if path.directory?
+    puts "--with-pre-init called with a directory, please pass a .rb file"
+    exit(-1)
+  end
+
+  library_name = path.basename(path.extname)
+  load_path = path.parent.expand_path
+
+  [
+    "-I", load_path,
+    "-r", library_name
+  ]
+end
+
 # Run all the benchmarks and record execution times
-def run_benchmarks(ruby:, name_filters:, out_path:)
+def run_benchmarks(ruby:, name_filters:, out_path:, pre_init:)
   bench_times = {}
 
   # Get the list of benchmark files/directories matching name filters
@@ -201,11 +225,17 @@ def run_benchmarks(ruby:, name_filters:, out_path:)
         "taskset", "-c", "#{Etc.nprocessors - 1}",
       ]
     end
+
+    if pre_init
+      pre_init = expand_pre_init(pre_init)
+    end
+
     cmd += [
       *ruby,
       "-I", "./harness",
+      *pre_init,
       script_path,
-    ]
+    ].compact
 
     # When the Ruby running this script is not the first Ruby in PATH, shell commands
     # like `bundle install` in a child process will not use the Ruby being benchmarked.
@@ -216,6 +246,7 @@ def run_benchmarks(ruby:, name_filters:, out_path:)
     end
 
     # Do the benchmarking
+    puts cmd.shelljoin
     check_call(cmd.shelljoin, env: env)
 
     # Read the benchmark data
@@ -233,7 +264,7 @@ args = OpenStruct.new({
   executables: {},
   out_path: "./data",
   yjit_opts: "",
-  name_filters: []
+  name_filters: [],
 })
 
 OptionParser.new do |opts|
@@ -255,6 +286,11 @@ OptionParser.new do |opts|
 
   opts.on("--yjit_opts=OPT_STRING", "string of command-line options to run YJIT with (ignored if you use -e)") do |str|
     args.yjit_opts=str
+  end
+
+  opts.on("--with_pre-init=PRE_INIT_FILE",
+          "a file to require before each benchmark run, so settings can be tuned (eg. enable/disable GC compaction)") do |str|
+    args.with_pre_init = str
   end
 end.parse!
 
@@ -286,7 +322,7 @@ FileUtils.mkdir_p(args.out_path)
 bench_start_time = Time.now.to_f
 bench_times = {}
 args.executables.each do |name, executable|
-  bench_times[name] = run_benchmarks(ruby: executable, name_filters: args.name_filters, out_path: args.out_path)
+  bench_times[name] = run_benchmarks(ruby: executable, name_filters: args.name_filters, out_path: args.out_path, pre_init: args.with_pre_init)
 end
 bench_end_time = Time.now.to_f
 bench_names = bench_times.first.last.keys.sort
