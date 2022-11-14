@@ -71,17 +71,10 @@ To run one or more specific benchmarks and record the data:
 ./run_benchmarks.rb fib lee optcarrot
 ```
 
-### YJIT options
-
-To benchmark YJIT with specific command-line options on specific benchmarks:
-```
-./run_benchmarks.rb --yjit_opts="--yjit-version-limit=10" fib lee optcarrot
-```
-
-### Ruby commands
+## Ruby options
 
 By default, yjit-bench compares two Ruby commands, `-e "interp::ruby"` and
-`-e "yjit::ruby --yjit $yjit_opts"`, with the Ruby used for `run_benchmarks.rb`.
+`-e "yjit::ruby --yjit`, with the Ruby used for `run_benchmarks.rb`.
 However, if you specify `-e` yourself, you can override what Ruby is benchmarked.
 
 ```sh
@@ -95,16 +88,15 @@ You could also measure only a single Ruby.
 ./run_benchmarks.rb -e "ruby"
 ```
 
-### Using perf
+### YJIT options
 
-There is also a harness to run benchmarks for a fixed
-number of iterations, for example to use with the `perf stat` tool:
+If you're interested in changing only YJIT options, `--yjit_opts` would be more useful:
 
 ```
-ruby --yjit-stats -I./harness-perf benchmarks/lee/benchmark.rb
+./run_benchmarks.rb --yjit_opts="--yjit-version-limit=10" fib lee optcarrot
 ```
 
-### Harnesses
+## Harnesses
 
 And finally, there is a handy script for running benchmarks just
 once, for example with the `--yjit-stats` command-line option:
@@ -121,6 +113,26 @@ You can find several test harnesses in this repository:
 * harness-continuous - a harness that adjusts the batch sizes of iterations to run in stable iteration size batches
 
 There is also a robust but complex CI harness in [the yjit-metrics repo](https://github.com/Shopify/yjit-metrics).
+
+### Iterations and duration
+
+With the default harness, the number of iterations and duration
+can be controlled by the following environment variables:
+
+* `WARMUP_ITRS`: The number of warm-up iterations, ignored in the final comparison (default: 15)
+* `MIN_BENCH_ITRS`: The minimum number of benchmark iterations (default: 10)
+* `MIN_BENCH_TIME`: The minimum seconds for benchmark (default: 10)
+
+### Using perf
+
+There is also a harness to run benchmarks for a fixed
+number of iterations, for example to use with the `perf stat` tool:
+
+```
+ruby --yjit-stats -I./harness-perf benchmarks/lee/benchmark.rb
+```
+
+This is the only harness that uses `run_benchmark`'s argument, `num_itrs_hint`.
 
 ## Disabling CPU Frequency Scaling
 

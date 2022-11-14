@@ -18,7 +18,7 @@ system('mkdir', '-p', File.dirname(OUT_CSV_PATH))
 puts RUBY_DESCRIPTION
 
 # Takes a block as input
-def run_benchmark(num_itrs_hint)
+def run_benchmark(_num_itrs_hint)
   times = []
   total_time = 0
   num_itrs = 0
