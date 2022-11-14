@@ -90,7 +90,7 @@ You could also measure only a single Ruby.
 
 ### YJIT options
 
-If you're interested in changing only YJIT options, `--yjit_opts` would be more useful:
+You can use `--yjit_opts` to specify YJIT command-line options:
 
 ```
 ./run_benchmarks.rb --yjit_opts="--yjit-version-limit=10" fib lee optcarrot
