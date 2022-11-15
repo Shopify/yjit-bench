@@ -9,11 +9,12 @@ require "ruby_lsp/internal"
 
 file_path = File.expand_path("fixture.rb", __dir__)
 file_uri = "file://#{file_path}"
+content = File.read(file_path)
 
 # These benchmarks are representative of the three main operations executed by the Ruby LSP server
 run_benchmark(10) do
   # File parsing
-  document = RubyLsp::Document.new(File.read(file_path))
+  document = RubyLsp::Document.new(content)
 
   # Running RuboCop related requests
   RubyLsp::Requests::Diagnostics.new(file_uri, document).run
