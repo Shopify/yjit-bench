@@ -96,6 +96,22 @@ You can use `--yjit_opts` to specify YJIT command-line options:
 ./run_benchmarks.rb --yjit_opts="--yjit-version-limit=10" fib lee optcarrot
 ```
 
+### Running pre-init code
+
+It is possible to use `run_benchmarks.rb` to run arbitrary code before
+each benchmark run using the `--with-pre-init` option.
+
+For example: to run benchmarks with `GC.auto_compact` enabled a
+`pre-init.rb` file can be created, containing `GC.auto_compact=true`,
+and this can be passed into the benchmarks in the following way:
+
+```
+./run_benchmarks.rb --with-pre-init=./pre-init.rb
+```
+
+This file will then be passed to the underlying Ruby interpreter with
+`-r`.
+
 ## Harnesses
 
 And finally, there is a handy script for running benchmarks just
