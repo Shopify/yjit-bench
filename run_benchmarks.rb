@@ -10,7 +10,7 @@ require 'json'
 require 'rbconfig'
 require 'etc'
 
-WARMUP_ITRS = 15
+WARMUP_ITRS = ENV.fetch('WARMUP_ITRS', 15).to_i
 
 # Check which OS we are running
 def os
