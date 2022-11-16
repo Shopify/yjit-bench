@@ -7,20 +7,30 @@ the [Shopify/yjit](https://github.com/Shopify/yjit) repository.
 The benchmarks are found in the `benchmarks` directory. Individual Ruby files
 in `benchmarks` are microbenchmarks. Subdirectories under `benchmarks` are
 larger macrobenchmarks. Each benchmark relies on a harness found in
-`/lib/harness.rb`. The harness controls the number of times a benchmark is
-run, and writes timing values into an output CSV file.
+[./harness/harness.rb](harness/harness.rb). The harness controls the number of times a benchmark is
+run, and writes timing values into an output file.
 
-The `run_benchmarks.rb` script traverses the `benchmarks` directory and
+The `run_benchmarks.rb` script (optional) traverses the `benchmarks` directory and
 runs the benchmarks in there. It reads the
 CSV file written by the benchmarking harness. The output is written to
 an output CSV file at the end, so that results can be easily viewed or
 graphed in any spreadsheet editor.
 
-yjit-bench expects to use chruby to run with YJIT.
+## Running a single benchmark
 
-## Installation
+This is the easiest way to run a single benchmark.
+It requires no setup at all and assumes nothing about the Ruby you are benchmarking.
+It's also convenient for profiling, debugging, etc, especially since all benchmarked code runs in that process.
+You can also use another harness or make your own by passing a different directory for `-I`.
 
-Install [chruby](https://github.com/postmodern/chruby)
+```
+ruby -Iharness benchmarks/some_benchmark.rb
+```
+
+## Installation to use run_benchmarks.rb
+
+`run_benchmarks.rb` expects to use chruby to run with YJIT, so you need to
+install [chruby](https://github.com/postmodern/chruby).
 
 Clone this repository:
 ```
