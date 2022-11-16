@@ -82,6 +82,10 @@ def offset_momentum(bodies)
   b.vz = - pz / SOLAR_MASS
 end
 
+# Pre-allocate a planet so that subsequent Planet objects
+# will have the same shape.
+Planet.new(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0)
+
 BODIES = [
   # sun
   Planet.new(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0),
