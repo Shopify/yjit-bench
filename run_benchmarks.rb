@@ -224,7 +224,7 @@ def run_benchmarks(ruby:, ruby_description:, name_filters:, out_path:, pre_init:
       # Disable address space randomization (for determinism)
       cmd += ["setarch", "x86_64", "-R"]
 
-      # Pin the process to one given core to improve caching on CRuby
+      # Pin the process to one given core to improve caching and reduce variance on CRuby
       # Other Rubies need to use multiple cores, e.g., for JIT threads
       if ruby_description.start_with?('ruby ')
         cmd += ["taskset", "-c", "#{Etc.nprocessors - 1}"]
