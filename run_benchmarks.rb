@@ -190,7 +190,7 @@ def expand_pre_init(path)
 end
 
 # Run all the benchmarks and record execution times
-def run_benchmarks(ruby:, name_filters:, out_path:, pre_init:)
+def run_benchmarks(ruby:, ruby_description:, name_filters:, out_path:, pre_init:)
   bench_times = {}
 
   # Get the list of benchmark files/directories matching name filters
@@ -221,12 +221,14 @@ def run_benchmarks(ruby:, name_filters:, out_path:, pre_init:)
     # Set up the benchmarking command
     cmd = []
     if os == :linux
-      cmd += [
-        # Disable address space randomization (for determinism)
-        "setarch", "x86_64", "-R",
-        # Pin the process to one given core to improve caching
-        "taskset", "-c", "#{Etc.nprocessors - 1}",
-      ]
+      # Disable address space randomization (for determinism)
+      cmd += ["setarch", "x86_64", "-R"]
+
+      # Pin the process to one given core to improve caching and reduce variance on CRuby
+      # Other Rubies need to use multiple cores, e.g., for JIT threads
+      if ruby_description.start_with?('ruby ')
+        cmd += ["taskset", "-c", "#{Etc.nprocessors - 1}"]
+      end
     end
 
     cmd += [
@@ -316,11 +318,16 @@ check_pstate()
 # Create the output directory
 FileUtils.mkdir_p(args.out_path)
 
+metadata = {}
+args.executables.each do |name, executable|
+  metadata[name] = check_output([*executable, "-v"]).chomp
+end
+
 # Benchmark with and without YJIT
 bench_start_time = Time.now.to_f
 bench_times = {}
 args.executables.each do |name, executable|
-  bench_times[name] = run_benchmarks(ruby: executable, name_filters: args.name_filters, out_path: args.out_path, pre_init: args.with_pre_init)
+  bench_times[name] = run_benchmarks(ruby: executable, ruby_description: metadata[name], name_filters: args.name_filters, out_path: args.out_path, pre_init: args.with_pre_init)
 end
 bench_end_time = Time.now.to_f
 bench_names = bench_times.first.last.keys.sort
@@ -371,12 +378,7 @@ end
 # Find a free file index for the output files
 file_no = free_file_no(args.out_path)
 
-metadata = {
-  end_time: Time.now.strftime("%Y-%m-%d %H:%M:%S %Z (%z)"),
-}
-args.executables.each do |name, executable|
-  metadata[name] = check_output([*executable, "-v"]).chomp
-end
+metadata[:end_time] = Time.now.strftime("%Y-%m-%d %H:%M:%S %Z (%z)")
 
 # Save the raw data as JSON
 out_json_path = File.join(args.out_path, "output_%03d.json" % file_no)
