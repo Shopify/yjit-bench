@@ -244,6 +244,12 @@ def run_benchmarks(ruby:, ruby_description:, name_filters:, out_path:, pre_init:
     env = {}
     if `#{ruby.first} -e 'print RbConfig.ruby'` != RbConfig.ruby
       env["PATH"] = "#{File.dirname(ruby.first)}:#{ENV["PATH"]}"
+
+      # chruby sets GEM_HOME and GEM_PATH in your shell. We have to unset it in the child
+      # process to avoid installing gems to the version that is running run_benchmarks.rb.
+      ["GEM_HOME", "GEM_PATH"].each do |var|
+        env[var] = nil if ENV.key?(var)
+      end
     end
 
     # Do the benchmarking
