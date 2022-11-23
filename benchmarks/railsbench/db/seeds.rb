@@ -128,6 +128,12 @@ posts = [
   { title: "The Proper Study", body: "I didn't work hard to make Ruby perfect for everyone, because you feel differently from me. No language can be perfect for everyone. I tried to make Ruby perfect for me, but maybe it's not perfect for you. The perfect language for Guido van Rossum is probably Python.", published: true },
 ]
 
+# Do not regenerate them if the same records are already there
+if Post.pluck(:title, :body, :published) == posts.map(&:values)
+  puts "Using #{posts.size} posts in the database"
+  return
+end
+
 puts "Deleted all #{Post.delete_all} posts"
 
 print "Creating #{posts.size} posts"
