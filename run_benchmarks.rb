@@ -324,16 +324,16 @@ check_pstate()
 # Create the output directory
 FileUtils.mkdir_p(args.out_path)
 
-metadata = {}
+ruby_descriptions = {}
 args.executables.each do |name, executable|
-  metadata[name] = check_output([*executable, "-v"]).chomp
+  ruby_descriptions[name] = check_output([*executable, "-v"]).chomp
 end
 
 # Benchmark with and without YJIT
 bench_start_time = Time.now.to_f
 bench_times = {}
 args.executables.each do |name, executable|
-  bench_times[name] = run_benchmarks(ruby: executable, ruby_description: metadata[name], name_filters: args.name_filters, out_path: args.out_path, pre_init: args.with_pre_init)
+  bench_times[name] = run_benchmarks(ruby: executable, ruby_description: ruby_descriptions[name], name_filters: args.name_filters, out_path: args.out_path, pre_init: args.with_pre_init)
 end
 bench_end_time = Time.now.to_f
 bench_names = bench_times.first.last.keys.sort
@@ -384,13 +384,11 @@ end
 # Find a free file index for the output files
 file_no = free_file_no(args.out_path)
 
-metadata[:end_time] = Time.now.strftime("%Y-%m-%d %H:%M:%S %Z (%z)")
-
 # Save the raw data as JSON
 out_json_path = File.join(args.out_path, "output_%03d.json" % file_no)
 File.open(out_json_path, "w") do |file|
   out_data = {
-    'metadata': metadata,
+    'metadata': ruby_descriptions,
   }
   out_data.merge!(bench_times)
   json_str = JSON.generate(out_data)
@@ -401,7 +399,7 @@ end
 # NOTE: we don't do any number formatting for the output file because
 #       we don't want to lose any precision
 output_rows = []
-metadata.each do |key, value|
+ruby_descriptions.each do |key, value|
   output_rows.append([key, value])
 end
 output_rows.append([])
@@ -415,7 +413,7 @@ end
 
 # Save the output in a text file that we can easily refer to
 output_str = ""
-metadata.each do |key, value|
+ruby_descriptions.each do |key, value|
   output_str << "#{key}: #{value}\n"
 end
 output_str += "\n"
