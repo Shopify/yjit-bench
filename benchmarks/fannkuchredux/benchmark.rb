@@ -54,19 +54,20 @@ def fannkuch(n)
 end
 
 #n = (ARGV[0] || 1).to_i
-n = 10
+n = 9 # Benchmarks Game uses n = 12, but it's too slow
 
 require 'harness'
 
 run_benchmark(5) do
-  sum, flips = fannkuch(n)
-  #printf "%d\nPfannkuchen(%d) = %d\n", sum, n, flips
+  5.times do
+    sum, flips = fannkuch(n)
 
-  if sum != 73196
-    raise RuntimeError "incorrect sum"
-  end
+    if sum != 8629
+      raise RuntimeError, "incorrect sum: #{sum}"
+    end
 
-  if flips != 38
-    raise RuntimeError "incorrect flips"
+    if flips != 30
+      raise RuntimeError, "incorrect flips: #{flips}"
+    end
   end
 end
