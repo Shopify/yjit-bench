@@ -31,5 +31,6 @@ end
 obj = TheClass.new
 
 run_benchmark(100) do
+  # Setting the ivar to an object rather than an immediate means we have to run write barrier code
   obj.set_value_loop(obj)
 end
