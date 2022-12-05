@@ -9,10 +9,7 @@ require 'csv'
 require 'json'
 require 'rbconfig'
 require 'etc'
-
-# https://github.com/Shopify/yjit-metrics/blob/main/lib/yjit-metrics/report_types/bloggable_speed_report.rb
-HEADLINE_BENCHMARKS = %w[activerecord hexapdf liquid-render mail psych-load railsbench ruby-lsp]
-MICRO_BENCHMARKS = %w[30k_ifelse 30k_methods cfunc_itself fib getivar keyword_args respond_to setivar str_concat]
+require 'yaml'
 
 WARMUP_ITRS = ENV.fetch('WARMUP_ITRS', 15).to_i
 
@@ -194,9 +191,13 @@ def expand_pre_init(path)
 end
 
 def sort_benchmarks(bench_names)
-  headline_benchmarks, bench_names = bench_names.partition { |name| HEADLINE_BENCHMARKS.include?(name) }
-  micro_benchmarks, other_benchmarks = bench_names.partition { |name| MICRO_BENCHMARKS.include?(name) }
-  headline_benchmarks.sort + other_benchmarks.sort + micro_benchmarks.sort
+  benchmarks = YAML.load_file('benchmarks.yml')
+  headline_benchmarks = benchmarks.fetch('headline').keys
+  other_benchmarks = benchmarks.fetch('other').keys
+
+  headline_names, bench_names = bench_names.partition { |name| headline_benchmarks.include?(name) }
+  other_names, micro_names = bench_names.partition { |name| other_benchmarks.include?(name) }
+  headline_names.sort + other_names.sort + micro_names.sort
 end
 
 # Run all the benchmarks and record execution times

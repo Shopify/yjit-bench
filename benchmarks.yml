@@ -1,0 +1,70 @@
+headline:
+  # Real-esque benchmarks that you could pretend are real for a blog post or a paper
+  activerecord:
+    desc: activerecord repeatedly queries entries in a SQLite table with highly-random names.
+  psych-load:
+    desc: psych-load repeatedly loads a small selection of YAML files taken from various OSS projects.
+  mail:
+    desc: mail tests the Mail gem by repeatedly creating an email from a text file and converting it to a string for sending.
+  liquid-render:
+    desc: liquid-render renders a chosen-for-profiling Liquid theme repeatedly.
+  jekyll:
+    desc: jekyll reviews and rebuilds a Jekyll site, but is almost entirely scanning directories of files that didn't change.
+    unstable: 1 # jekyll has known problems including some kind of resource leak. Jekyll-the-tool is fine, but this usage method is flawed.
+  hexapdf:
+    desc: hexapdf benchmarks the hexapdf Ruby gem by line-wrapping The Odyssey with specific line-length and font.
+  railsbench:
+    desc: railsbench is a read-only tiny SQLite-backed Rails app, querying a small selection of .html.erb routes and JSON routes.
+  ruby-lsp:
+    desc: Run several operations with the Ruby language server used by VSCode
+other:
+  # "Shootout" benchmarks, from places like The Computer Language Benchmarks Game
+  binarytrees:
+    desc: binarytrees from the Computer Language Benchmarks Game.
+  fannkuchredux:
+    desc: fannkuchredux from the Computer Language Benchmarks Game.
+  nbody:
+    desc: nbody from the Computer Language Benchmarks Game.
+  # Benchmarks with some measure of real-world functionality (e.g. simple library load-tests)
+  erubi:
+    desc: erubi compiles a simple Erb template into a method with erubi, then times evaluating that method.
+  erubi_rails:
+    desc: erubi_rails uses Rails template rendering to repeatedly render a stubbed Discourse view.
+  # Real-esque benchmarks that you could pretend are real for a blog post or a paper
+  lee:
+    desc: lee is a circuit-board layout solver, deployed in a plausibly reality-like way
+  optcarrot:
+    desc: optcarrot is a functional headless NES emulator, run on a specific game cartridge for a specific number of frames.
+  rubykon:
+    desc: Ruby solver for Go (the boardgame.) Runs 1,000 iterations forward from an initial starting board.
+  chunky_png:
+    desc: A pure-Ruby implementation of PNG encoding
+micro:
+  # Highly synthetic microbenchmarks
+  30k_ifelse:
+    desc: 30k_ifelse tests thousands of nested methods containing simple if/else statements.
+    single_file: true
+  30k_methods:
+    desc: 30k_methods tests thousands of nested method calls that mostly just call out to other single-call methods.
+    single_file: true
+  cfunc_itself:
+    desc: cfunc_itself just calls the 'itself' method many, many times.
+    single_file: true
+  fib:
+    desc: Fib is a simple exponential-time recursive Fibonacci number generator.
+    single_file: true
+  getivar:
+    desc: getivar tests the performance of getting instance variable values.
+    single_file: true
+  setivar:
+    desc: setivar tests the performance of setting instance variable values.
+    single_file: true
+  str_concat:
+    desc: str_concat tests the performance of string concatenation in multiple different encodings.
+    single_file: true
+  respond_to:
+    desc: respond_to tests the performance of the respond_to? method.
+    single_file: true
+  keyword_args:
+    desc: keyword_args tests the performance of method calls with keyword arguments.
+    single_file: true
