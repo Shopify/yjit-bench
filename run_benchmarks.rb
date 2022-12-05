@@ -9,6 +9,7 @@ require 'csv'
 require 'json'
 require 'rbconfig'
 require 'etc'
+require 'yaml'
 
 WARMUP_ITRS = ENV.fetch('WARMUP_ITRS', 15).to_i
 
@@ -189,6 +190,16 @@ def expand_pre_init(path)
   ]
 end
 
+def sort_benchmarks(bench_names)
+  benchmarks = YAML.load_file('benchmarks.yml')
+  headline_benchmarks = benchmarks.select { |_, metadata| metadata['category'] == 'headline' }.keys
+  micro_benchmarks = benchmarks.select { |_, metadata| metadata['category'] == 'micro' }.keys
+
+  headline_names, bench_names = bench_names.partition { |name| headline_benchmarks.include?(name) }
+  micro_names, other_names = bench_names.partition { |name| micro_benchmarks.include?(name) }
+  headline_names.sort + other_names.sort + micro_names.sort
+end
+
 # Run all the benchmarks and record execution times
 def run_benchmarks(ruby:, ruby_description:, name_filters:, out_path:, pre_init:)
   bench_times = {}
@@ -336,7 +347,7 @@ args.executables.each do |name, executable|
   bench_times[name] = run_benchmarks(ruby: executable, ruby_description: ruby_descriptions[name], name_filters: args.name_filters, out_path: args.out_path, pre_init: args.with_pre_init)
 end
 bench_end_time = Time.now.to_f
-bench_names = bench_times.first.last.keys.sort
+bench_names = sort_benchmarks(bench_times.first.last.keys)
 
 bench_total_time = (bench_end_time - bench_start_time).to_i
 puts("Total time spent benchmarking: #{bench_total_time}s")
