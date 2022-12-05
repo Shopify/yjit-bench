@@ -192,11 +192,11 @@ end
 
 def sort_benchmarks(bench_names)
   benchmarks = YAML.load_file('benchmarks.yml')
-  headline_benchmarks = benchmarks.fetch('headline').keys
-  other_benchmarks = benchmarks.fetch('other').keys
+  headline_benchmarks = benchmarks.select { |_, metadata| metadata['category'] == 'headline' }.keys
+  micro_benchmarks = benchmarks.select { |_, metadata| metadata['category'] == 'micro' }.keys
 
   headline_names, bench_names = bench_names.partition { |name| headline_benchmarks.include?(name) }
-  other_names, micro_names = bench_names.partition { |name| other_benchmarks.include?(name) }
+  micro_names, other_names = bench_names.partition { |name| micro_benchmarks.include?(name) }
   headline_names.sort + other_names.sort + micro_names.sort
 end
 
