@@ -201,8 +201,9 @@ def sort_benchmarks(bench_names)
 end
 
 # Run all the benchmarks and record execution times
-def run_benchmarks(ruby:, ruby_description:, name_filters:, out_path:, pre_init:)
+def run_benchmarks(ruby:, ruby_description:, name_filters:, out_path:, pre_init:, rss:)
   bench_times = {}
+  bench_rss = {}
 
   # Get the list of benchmark files/directories matching name filters
   bench_files = Dir.children('benchmarks').sort.filter do |entry|
@@ -228,6 +229,9 @@ def run_benchmarks(ruby:, ruby_description:, name_filters:, out_path:, pre_init:
     # Set up the environment for the benchmarking command
     ENV["OUT_CSV_PATH"] = File.join(out_path, 'temp.csv')
     ENV["WARMUP_ITRS"] = WARMUP_ITRS.to_s
+    if rss
+      ENV["RSS_CSV_PATH"] = File.join(out_path, 'rss.csv')
+    end
 
     # Set up the benchmarking command
     cmd = []
@@ -271,9 +275,14 @@ def run_benchmarks(ruby:, ruby_description:, name_filters:, out_path:, pre_init:
     ruby_description, *times = File.readlines(ENV["OUT_CSV_PATH"])
     times = times.map { |v| 1000 * Float(v) }
     bench_times[bench_name] = times
+
+    # Read the RSS data, converting bytes to MiB
+    if rss
+      bench_rss[bench_name] = File.read(ENV["RSS_CSV_PATH"]).to_i / 1024.0 / 1024.0
+    end
   end
 
-  return bench_times
+  return bench_times, bench_rss
 end
 
 # Default values for command-line arguments
@@ -282,6 +291,7 @@ args = OpenStruct.new({
   out_path: "./data",
   yjit_opts: "",
   name_filters: [],
+  rss: false,
 })
 
 OptionParser.new do |opts|
@@ -308,6 +318,10 @@ OptionParser.new do |opts|
   opts.on("--with_pre-init=PRE_INIT_FILE",
           "a file to require before each benchmark run, so settings can be tuned (eg. enable/disable GC compaction)") do |str|
     args.with_pre_init = str
+  end
+
+  opts.on("--rss", "measure RSS after benchmark iterations") do
+    args.rss = true
   end
 end.parse!
 
@@ -343,8 +357,16 @@ end
 # Benchmark with and without YJIT
 bench_start_time = Time.now.to_f
 bench_times = {}
+bench_rss = {}
 args.executables.each do |name, executable|
-  bench_times[name] = run_benchmarks(ruby: executable, ruby_description: ruby_descriptions[name], name_filters: args.name_filters, out_path: args.out_path, pre_init: args.with_pre_init)
+  bench_times[name], bench_rss[name] = run_benchmarks(
+    ruby: executable,
+    ruby_description: ruby_descriptions[name],
+    name_filters: args.name_filters,
+    out_path: args.out_path,
+    pre_init: args.with_pre_init,
+    rss: args.rss,
+  )
 end
 bench_end_time = Time.now.to_f
 bench_names = sort_benchmarks(bench_times.first.last.keys)
@@ -357,9 +379,17 @@ puts()
 base_name, *other_names = args.executables.keys
 table  = [["bench", "#{base_name} (ms)", "stddev (%)"]]
 format =  ["%s",    "%.1f",              "%.1f"]
+if args.rss
+  table[0] += ["RSS (MiB)"]
+  format   += ["%.1f"]
+end
 other_names.each do |name|
   table[0] += ["#{name} (ms)", "stddev (%)"]
   format   += ["%.1f",         "%.1f"]
+  if args.rss
+    table[0] += ["RSS (MiB)"]
+    format   += ["%.1f"]
+  end
 end
 other_names.each do |name|
   table[0] += ["#{base_name}/#{name}"]
@@ -373,7 +403,9 @@ end
 # Format the results table
 bench_names.each do |bench_name|
   other_ts = other_names.map { |other_name| bench_times[other_name][bench_name] }
+  other_rsss = other_names.map { |other_name| bench_rss[other_name][bench_name] }
   base_t = bench_times[base_name][bench_name]
+  base_rss = bench_rss[base_name][bench_name]
 
   other_t0s = other_ts.map { |other_t| other_t[0] }
   other_ts = other_ts.map { |other_t| other_t[WARMUP_ITRS..] }
@@ -382,14 +414,14 @@ bench_names.each do |bench_name|
   ratio_1sts = other_t0s.map { |other_t0| base_t0 / other_t0 }
   ratios = other_ts.map { |other_t| mean(base_t) / mean(other_t) }
 
-  row = [bench_name, mean(base_t), 100 * stddev(base_t) / mean(base_t)]
-  other_ts.each do |other_t|
-    row += [mean(other_t), 100 * stddev(other_t) / mean(other_t)]
+  row = [bench_name, mean(base_t), 100 * stddev(base_t) / mean(base_t), base_rss]
+  other_ts.zip(other_rsss).each do |other_t, other_rss|
+    row += [mean(other_t), 100 * stddev(other_t) / mean(other_t), other_rss]
   end
 
   row += ratios + ratio_1sts
 
-  table.append(row)
+  table.append(row.compact)
 end
 
 # Find a free file index for the output files
