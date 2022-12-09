@@ -295,7 +295,7 @@ args = OpenStruct.new({
 })
 
 OptionParser.new do |opts|
-  opts.on("-e=NAME::RUBY_PATH OPTIONS", "ruby executable and options to be be benchmarked (default: interp, yjit)") do |v|
+  opts.on("-e=NAME::RUBY_PATH OPTIONS", "ruby executable and options to be benchmarked (default: interp, yjit)") do |v|
     name, executable = v.split("::", 2)
     if executable.nil?
       executable = name # allow skipping `NAME::`
