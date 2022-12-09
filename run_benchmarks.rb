@@ -303,6 +303,18 @@ OptionParser.new do |opts|
     args.executables[name] = executable.shellsplit
   end
 
+  opts.on("--chruby=NAME::VERSION OPTIONS", "ruby version under chruby and options to be benchmarked") do |v|
+    name, version = v.split("::", 2)
+    if version.nil?
+      version = name # allow skipping `NAME::`
+    end
+    version, *options = version.shellsplit
+    unless executable = ["/opt/rubies/#{version}/bin/ruby", "#{ENV["HOME"]}/.rubies/#{version}/bin/ruby"].find { |path| File.executable?(path) }
+      abort "Cannot find '#{version}' in /opt/rubies or ~/.rubies"
+    end
+    args.executables[name] = [executable, *options]
+  end
+
   opts.on("--out_path=OUT_PATH", "directory where to store output data files") do |v|
     args.out_path = v
   end
