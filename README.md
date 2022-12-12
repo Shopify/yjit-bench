@@ -89,13 +89,13 @@ However, if you specify `-e` yourself, you can override what Ruby is benchmarked
 
 ```sh
 # "xxx::" prefix can be used to specify a shorter name/alias, but it's optional.
-./run_benchmarks.rb -e "mjit::ruby --mjit" -e "truffleruby"
-```
+./run_benchmarks.rb -e "ruby" -e "mjit::ruby --mjit"
 
-You could also measure only a single Ruby.
+# You could also measure only a single Ruby
+./run_benchmarks.rb -e "3.1.0::/opt/rubies/3.1.0/bin/ruby"
 
-```
-./run_benchmarks.rb -e "ruby"
+# With --chruby, you can easily specify rubies managed by chruby
+./run_benchmarks.rb --chruby "3.1.0" --chruby "3.1.0+YJIT::3.1.0 --yjit"
 ```
 
 ### YJIT options
