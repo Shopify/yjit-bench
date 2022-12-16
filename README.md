@@ -131,6 +131,12 @@ You can find several test harnesses in this repository:
 * harness-bips - a harness that measures iterations/second until stable
 * harness-continuous - a harness that adjusts the batch sizes of iterations to run in stable iteration size batches
 
+To use it, run a benchmark script directly, specifying a harness directory with `-I`:
+
+```
+ruby -Iharness benchmarks/railsbench/benchmark.rb
+```
+
 There is also a robust but complex CI harness in [the yjit-metrics repo](https://github.com/Shopify/yjit-metrics).
 
 ### Iterations and duration
