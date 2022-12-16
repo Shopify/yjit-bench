@@ -124,13 +124,6 @@ This file will then be passed to the underlying Ruby interpreter with
 
 ## Harnesses
 
-And finally, there is a handy script for running benchmarks just
-once, for example with the `--yjit-stats` command-line option:
-
-```
-./run_once.sh --yjit-stats benchmarks/railsbench/benchmark.rb
-```
-
 You can find several test harnesses in this repository:
 
 * harness - the normal default harness, with duration controlled by warmup iterations and time/count limits
@@ -148,6 +141,14 @@ can be controlled by the following environment variables:
 * `WARMUP_ITRS`: The number of warm-up iterations, ignored in the final comparison (default: 15)
 * `MIN_BENCH_ITRS`: The minimum number of benchmark iterations (default: 10)
 * `MIN_BENCH_TIME`: The minimum seconds for benchmark (default: 10)
+
+There is a handy script for running benchmarks just once using
+`WARMUP_ITRS=0 MIN_BENCH_ITRS=1 MIN_BENCH_TIME=0`, for example
+with the `--yjit-stats` command-line option:
+
+```
+./run_once.sh --yjit-stats benchmarks/railsbench/benchmark.rb
+```
 
 ### Using perf
 
