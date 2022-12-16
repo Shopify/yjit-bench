@@ -1,0 +1,10 @@
+diff --git a/benchmarks/railsbench/Gemfile b/benchmarks/railsbench/Gemfile
+index cea41fb..3cfe53e 100644
+--- a/benchmarks/railsbench/Gemfile
++++ b/benchmarks/railsbench/Gemfile
+@@ -52,4 +52,4 @@ if RUBY_VERSION >= "3.1"
+ end
+ 
+ # Windows does not include zoneinfo files, so bundle the tzinfo-data gem
+-gem 'tzinfo-data', platforms: [:mingw, :mswin, :x64_mingw, :jruby]
++gem 'tzinfo-data'
