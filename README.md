@@ -74,6 +74,15 @@ The `interp/yjit` column is the ratio of the average time taken by the interpret
 average time taken by YJIT after a number of warmup iterations. Results above 1 represent
 speedups. For instance, 1.14 means "YJIT is 1.14 times as fast as the interpreter".
 
+### Specific categories
+
+By default, `run_benchmarks.rb` runs all three [benchmark categories](./benchmarks.yml),
+`--category headline,other,micro`. You can run only benchmarks with specific categories:
+
+```
+./run_benchmarks.rb --category headline
+```
+
 ### Specific benchmarks
 
 To run one or more specific benchmarks and record the data:

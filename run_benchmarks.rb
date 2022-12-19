@@ -152,19 +152,15 @@ def free_file_no(prefix)
   end
 end
 
+def benchmark_category(name)
+  metadata = benchmarks_metadata.find { |benchmark, _metadata| benchmark == name }&.last || {}
+  metadata.fetch('category', 'other')
+end
+
 # Check if the name matches any of the names in a list of filters
-def match_filter(name, filters)
-  if filters.length == 0
-    return true
-  end
-
-  filters.each do |filter|
-    if name.downcase.include?(filter)
-      return true
-    end
-  end
-
-  return false
+def match_filter(name, categories:, name_filters:)
+  (categories.empty? || categories.include?(benchmark_category(name))) &&
+    (name_filters.empty? || name_filters.include?(name.downcase))
 end
 
 # Resolve the pre_init file path into a form that can be required
@@ -190,10 +186,13 @@ def expand_pre_init(path)
   ]
 end
 
+def benchmarks_metadata
+  @benchmarks_metadata ||= YAML.load_file('benchmarks.yml')
+end
+
 def sort_benchmarks(bench_names)
-  benchmarks = YAML.load_file('benchmarks.yml')
-  headline_benchmarks = benchmarks.select { |_, metadata| metadata['category'] == 'headline' }.keys
-  micro_benchmarks = benchmarks.select { |_, metadata| metadata['category'] == 'micro' }.keys
+  headline_benchmarks = benchmarks_metadata.select { |_, metadata| metadata['category'] == 'headline' }.keys
+  micro_benchmarks = benchmarks_metadata.select { |_, metadata| metadata['category'] == 'micro' }.keys
 
   headline_names, bench_names = bench_names.partition { |name| headline_benchmarks.include?(name) }
   micro_names, other_names = bench_names.partition { |name| micro_benchmarks.include?(name) }
@@ -201,13 +200,13 @@ def sort_benchmarks(bench_names)
 end
 
 # Run all the benchmarks and record execution times
-def run_benchmarks(ruby:, ruby_description:, name_filters:, out_path:, pre_init:, rss:)
+def run_benchmarks(ruby:, ruby_description:, categories:, name_filters:, out_path:, pre_init:, rss:)
   bench_times = {}
   bench_rss = {}
 
   # Get the list of benchmark files/directories matching name filters
   bench_files = Dir.children('benchmarks').sort.filter do |entry|
-    match_filter(entry, name_filters)
+    match_filter(entry, categories: categories, name_filters: name_filters)
   end
 
   if pre_init
@@ -290,6 +289,7 @@ args = OpenStruct.new({
   executables: {},
   out_path: "./data",
   yjit_opts: "",
+  categories: [],
   name_filters: [],
   rss: false,
 })
@@ -317,6 +317,10 @@ OptionParser.new do |opts|
 
   opts.on("--out_path=OUT_PATH", "directory where to store output data files") do |v|
     args.out_path = v
+  end
+
+  opts.on("--category=headline,other,micro", "when given, only benchmarks with specified categories will run") do |v|
+    args.categories += v.split(",")
   end
 
   opts.on("--name_filters=x,y,z", Array, "when given, only benchmarks with names that contain one of these strings will run") do |list|
@@ -374,6 +378,7 @@ args.executables.each do |name, executable|
   bench_times[name], bench_rss[name] = run_benchmarks(
     ruby: executable,
     ruby_description: ruby_descriptions[name],
+    categories: args.categories,
     name_filters: args.name_filters,
     out_path: args.out_path,
     pre_init: args.with_pre_init,
