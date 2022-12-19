@@ -90,8 +90,8 @@ ruby -Iharness benchmarks/some_benchmark.rb
 
 ## Ruby options
 
-By default, yjit-bench compares two Ruby commands, `-e "interp::ruby"` and
-`-e "yjit::ruby --yjit`, with the Ruby used for `run_benchmarks.rb`.
+By default, yjit-bench benchmarks the Ruby used for `run_benchmarks.rb`.
+If the Ruby has `--yjit` option, it compares two Ruby commands, `-e "interp::ruby"` and `-e "yjit::ruby --yjit`.
 However, if you specify `-e` yourself, you can override what Ruby is benchmarked.
 
 ```sh
