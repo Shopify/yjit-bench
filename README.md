@@ -27,24 +27,31 @@ You can also use another harness or make your own by passing a different directo
 ruby -Iharness benchmarks/some_benchmark.rb
 ```
 
-## Installation to use run_benchmarks.rb
-
-`run_benchmarks.rb` expects to use chruby to run with YJIT, so you need to
-install [chruby](https://github.com/postmodern/chruby).
+## Installation
 
 Clone this repository:
 ```
 git clone https://github.com/Shopify/yjit-bench.git yjit-bench
 ```
 
-Follow [these instructions](https://github.com/ruby/ruby/blob/master/doc/yjit/yjit.md#building-yjit) to build and install YJIT with the name ruby-yjit.
+### Benchmarking YJIT
+
+yjit-bench supports benchmarking any Ruby implementation. But if you want to benchmark YJIT,
+follow [these instructions](https://github.com/ruby/ruby/blob/master/doc/yjit/yjit.md#building-yjit)
+to build and install YJIT.
+
+If you install it with the name `ruby-yjit` on [chruby](https://github.com/postmodern/chruby),
+you should enable it before running `./run_benchmarks.rb`:
+
+```
+chruby ruby-yjit
+```
 
 ## Usage
 
 To run all the benchmarks and record the data:
 ```
 cd yjit-bench
-chruby ruby-yjit
 ./run_benchmarks.rb
 ```
 

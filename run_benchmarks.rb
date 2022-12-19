@@ -48,8 +48,8 @@ def check_call(command, verbose: false, env: {})
   end
 end
 
-def check_output(command)
-  IO.popen(command, &:read)
+def check_output(*command)
+  IO.popen(*command, &:read)
 end
 
 def set_bench_config()
@@ -61,16 +61,9 @@ def set_bench_config()
   end
 end
 
-def check_chruby()
-  ruby = RbConfig.ruby
-  ruby_version = check_output("#{ruby} -v --yjit").strip
-
-  if !ruby_version.downcase.include?("yjit")
-    puts "Your current Ruby (#{ruby}) doesn't seem to include YJIT."
-    puts "Maybe you need to chruby to ruby-yjit?"
-    puts "  chruby ruby-yjit"
-    exit(-1)
-  end
+def have_yjit?(ruby)
+  ruby_version = check_output("#{ruby} -v --yjit", err: File::NULL).strip
+  ruby_version.downcase.include?("yjit")
 end
 
 def check_pstate()
@@ -342,14 +335,14 @@ if ARGV.length > 0
   args.name_filters += ARGV
 end
 
-# If -e is not specified, compare the interpreter and YJIT of the current Ruby
+# If -e is not specified, benchmark the current Ruby. Compare it with YJIT if available.
 if args.executables.empty?
-  args.executables["interp"] = [RbConfig.ruby]
-  args.executables["yjit"] = [RbConfig.ruby, "--yjit", *args.yjit_opts.shellsplit]
-
-  # Check that the chruby command was run
-  # Note: we intentionally do this first
-  check_chruby()
+  if have_yjit?(RbConfig.ruby)
+    args.executables["interp"] = [RbConfig.ruby]
+    args.executables["yjit"] = [RbConfig.ruby, "--yjit", *args.yjit_opts.shellsplit]
+  else
+    args.executables["ruby"] = [RbConfig.ruby]
+  end
 end
 
 # Disable CPU frequency scaling
