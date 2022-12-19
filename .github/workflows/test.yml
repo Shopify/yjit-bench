@@ -1,0 +1,25 @@
+name: Test benchmarks
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 'head'
+
+      - name: Test run_benchmarks.rb
+        run: ./run_benchmarks.rb
+        env:
+          WARMUP_ITRS: '1'
+          MIN_BENCH_ITRS: '1'
+          MIN_BENCH_TIME: '0'
+
+      - name: Test run_once.sh
+        run: ./run_once.sh --yjit-stats benchmarks/railsbench/benchmark.rb
