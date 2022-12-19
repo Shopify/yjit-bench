@@ -16,17 +16,6 @@ CSV file written by the benchmarking harness. The output is written to
 an output CSV file at the end, so that results can be easily viewed or
 graphed in any spreadsheet editor.
 
-## Running a single benchmark
-
-This is the easiest way to run a single benchmark.
-It requires no setup at all and assumes nothing about the Ruby you are benchmarking.
-It's also convenient for profiling, debugging, etc, especially since all benchmarked code runs in that process.
-You can also use another harness or make your own by passing a different directory for `-I`.
-
-```
-ruby -Iharness benchmarks/some_benchmark.rb
-```
-
 ## Installation
 
 Clone this repository:
@@ -86,6 +75,17 @@ speedups. For instance, 1.14 means "YJIT is 1.14 times as fast as the interprete
 To run one or more specific benchmarks and record the data:
 ```
 ./run_benchmarks.rb fib lee optcarrot
+```
+
+### Running a single benchmark
+
+This is the easiest way to run a single benchmark.
+It requires no setup at all and assumes nothing about the Ruby you are benchmarking.
+It's also convenient for profiling, debugging, etc, especially since all benchmarked code runs in that process.
+You can also use another harness or make your own by passing a different directory for `-I`.
+
+```
+ruby -Iharness benchmarks/some_benchmark.rb
 ```
 
 ## Ruby options
