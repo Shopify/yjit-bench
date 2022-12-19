@@ -1,11 +1,11 @@
-name: test benchmarks
+name: Test benchmarks
 on:
   push:
     branches:
       - master
   pull_request:
 jobs:
-  benchmarks:
+  test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -13,9 +13,13 @@ jobs:
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: 'head'
-      - name: Run benchmarks for testing
-        run: ./run_benchmarks.rb -e "interp::ruby" -e "yjit::ruby --yjit"
+
+      - name: Test run_benchmarks.rb
+        run: ./run_benchmarks.rb
         env:
-          WARMUP_ITRS: '0'
+          WARMUP_ITRS: '1'
           MIN_BENCH_ITRS: '1'
           MIN_BENCH_TIME: '0'
+
+      - name: Test run_once.sh
+        run: ./run_once.sh --yjit-stats benchmarks/railsbench/benchmark.rb
