@@ -16,9 +16,9 @@ jobs:
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:
-          ruby-version: '3.1'
+          ruby-version: 'head'
       - name: Run benchmarks for testing
-        run: ./run_benchmarks.rb -e ruby
+        run: ./run_benchmarks.rb -e "interp::ruby" -e "yjit::ruby --yjit"
         env:
           WARMUP_ITRS: '0'
           MIN_BENCH_ITRS: '1'
