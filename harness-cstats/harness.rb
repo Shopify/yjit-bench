@@ -14,8 +14,10 @@ self.singleton_class.prepend Module.new {
       case tp.method_id
       when /(\A|_)each(_|\z)/, /(\A|_)map\!?\z/
         c_loops[method_name] += tp.self.size if tp.self.respond_to?(:size)
-      when 'times'
+      when :times
         c_loops[method_name] += Integer(tp.self)
+      when :loop
+        c_loops[method_name] += 1 # can't predict it properly
       end
     end
 
@@ -31,7 +33,7 @@ self.singleton_class.prepend Module.new {
     puts
 
     puts "Top 100 C method calls:"
-    c_calls.sort_by(&:last).reverse[0...100].each do |method, count|
+    c_calls.sort_by(&:last).reverse.first(100).each do |method, count|
       puts '%8d %s' % [count, method]
     end
   end
