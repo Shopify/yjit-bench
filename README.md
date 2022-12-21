@@ -139,6 +139,7 @@ You can find several test harnesses in this repository:
 * harness-perf - a simplified harness that runs for exactly the hinted number of iterations
 * harness-bips - a harness that measures iterations/second until stable
 * harness-continuous - a harness that adjusts the batch sizes of iterations to run in stable iteration size batches
+* harness-cstats - count C method calls and C loop iterations
 
 To use it, run a benchmark script directly, specifying a harness directory with `-I`:
 
