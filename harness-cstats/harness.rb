@@ -4,29 +4,43 @@ require_relative '../harness/harness'
 # while also reusing the original implementation.
 self.singleton_class.prepend Module.new {
   def run_benchmark(*)
+    frames = []
     c_calls = Hash.new { 0 }
     c_loops = Hash.new { 0 }
 
-    trace_point = TracePoint.new(:c_call) do |tp|
-      method_name = "#{tp.defined_class}##{tp.method_id}"
-      c_calls[method_name] += 1
+    method_trace = TracePoint.new(:call, :c_call, :return, :c_return) do |tp|
+      # Keep track of call frames to get the caller of :b_call
+      case tp.event
+      when :call, :c_call
+        method_name = "#{tp.defined_class}##{tp.method_id}"
+        frames.push([tp.event, method_name])
+      when :return, :c_return
+        frames.pop
+      end
 
-      case tp.method_id
-      when /(\A|_)each(_|\z)/, /(\A|_)map\!?\z/
-        c_loops[method_name] += tp.self.size if tp.self.respond_to?(:size)
-      when :times
-        c_loops[method_name] += Integer(tp.self)
-      when :loop
-        c_loops[method_name] += 1 # can't predict it properly
+      # Count C method calls
+      if tp.event == :c_call
+        c_calls[method_name] += 1
       end
     end
 
-    trace_point.enable
+    block_trace = TracePoint.new(:b_call) do |tp|
+      caller_event, caller_method = frames.last
+
+      # Count block calls only when the caller is a C method
+      if caller_event == :c_call
+        c_loops[caller_method] += 1
+      end
+    end
+
+    method_trace.enable
+    block_trace.enable
     super
   ensure
-    trace_point.disable
+    block_trace.disable
+    method_trace.disable
 
-    puts "Top C loop method iterations:"
+    puts "Top C method block iterations:"
     c_loops.sort_by(&:last).reverse_each do |method, count|
       puts '%8d %s' % [count, method]
     end
