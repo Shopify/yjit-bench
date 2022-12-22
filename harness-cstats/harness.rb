@@ -40,15 +40,21 @@ self.singleton_class.prepend Module.new {
     block_trace.disable
     method_trace.disable
 
-    puts "Top C method block iterations:"
-    c_loops.sort_by(&:last).reverse_each do |method, count|
-      puts '%8d %s' % [count, method]
+    c_loops_total = c_loops.sum(&:last)
+    c_loops = c_loops.sort_by { |_method, count| -count }.first(100)
+    c_loops_ratio = 100.0 * c_loops.sum(&:last) / c_loops_total
+    puts "Top #{c_loops.size} block calls by C methods (#{'%.1f' % c_loops_ratio}% of all #{c_loops_total} calls):"
+    c_loops.each do |method, count|
+      puts '%8d (%4.1f%%) %s' % [count, 100.0 * count / c_loops_total, method]
     end
     puts
 
-    puts "Top 100 C method calls:"
+    c_calls_total = c_calls.sum(&:last)
+    c_calls = c_calls.sort_by { |_method, count| -count }.first(100)
+    c_calls_ratio = 100.0 * c_calls.sum(&:last) / c_calls_total
+    puts "Top #{c_calls.size} C method calls (#{'%.1f' % c_calls_ratio}% of all #{c_calls_total} calls):"
     c_calls.sort_by(&:last).reverse.first(100).each do |method, count|
-      puts '%8d %s' % [count, method]
+      puts '%8d (%4.1f%%) %s' % [count, 100.0 * count / c_calls_total, method]
     end
   end
 }
