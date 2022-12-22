@@ -1,3 +1,4 @@
+# based on https://github.com/docker-library/ruby/blob/master/3.2-rc/alpine3.16/Dockerfile
 FROM alpine:3.16 as builder
 
 ARG TARGETOS
@@ -26,7 +27,7 @@ RUN set -eux; \
 ENV LANG C.UTF-8
 ENV RUBY_TAG v3_2_0_rc1
 ENV RUBY_SHA256SUM e419d4f535ff0ad15e3bbec8f995ebb3f5724d4709520c01269993482bf29610
-ENV JYIT_COMMIT 8323839edf40da8c2652a599641ef15957edcbc5
+ENV JYIT_BENCH_COMMIT 8323839edf40da8c2652a599641ef15957edcbc5
 
 # some of ruby's build scripts are written in ruby
 #   we purge system ruby later to make sure our final image uses what we just built
@@ -117,13 +118,13 @@ ENV BUNDLE_SILENCE_ROOT_WARNING=1 \
 	BUNDLE_APP_CONFIG="$GEM_HOME"
 ENV PATH $GEM_HOME/bin:$PATH
 
-# TODO - should probably be managed in a Gemfile...
+# Pre-install Gems from yjit-bench benchmarks
 RUN mkdir -p "$GEM_HOME" && \
 	chmod 777 "$GEM_HOME" && \
 	\
 	git clone https://github.com/Shopify/yjit-bench.git /yjit-bench && \
 	cd /yjit-bench && \
-	git reset --hard ${YJIT_COMMIT} && \
+	git reset --hard ${JYIT_BENCH_COMMIT} && \
 	\
 	for i in $(find . -name Gemfile -type f -print); do (BUNDLE_GEMFILE=$i bundle install); done && \
 	\
@@ -163,6 +164,7 @@ RUN set -eux; \
 		procps \
 		sqlite-dev \
 		su-exec \
+		tzdata \
 		util-linux \
 		yaml \
 	;
@@ -171,12 +173,14 @@ COPY --from=builder /usr/local/ /usr/local/
 ADD patch-05-tzinfo-data /tmp/
 ADD patch-06-tzinfo-data /tmp/
 
+# checkout yjit-bench at a fixed commit and patch Gemfiles for alpine
 RUN git clone https://github.com/Shopify/yjit-bench.git /yjit-bench && \
 	cd /yjit-bench \
-	git reset --hard ${YJIT_COMMIT} && \
-	\
-	patch -p1 < /tmp/patch-05-tzinfo-data && \
-	patch -p1 < /tmp/patch-06-tzinfo-data
+	git reset --hard ${JYIT_BENCH_COMMIT} 
+#	&& \
+#	\
+#	patch -p1 < /tmp/patch-05-tzinfo-data && \
+#	patch -p1 < /tmp/patch-06-tzinfo-data
 
 ENV GEM_HOME /usr/local/bundle
 ENV BUNDLE_SILENCE_ROOT_WARNING=1 \
