@@ -170,17 +170,11 @@ RUN set -eux; \
 	;
 
 COPY --from=builder /usr/local/ /usr/local/
-ADD patch-05-tzinfo-data /tmp/
-ADD patch-06-tzinfo-data /tmp/
 
 # checkout yjit-bench at a fixed commit and patch Gemfiles for alpine
 RUN git clone https://github.com/Shopify/yjit-bench.git /yjit-bench && \
 	cd /yjit-bench \
-	git reset --hard ${JYIT_BENCH_COMMIT} 
-#	&& \
-#	\
-#	patch -p1 < /tmp/patch-05-tzinfo-data && \
-#	patch -p1 < /tmp/patch-06-tzinfo-data
+	git reset --hard ${JYIT_BENCH_COMMIT}
 
 ENV GEM_HOME /usr/local/bundle
 ENV BUNDLE_SILENCE_ROOT_WARNING=1 \
