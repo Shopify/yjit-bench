@@ -16,35 +16,31 @@ CSV file written by the benchmarking harness. The output is written to
 an output CSV file at the end, so that results can be easily viewed or
 graphed in any spreadsheet editor.
 
-## Running a single benchmark
-
-This is the easiest way to run a single benchmark.
-It requires no setup at all and assumes nothing about the Ruby you are benchmarking.
-It's also convenient for profiling, debugging, etc, especially since all benchmarked code runs in that process.
-You can also use another harness or make your own by passing a different directory for `-I`.
-
-```
-ruby -Iharness benchmarks/some_benchmark.rb
-```
-
-## Installation to use run_benchmarks.rb
-
-`run_benchmarks.rb` expects to use chruby to run with YJIT, so you need to
-install [chruby](https://github.com/postmodern/chruby).
+## Installation
 
 Clone this repository:
 ```
 git clone https://github.com/Shopify/yjit-bench.git yjit-bench
 ```
 
-Follow [these instructions](https://github.com/ruby/ruby/blob/master/doc/yjit/yjit.md#building-yjit) to build and install YJIT with the name ruby-yjit.
+### Benchmarking YJIT
+
+yjit-bench supports benchmarking any Ruby implementation. But if you want to benchmark YJIT,
+follow [these instructions](https://github.com/ruby/ruby/blob/master/doc/yjit/yjit.md#building-yjit)
+to build and install YJIT.
+
+If you install it with the name `ruby-yjit` on [chruby](https://github.com/postmodern/chruby),
+you should enable it before running `./run_benchmarks.rb`:
+
+```
+chruby ruby-yjit
+```
 
 ## Usage
 
 To run all the benchmarks and record the data:
 ```
 cd yjit-bench
-chruby ruby-yjit
 ./run_benchmarks.rb
 ```
 
@@ -90,10 +86,21 @@ To run one or more specific benchmarks and record the data:
 ./run_benchmarks.rb fib lee optcarrot
 ```
 
+### Running a single benchmark
+
+This is the easiest way to run a single benchmark.
+It requires no setup at all and assumes nothing about the Ruby you are benchmarking.
+It's also convenient for profiling, debugging, etc, especially since all benchmarked code runs in that process.
+You can also use another harness or make your own by passing a different directory for `-I`.
+
+```
+ruby -Iharness benchmarks/some_benchmark.rb
+```
+
 ## Ruby options
 
-By default, yjit-bench compares two Ruby commands, `-e "interp::ruby"` and
-`-e "yjit::ruby --yjit`, with the Ruby used for `run_benchmarks.rb`.
+By default, yjit-bench benchmarks the Ruby used for `run_benchmarks.rb`.
+If the Ruby has `--yjit` option, it compares two Ruby commands, `-e "interp::ruby"` and `-e "yjit::ruby --yjit`.
 However, if you specify `-e` yourself, you can override what Ruby is benchmarked.
 
 ```sh
