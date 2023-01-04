@@ -2,7 +2,7 @@ require "harness"
 require "securerandom"
 require "tzinfo"
 
-Dir.chdir __dir__
+Dir.chdir File.join(__dir__, "sequel")
 use_gemfile
 
 require "sequel"
