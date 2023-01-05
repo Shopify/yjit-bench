@@ -151,9 +151,10 @@ def benchmark_category(name)
 end
 
 # Check if the name matches any of the names in a list of filters
-def match_filter(name, categories:, name_filters:)
+def match_filter(entry, categories:, name_filters:)
+  name = entry.sub(/\.rb\z/, '')
   (categories.empty? || categories.include?(benchmark_category(name))) &&
-    (name_filters.empty? || name_filters.include?(name.downcase))
+    (name_filters.empty? || name_filters.include?(name))
 end
 
 # Resolve the pre_init file path into a form that can be required
