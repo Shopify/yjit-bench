@@ -7,6 +7,7 @@ self.singleton_class.prepend Module.new {
     frames = []
     c_calls = Hash.new { 0 }
     c_loops = Hash.new { 0 }
+    rb_calls = Hash.new { 0 }
 
     method_trace = TracePoint.new(:call, :c_call, :return, :c_return) do |tp|
       # Keep track of call frames to get the caller of :b_call
@@ -18,9 +19,12 @@ self.singleton_class.prepend Module.new {
         frames.pop
       end
 
-      # Count C method calls
-      if tp.event == :c_call
+      # Count method calls
+      case tp.event
+      when :c_call
         c_calls[method_name] += 1
+      when :call
+        rb_calls[method_name] += 1
       end
     end
 
@@ -55,6 +59,15 @@ self.singleton_class.prepend Module.new {
     puts "Top #{c_calls.size} C method calls (#{'%.1f' % c_calls_ratio}% of all #{c_calls_total} calls):"
     c_calls.sort_by(&:last).reverse.first(100).each do |method, count|
       puts '%8d (%4.1f%%) %s' % [count, 100.0 * count / c_calls_total, method]
+    end
+    puts
+
+    rb_calls_total = rb_calls.sum(&:last)
+    rb_calls = rb_calls.sort_by { |_method, count| -count }.first(100)
+    rb_calls_ratio = 100.0 * rb_calls.sum(&:last) / rb_calls_total
+    puts "Top #{rb_calls.size} Ruby method calls (#{'%.1f' % rb_calls_ratio}% of all #{rb_calls_total} calls):"
+    rb_calls.sort_by(&:last).reverse.first(100).each do |method, count|
+      puts '%8d (%4.1f%%) %s' % [count, 100.0 * count / rb_calls_total, method]
     end
   end
 }
