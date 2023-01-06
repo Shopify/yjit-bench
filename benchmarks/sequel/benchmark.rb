@@ -1,5 +1,4 @@
 require "harness"
-require "securerandom"
 
 Dir.chdir __dir__
 use_gemfile
@@ -24,10 +23,10 @@ end
 class Post < Sequel::Model; end
 
 50000.times {
-  Post.create(title: SecureRandom.alphanumeric(30),
-              type_name: SecureRandom.alphanumeric(10),
-              key: SecureRandom.alphanumeric(10),
-              body: SecureRandom.alphanumeric(100),
+  Post.create(title: Random.alphanumeric(30),
+              type_name: Random.alphanumeric(10),
+              key: Random.alphanumeric(10),
+              body: Random.alphanumeric(100),
               upvotes: rand(30),
               author_id: rand(30))
 }
