@@ -21,7 +21,7 @@ end
 
 class Post < ActiveRecord::Base; end
 
-50000.times {
+10000.times {
   Post.create!(title: Random.alphanumeric(30),
                type_name: Random.alphanumeric(10),
                key: Random.alphanumeric(10),
@@ -34,7 +34,9 @@ class Post < ActiveRecord::Base; end
 Post.where(id: 1).first.title
 
 run_benchmark(10) do
-  1000.times do |i|
-    Post.where(id: i + 1).first.title
+  1.upto(1000) do |i|
+    post = Post.where(id: i).first
+    "#{post.title}\n#{post.body}"
+    "type: #{post.type_name}, votes: #{post.upvotes}, updated on: #{post.updated_at}"
   end
 end
