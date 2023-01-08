@@ -2,7 +2,7 @@ GEM
   remote: https://rubygems.org/
   specs:
     mini_portile2 (2.8.1)
-    sequel (5.63.0)
+    sequel (5.64.0)
     sqlite3 (1.5.4)
       mini_portile2 (~> 2.8.0)
 
@@ -10,7 +10,7 @@ PLATFORMS
   x86_64-darwin-20
 
 DEPENDENCIES
-  sequel (~> 5.63.0)
+  sequel (~> 5.63)
   sqlite3 (~> 1.4)
 
 BUNDLED WITH
