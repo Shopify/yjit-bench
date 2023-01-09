@@ -26,6 +26,9 @@ railsbench:
 ruby-lsp:
   desc: Run several operations with the Ruby language server used by VSCode
   category: headline
+sequel:
+  desc: sequel repeatedly queries entries in a SQLite table with highly-random names.
+  category: headline
 
 #
 # Other Benchmarks
