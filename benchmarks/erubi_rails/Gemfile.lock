@@ -185,7 +185,7 @@ GEM
       activesupport (>= 5.2)
       sprockets (>= 3.0.0)
     sqlite3 (1.4.2)
-    strscan (3.0.6)
+    strscan (3.0.5)
     thor (1.1.0)
     tilt (2.0.10)
     timeout (0.3.1)
