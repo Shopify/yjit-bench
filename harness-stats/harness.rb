@@ -60,16 +60,16 @@ self.singleton_class.prepend Module.new {
       puts
     end
 
-    show_distribution.call(c_calls,   subject: "C method calls")
-    show_distribution.call(c_blocks,  subject: "C method's block calls")
-    show_distribution.call(rb_calls,  subject: "Ruby method calls")
-    show_distribution.call(rb_blocks, subject: "Ruby method's block calls")
-
     show_distribution.call({
-      "C method calls"            => c_calls.sum(&:last),
-      "C method's block calls"    => c_blocks.sum(&:last),
-      "Ruby method calls"         => rb_calls.sum(&:last),
-      "Ruby method's block calls" => rb_blocks.sum(&:last),
-    }, header: 'The overall ratio of each call type')
+      'C method calls'        => c_calls.sum(&:last),
+      'Ruby method calls'     => rb_calls.sum(&:last),
+      'block calls from C'    => c_blocks.sum(&:last),
+      'block calls from Ruby' => rb_blocks.sum(&:last),
+    }, header: 'The overall breakdown of each call type')
+
+    show_distribution.call(c_calls,   subject: 'C method calls')
+    show_distribution.call(rb_calls,  subject: 'Ruby method calls')
+    show_distribution.call(c_blocks,  subject: 'block calls from C')
+    show_distribution.call(rb_blocks, subject: 'block calls from Ruby')
   end
 }
