@@ -60,7 +60,7 @@ Post.where(id: 1).first.title
 run_benchmark(10) do
   1.upto(1000) do |i|
     post = Post.where(id: i).first
-    "#{post.title}\n#{post.body}"
+    "#{post.title}\n#{post.body}" \
     "type: #{post.type_name}, votes: #{post.upvotes}, updated on: #{post.updated_at}"
   end
 end
