@@ -15,7 +15,7 @@ jobs:
           ruby-version: 'head'
 
       - name: Run tests
-        run: ruby test/**/*_test.rb
+        run: ruby test/benchmarks_test.rb
 
       - name: Test run_benchmarks.rb
         run: ./run_benchmarks.rb
