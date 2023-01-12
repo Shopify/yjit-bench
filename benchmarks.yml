@@ -7,10 +7,6 @@ activerecord:
 hexapdf:
   desc: hexapdf benchmarks the hexapdf Ruby gem by line-wrapping The Odyssey with specific line-length and font.
   category: headline
-jekyll:
-  desc: jekyll reviews and rebuilds a Jekyll site, but is almost entirely scanning directories of files that didn't change.
-  category: headline
-  unstable: 1 # jekyll has known problems including some kind of resource leak. Jekyll-the-tool is fine, but this usage method is flawed.
 liquid-render:
   desc: liquid-render renders a chosen-for-profiling Liquid theme repeatedly.
   category: headline
@@ -41,6 +37,8 @@ erubi:
   desc: erubi compiles a simple Erb template into a method with erubi, then times evaluating that method.
 erubi_rails:
   desc: erubi_rails uses Rails template rendering to repeatedly render a stubbed Discourse view.
+etanni:
+  desc: etanni is an older, extremely simple template-lang format that basically turns your template into an "eval" with a lot of heredocs.
 fannkuchredux:
   desc: fannkuchredux from the Computer Language Benchmarks Game.
 lee:
