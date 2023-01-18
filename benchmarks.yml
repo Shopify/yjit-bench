@@ -25,6 +25,10 @@ ruby-lsp:
 sequel:
   desc: sequel repeatedly queries entries in a SQLite table with highly-random names.
   category: headline
+liquid-c:
+  desc: liquid-c renders a chosen-for-profiling Liquid theme repeatedly.
+  category: headline
+
 
 #
 # Other Benchmarks
@@ -49,9 +53,6 @@ optcarrot:
   desc: optcarrot is a functional headless NES emulator, run on a specific game cartridge for a specific number of frames.
 rubykon:
   desc: Ruby solver for Go (the boardgame.) Runs 1,000 iterations forward from an initial starting board.
-liquid-c:
-  desc: liquid-c renders a chosen-for-profiling Liquid theme repeatedly.
-
 #
 # MicroBenchmarks
 #
