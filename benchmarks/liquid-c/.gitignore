@@ -1,0 +1,13 @@
+*.gem
+*.rbc
+Gemfile.lock
+pkg
+tmp
+*.o
+*.bundle
+ext/*/Makefile
+*.so
+instruments*.trace
+*.cpu
+*.object
+*.dSYM

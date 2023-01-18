@@ -1,0 +1,14 @@
+inherit_gem:
+  rubocop-shopify: rubocop.yml
+
+require: rubocop-performance
+
+AllCops:
+  TargetRubyVersion: 2.5
+  Exclude:
+    - 'vendor/bundle/**/*'
+    - 'tmp/**/*'
+
+Style/GlobalVars:
+  Exclude:
+    - 'ext/liquid_c/extconf.rb'
