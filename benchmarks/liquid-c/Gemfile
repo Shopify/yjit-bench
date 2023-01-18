@@ -1,0 +1,10 @@
+# frozen_string_literal: true
+
+source "https://rubygems.org"
+git_source(:github) do |repo_name|
+  "https://github.com/#{repo_name}.git"
+end
+
+
+gem "liquid", github: "Shopify/liquid", ref: "v5.4.0"
+gem "liquid-c", github: "Shopify/liquid-c", ref: "v4.1.0"
