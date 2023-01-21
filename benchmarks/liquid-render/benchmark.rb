@@ -1,6 +1,11 @@
 require 'harness'
 
-require_relative 'performance/theme_runner'
+Dir.chdir __dir__
+use_gemfile
+
+require 'liquid'
+liquid_lib_dir = $LOAD_PATH.detect { |p| File.exist?(File.join(p, "liquid.rb")) }
+require File.join(File.dirname(liquid_lib_dir), "performance/theme_runner")
 
 Liquid::Template.error_mode = ARGV.first.to_sym if ARGV.first
 profiler = ThemeRunner.new
