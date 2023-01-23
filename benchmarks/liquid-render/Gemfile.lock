@@ -8,17 +8,13 @@ GIT
 GEM
   remote: https://rubygems.org/
   specs:
-    liquid-c (4.1.0)
-      liquid (>= 5.0.1)
 
 PLATFORMS
-  arm64-darwin-22
   ruby
   x86_64-linux
 
 DEPENDENCIES
   liquid!
-  liquid-c (= 4.1.0)
 
 BUNDLED WITH
    2.3.26
