@@ -3,7 +3,7 @@ require 'harness'
 Dir.chdir __dir__
 use_gemfile
 
-require 'liquid'
+require 'liquid/c'
 liquid_lib_dir = $LOAD_PATH.detect { |p| File.exist?(File.join(p, "liquid.rb")) }
 require File.join(File.dirname(liquid_lib_dir), "performance/theme_runner")
 

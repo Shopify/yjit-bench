@@ -11,12 +11,12 @@ GEM
     i18n (1.12.0)
       concurrent-ruby (~> 1.0)
     json (2.6.2)
-    language_server-protocol (3.17.0.1)
+    language_server-protocol (3.17.0.3)
     minitest (5.17.0)
     parallel (1.22.1)
     parser (3.1.2.1)
       ast (~> 2.4.1)
-    prettier_print (0.1.0)
+    prettier_print (1.2.0)
     rack (3.0.0)
     rainbow (3.1.1)
     regexp_parser (2.6.0)
@@ -40,14 +40,14 @@ GEM
       activesupport (>= 4.2.0)
       rack (>= 1.1)
       rubocop (>= 1.33.0, < 2.0)
-    ruby-lsp (0.3.4)
+    ruby-lsp (0.4.1)
       language_server-protocol (~> 3.17.0)
       sorbet-runtime
-      syntax_tree (>= 3.6.3)
+      syntax_tree (>= 6, < 7)
     ruby-progressbar (1.11.0)
-    sorbet-runtime (0.5.10488)
-    syntax_tree (3.6.3)
-      prettier_print
+    sorbet-runtime (0.5.10679)
+    syntax_tree (6.0.0)
+      prettier_print (>= 1.2.0)
     tzinfo (2.0.5)
       concurrent-ruby (~> 1.0)
     unicode-display_width (2.3.0)
@@ -64,4 +64,4 @@ DEPENDENCIES
   ruby-lsp
 
 BUNDLED WITH
-   2.5.0.dev
+   2.3.7

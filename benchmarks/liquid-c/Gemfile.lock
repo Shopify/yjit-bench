@@ -1,0 +1,24 @@
+GIT
+  remote: https://github.com/Shopify/liquid.git
+  revision: 4d4a565e98c1dda099df1fddf80e293f768cda29
+  ref: v5.4.0
+  specs:
+    liquid (5.4.0)
+
+GEM
+  remote: https://rubygems.org/
+  specs:
+    liquid-c (4.1.0)
+      liquid (>= 5.0.1)
+
+PLATFORMS
+  arm64-darwin-22
+  ruby
+  x86_64-linux
+
+DEPENDENCIES
+  liquid!
+  liquid-c (= 4.1.0)
+
+BUNDLED WITH
+   2.3.26
