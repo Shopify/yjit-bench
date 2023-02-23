@@ -1,5 +1,5 @@
 require "harness"
-require 'random/formatter'
+require "securerandom" # Provides `Random::Formatter` in Ruby 2.6+
 
 Dir.chdir __dir__
 use_gemfile
