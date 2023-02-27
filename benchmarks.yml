@@ -46,7 +46,7 @@ etanni:
 fannkuchredux:
   desc: fannkuchredux from the Computer Language Benchmarks Game.
 rb_json_parser:
-  desc: json_parser is an optimized version of the json_pure gem's parser.
+  desc: an optimized version of the json_pure gem's parser.
 lee:
   desc: lee is a circuit-board layout solver, deployed in a plausibly reality-like way
 nbody:
