@@ -45,7 +45,7 @@ etanni:
   desc: etanni is an older, extremely simple template-lang format that basically turns your template into an "eval" with a lot of heredocs.
 fannkuchredux:
   desc: fannkuchredux from the Computer Language Benchmarks Game.
-json_parser:
+rb_json_parser:
   desc: json_parser is an optimized version of the json_pure gem's parser.
 lee:
   desc: lee is a circuit-board layout solver, deployed in a plausibly reality-like way
