@@ -197,10 +197,10 @@ This is the only harness that uses `run_benchmark`'s argument, `num_itrs_hint`.
 To disable CPU frequency scaling on an AWS instance with an Intel CPU, edit `/etc/default/grub.d/50-cloudimg-settings.cfg` and add `intel_pstate=no_hwp` to `GRUB_CMDLINE_LINUX_DEFAULT`. It’s a space-separated list.
 
 Then:
-```
+```bash
 sudo update-grub
- - sudo reboot
- - sudo sh -c 'echo 1 > /sys/devices/system/cpu/intel_pstate/no_turbo'
+sudo reboot
+sudo sh -c 'echo 1 > /sys/devices/system/cpu/intel_pstate/no_turbo'
 ```
 
 To verify things worked:
