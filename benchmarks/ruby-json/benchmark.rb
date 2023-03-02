@@ -139,20 +139,8 @@ class JSONParser < StringScanner
   end
 end
 
-elements = [
-  *Array.new(16) { true },
-  *Array.new(16) { false },
-  *Array.new(16) { nil },
-  *Array.new(16, &:itself),
-  *Array.new(16, &:to_f),
-  *Array.new(16) { "" },
-  *Array.new(16, &:to_s),
-  *Array.new(128, &:chr),
-  *Array.new(16) { [] },
-  *Array.new(16) { {} },
-  *Array.new(16) { Array.new(3) { rand(128) } },
-  *Array.new(16) { Hash[Array.new(128) { [_1.chr, rand(128)] }] }
-].shuffle
+# Public domain football data taken from:
+# https://github.com/openfootball/football.json/blob/master/2011-12/at.1.json
+source = IO.read("benchmarks/ruby-json/data.json")
 
-source = JSON.pretty_generate(elements)
 run_benchmark(50) { 1000.times { JSONParser.new(source).parse } }
