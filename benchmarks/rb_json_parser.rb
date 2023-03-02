@@ -155,4 +155,4 @@ elements = [
 ].shuffle
 
 source = JSON.pretty_generate(elements)
-run_benchmark(5000) { JSONParser.new(source).parse }
+run_benchmark(50) { 1000.times { JSONParser.new(source).parse } }
