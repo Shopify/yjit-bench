@@ -286,6 +286,7 @@ args = OpenStruct.new({
   categories: [],
   name_filters: [],
   rss: false,
+  graph: false,
 })
 
 OptionParser.new do |opts|
@@ -332,6 +333,10 @@ OptionParser.new do |opts|
 
   opts.on("--rss", "measure RSS after benchmark iterations") do
     args.rss = true
+  end
+
+  opts.on("--graph", "generate a graph image of benchmark results") do
+    args.graph = true
   end
 end.parse!
 
@@ -484,3 +489,44 @@ File.open(out_txt_path, "w") { |f| f.write output_str }
 
 # Print the table to the console, with numbers truncated
 puts(output_str)
+
+if args.graph
+  begin
+    require "gruff"
+  rescue LoadError
+    Gem.install("gruff")
+    gem "gruff"
+    require "gruff"
+  end
+
+  g = Gruff::Bar.new(1600)
+  g.title = "Speedup ratio relative to #{ruby_descriptions.keys.first}"
+  g.title_font_size = 16.0
+  g.theme = {
+    colors: %w[#3285e1 #489d32 #e2c13e #8A6EAF #D1695E],
+    marker_color: '#dddddd',
+    font_color: 'black',
+    background_colors: 'white'
+  }
+  g.labels = bench_names.map.with_index { |bench, index| [index, bench] }.to_h
+  g.show_labels_for_bar_values = true
+  g.bottom_margin = 30.0
+  g.legend_margin = 4.0
+  g.legend_font_size = 12.0
+  g.marker_font_size = 10.0
+
+  rubies = ruby_descriptions.map { |ruby, description| "#{ruby}: #{description}" }
+  g.data rubies.first, [1.0] * bench_names.size
+  rubies.drop(1).each_with_index do |ruby, index|
+    speedup = table.drop(1).map do |row|
+      num_rests = rubies.size - 1
+      row.last(num_rests * 2).first(num_rests)[index]
+    end
+    g.data ruby, speedup
+  end
+
+  out_png_path = File.join(args.out_path, "output_%03d.png" % file_no)
+  g.write(out_png_path)
+  puts "\ngraph:\n#{out_png_path}"
+  %w[open xdg-open].find { |open| system("which #{open} > /dev/null && #{open} #{out_png_path}") }
+end
