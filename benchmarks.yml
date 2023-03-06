@@ -29,7 +29,6 @@ liquid-c:
   desc: liquid-c renders a chosen-for-profiling Liquid theme repeatedly.
   category: headline
 
-
 #
 # Other Benchmarks
 #
@@ -45,6 +44,8 @@ etanni:
   desc: etanni is an older, extremely simple template-lang format that basically turns your template into an "eval" with a lot of heredocs.
 fannkuchredux:
   desc: fannkuchredux from the Computer Language Benchmarks Game.
+ruby-json:
+  desc: an optimized version of the json_pure gem's pure Ruby JSON parser.
 lee:
   desc: lee is a circuit-board layout solver, deployed in a plausibly reality-like way
 nbody:
@@ -53,6 +54,7 @@ optcarrot:
   desc: optcarrot is a functional headless NES emulator, run on a specific game cartridge for a specific number of frames.
 rubykon:
   desc: Ruby solver for Go (the boardgame.) Runs 1,000 iterations forward from an initial starting board.
+
 #
 # MicroBenchmarks
 #
