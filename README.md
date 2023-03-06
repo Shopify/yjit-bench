@@ -112,6 +112,9 @@ However, if you specify `-e` yourself, you can override what Ruby is benchmarked
 
 # With --chruby, you can easily specify rubies managed by chruby
 ./run_benchmarks.rb --chruby "3.1.0" --chruby "3.1.0+YJIT::3.1.0 --yjit"
+
+# ";" can be used to specify multiple executables in a single option
+./run_benchmarks.rb --chruby "3.1.0;3.1.0+YJIT::3.1.0 --yjit"
 ```
 
 ### YJIT options

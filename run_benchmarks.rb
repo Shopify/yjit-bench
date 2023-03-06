@@ -290,23 +290,27 @@ args = OpenStruct.new({
 
 OptionParser.new do |opts|
   opts.on("-e=NAME::RUBY_PATH OPTIONS", "ruby executable and options to be benchmarked (default: interp, yjit)") do |v|
-    name, executable = v.split("::", 2)
-    if executable.nil?
-      executable = name # allow skipping `NAME::`
+    v.split(";").each do |name_executable|
+      name, executable = name_executable.split("::", 2)
+      if executable.nil?
+        executable = name # allow skipping `NAME::`
+      end
+      args.executables[name] = executable.shellsplit
     end
-    args.executables[name] = executable.shellsplit
   end
 
   opts.on("--chruby=NAME::VERSION OPTIONS", "ruby version under chruby and options to be benchmarked") do |v|
-    name, version = v.split("::", 2)
-    if version.nil?
-      version = name # allow skipping `NAME::`
+    v.split(";").each do |name_version|
+      name, version = name_version.split("::", 2)
+      if version.nil?
+        version = name # allow skipping `NAME::`
+      end
+      version, *options = version.shellsplit
+      unless executable = ["/opt/rubies/#{version}/bin/ruby", "#{ENV["HOME"]}/.rubies/#{version}/bin/ruby"].find { |path| File.executable?(path) }
+        abort "Cannot find '#{version}' in /opt/rubies or ~/.rubies"
+      end
+      args.executables[name] = [executable, *options]
     end
-    version, *options = version.shellsplit
-    unless executable = ["/opt/rubies/#{version}/bin/ruby", "#{ENV["HOME"]}/.rubies/#{version}/bin/ruby"].find { |path| File.executable?(path) }
-      abort "Cannot find '#{version}' in /opt/rubies or ~/.rubies"
-    end
-    args.executables[name] = [executable, *options]
   end
 
   opts.on("--out_path=OUT_PATH", "directory where to store output data files") do |v|
