@@ -200,6 +200,18 @@ This is the only harness that uses `run_benchmark`'s argument, `num_itrs_hint`.
 ./run_benchmarks.rb --graph
 ```
 
+### Installation
+
+Before using this option, you might need to install the dependencies of [Gruff](https://github.com/topfunky/gruff):
+
+```bash
+# macOS
+brew install imagemagick
+
+# Ubuntu
+sudo apt-get install libmagickwand-dev
+```
+
 ## Disabling CPU Frequency Scaling
 
 To disable CPU frequency scaling on an AWS instance with an Intel CPU, edit `/etc/default/grub.d/50-cloudimg-settings.cfg` and add `intel_pstate=no_hwp` to `GRUB_CMDLINE_LINUX_DEFAULT`. It’s a space-separated list.
