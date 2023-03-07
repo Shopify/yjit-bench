@@ -286,6 +286,7 @@ args = OpenStruct.new({
   categories: [],
   name_filters: [],
   rss: false,
+  graph: false,
 })
 
 OptionParser.new do |opts|
@@ -336,6 +337,10 @@ OptionParser.new do |opts|
 
   opts.on("--rss", "measure RSS after benchmark iterations") do
     args.rss = true
+  end
+
+  opts.on("--graph", "generate a graph image of benchmark results") do
+    args.graph = true
   end
 end.parse!
 
@@ -488,3 +493,14 @@ File.open(out_txt_path, "w") { |f| f.write output_str }
 
 # Print the table to the console, with numbers truncated
 puts(output_str)
+
+# Print CSV and PNG file names
+puts
+puts "Output:"
+puts out_tbl_path
+if args.graph
+  require_relative 'misc/graph'
+  out_graph_path = File.join(args.out_path, "output_%03d.png" % file_no)
+  render_graph(out_tbl_path, out_graph_path)
+  puts out_graph_path
+end
