@@ -196,7 +196,8 @@ This is the only harness that uses `run_benchmark`'s argument, `num_itrs_hint`.
 
 `--graph` option of `run_benchmarks.rb` allows you to render benchmark results as a graph.
 
-```
+```bash
+# Write a graph at data/output_XXX.png (it will print the path)
 ./run_benchmarks.rb --graph
 ```
 
@@ -210,6 +211,17 @@ brew install imagemagick
 
 # Ubuntu
 sudo apt-get install libmagickwand-dev
+```
+
+### Changing font size
+
+You can regenerate a graph with `misc/graph.rb`, changing its font size.
+
+```
+Usage: misc/graph.rb [options] CSV_PATH
+        --title SIZE                 title font size
+        --legend SIZE                legend font size
+        --marker SIZE                marker font size
 ```
 
 ## Disabling CPU Frequency Scaling
