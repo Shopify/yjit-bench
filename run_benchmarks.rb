@@ -10,6 +10,7 @@ require 'json'
 require 'rbconfig'
 require 'etc'
 require 'yaml'
+require_relative 'misc/stats'
 
 WARMUP_ITRS = ENV.fetch('WARMUP_ITRS', 15).to_i
 
@@ -126,14 +127,11 @@ def table_to_str(table_data, format)
 end
 
 def mean(values)
-  return values.sum(0.0) / values.size
+  Stats.new(values).mean
 end
 
 def stddev(values)
-  xbar = mean(values)
-  diff_sqrs = values.map { |v| (v-xbar)*(v-xbar) }
-  mean_sqr = diff_sqrs.sum(0.0) / values.length
-  return Math.sqrt(mean_sqr)
+  Stats.new(values).stddev
 end
 
 def free_file_no(prefix)
