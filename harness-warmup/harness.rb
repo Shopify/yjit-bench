@@ -65,8 +65,8 @@ def run_benchmark(num_itrs_hint)
     end
   end until times.size >= MIN_ITERS and elapsed >= MIN_TIME and mad <= threshold
 
-  print_stats(times)
-
   # Write each time value on its own line
   File.write(OUT_CSV_PATH, "#{RUBY_DESCRIPTION}\n#{times.join("\n")}\n")
+
+  print_stats(times)
 end
