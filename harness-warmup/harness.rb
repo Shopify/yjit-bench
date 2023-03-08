@@ -21,7 +21,9 @@ def monotonic_time
   Process.clock_gettime(Process::CLOCK_MONOTONIC)
 end
 
-def print_stats(times)
+def print_stats(times, elapsed)
+  min, sec = elapsed.floor.divmod(60)
+  puts "Benchmarking took #{min} minutes #{sec} seconds"
   puts "Statistics for the second half of iterations (considered warmed up):"
   warmed_up = times[times.size/2..-1]
   stats = Stats.new(warmed_up)
@@ -68,5 +70,5 @@ def run_benchmark(num_itrs_hint)
   # Write each time value on its own line
   File.write(OUT_CSV_PATH, "#{RUBY_DESCRIPTION}\n#{times.join("\n")}\n")
 
-  print_stats(times)
+  print_stats(times, elapsed)
 end
