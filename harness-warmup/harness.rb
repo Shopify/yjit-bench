@@ -21,17 +21,18 @@ def monotonic_time
   Process.clock_gettime(Process::CLOCK_MONOTONIC)
 end
 
-def print_stats(times)
+def print_stats(times, elapsed)
+  min, sec = elapsed.floor.divmod(60)
+  puts "Benchmarking took #{min} minutes #{sec} seconds"
   puts "Statistics for the second half of iterations (considered warmed up):"
   warmed_up = times[times.size/2..-1]
   stats = Stats.new(warmed_up)
-  mean = stats.mean
   median = stats.median
-  mad = stats.median_absolute_deviation(median) / median
-  f2 = '%.2f'
-  f3 = '%.3f'
-  puts "median: #{ms(median)}ms +/- #{f3 % (stats.median_absolute_deviation(median) * 1000)}ms (#{f2 % (mad * 100)}%) (median absolute deviation)"
-  puts "mean:   #{ms(mean)}ms +/- #{f3 % (stats.stddev * 1000)}ms (#{f2 % (stats.stddev / mean * 100)}%) (standard deviation)"
+  mad = stats.median_absolute_deviation(median)
+  mean, stddev = stats.mean, stats.stddev
+  f2, f3 = '%.2f', '%.3f'
+  puts "median: #{ms(median)}ms +/- #{f3 % (mad * 1000)}ms (#{f2 % (mad / median * 100)}%) (median absolute deviation)"
+  puts "mean:   #{ms(mean)}ms +/- #{f3 % (stddev * 1000)}ms (#{f2 % (stddev / mean * 100)}%) (standard deviation)"
   puts "range: [#{ms(stats.min)}-#{ms(stats.max)}]ms"
 end
 
@@ -65,8 +66,8 @@ def run_benchmark(num_itrs_hint)
     end
   end until times.size >= MIN_ITERS and elapsed >= MIN_TIME and mad <= threshold
 
-  print_stats(times)
-
   # Write each time value on its own line
   File.write(OUT_CSV_PATH, "#{RUBY_DESCRIPTION}\n#{times.join("\n")}\n")
+
+  print_stats(times, elapsed)
 end
