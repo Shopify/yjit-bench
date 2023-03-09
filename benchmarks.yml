@@ -32,6 +32,12 @@ liquid-c:
 #
 # Other Benchmarks
 #
+30k_methods_compile_time:
+  desc: time to compile 30k_methods benchmark
+  file: compile_time
+30k_ifelse_compile_time:
+  desc: time to compile 30k_ifelse benchmark
+  file: compile_time
 binarytrees:
   desc: binarytrees from the Computer Language Benchmarks Game.
 chunky_png:

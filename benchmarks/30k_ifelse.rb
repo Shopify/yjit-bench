@@ -240012,8 +240012,10 @@ end
 
 require 'harness'
 
+INTERNAL_ITRS = ENV.fetch("30K_INTERNAL_ITRS", 600).to_i
+
 run_benchmark(10) do
-  600.times do
+  INTERNAL_ITRS.times do
     @x = (@x < 1)? 1:0
     fun_l0_n0(@x)
     fun_l0_n1(@x)

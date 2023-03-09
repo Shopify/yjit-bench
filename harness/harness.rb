@@ -10,23 +10,23 @@ MIN_BENCH_ITRS = ENV.fetch('MIN_BENCH_ITRS', 10).to_i
 # Minimum benchmarking time in seconds
 MIN_BENCH_TIME = ENV.fetch('MIN_BENCH_TIME', 10).to_i
 
-default_path = "data/results-#{RUBY_ENGINE}-#{RUBY_ENGINE_VERSION}-#{Time.now.strftime('%F-%H%M%S')}.csv"
-OUT_CSV_PATH = File.expand_path(ENV.fetch('OUT_CSV_PATH', default_path))
-
-RSS_CSV_PATH = ENV['RSS_CSV_PATH'] ? File.expand_path(ENV['RSS_CSV_PATH']) : nil
-
-system('mkdir', '-p', File.dirname(OUT_CSV_PATH))
-
 puts RUBY_DESCRIPTION
 
-# Takes a block as input
-def run_benchmark(_num_itrs_hint)
+# Takes a block as input. "values" is a special name-value that names the results after this benchmark.
+def run_benchmark(num_itrs_hint, benchmark_name: "values", &block)
+  calculate_benchmark(num_itrs_hint, benchmark_name:benchmark_name) { Benchmark.realtime { yield } }
+end
+
+# For calculate_benchmark, the block calculates a time value in fractional seconds and returns it.
+# This permits benchmarks that add or subtract multiple times, or import times from a different
+# runner.
+def calculate_benchmark(_num_itrs_hint, benchmark_name: "values")
   times = []
   total_time = 0
   num_itrs = 0
 
   begin
-    time = Benchmark.realtime { yield }
+    time = yield
     num_itrs += 1
 
     # NOTE: we may want to avoid this as it could trigger GC?
@@ -39,18 +39,12 @@ def run_benchmark(_num_itrs_hint)
     total_time += time
   end until num_itrs >= WARMUP_ITRS + MIN_BENCH_ITRS and total_time >= MIN_BENCH_TIME
 
-  if RSS_CSV_PATH
-    # Collect our own peak mem usage as soon as reasonable after finishing the last iteration.
-    # This method is only accurate to kilobytes, but is nicely portable to Mac and Linux
-    # and doesn't require any extra gems/dependencies.
-    mem = `ps -o rss= -p #{Process.pid}`
-    peak_mem_bytes = 1024 * mem.to_i
-    File.write(RSS_CSV_PATH, peak_mem_bytes.to_s)
-    puts "RSS: %.1fMiB" % (peak_mem_bytes / 1024.0 / 1024.0)
-  end
+  # Collect our own peak mem usage as soon as reasonable after finishing the last iteration.
+  peak_mem_bytes = get_rss
+  return_results("#{benchmark_name}:rss", peak_mem_bytes)
+  puts "RSS: %.1fMiB" % (peak_mem_bytes / 1024.0 / 1024.0)
 
-  # Write each time value on its own line
-  File.write(OUT_CSV_PATH, "#{RUBY_DESCRIPTION}\n#{times.join("\n")}\n")
+  return_results(benchmark_name, times)
 
   non_warmups = times[WARMUP_ITRS..-1]
   if non_warmups.size > 1

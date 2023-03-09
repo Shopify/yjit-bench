@@ -144,15 +144,21 @@ def free_file_no(prefix)
 end
 
 def benchmark_category(name)
-  metadata = benchmarks_metadata.find { |benchmark, _metadata| benchmark == name }&.last || {}
+  metadata = benchmarks_metadata.find { |benchmark, metadata| benchmark == name || metadata["file"] == name}&.last || {}
   metadata.fetch('category', 'other')
+end
+
+def benchmark_file(name)
+  metadata = benchmarks_metadata.find { |benchmark, metadata| benchmark == name || metadata["file"] == name }&.last || {}
+  metadata["file"]
 end
 
 # Check if the name matches any of the names in a list of filters
 def match_filter(entry, categories:, name_filters:)
   name = entry.sub(/\.rb\z/, '')
-  (categories.empty? || categories.include?(benchmark_category(name))) &&
-    (name_filters.empty? || name_filters.include?(name))
+  cat_match = categories.empty? || categories.include?(benchmark_category(name))
+  name_match = name_filters.empty? || name_filters.include?(name) || name_filters.include?(benchmark_file(name))
+  cat_match && name_match
 end
 
 # Resolve the pre_init file path into a form that can be required
@@ -179,7 +185,12 @@ def expand_pre_init(path)
 end
 
 def benchmarks_metadata
-  @benchmarks_metadata ||= YAML.load_file('benchmarks.yml')
+  return @benchmarks_metadata if @benchmarks_metadata
+
+  @benchmarks_metadata = YAML.load_file('benchmarks.yml')
+  @benchmarks_metadata.each do |name, metadata|
+    metadata["file"] ||= name
+  end
 end
 
 def sort_benchmarks(bench_names)
@@ -218,11 +229,9 @@ def run_benchmarks(ruby:, ruby_description:, categories:, name_filters:, out_pat
     end
 
     # Set up the environment for the benchmarking command
-    ENV["OUT_CSV_PATH"] = File.join(out_path, 'temp.csv')
+    result_json_path = File.join(out_path, "temp#{Process.pid}.json")
+    ENV["RESULT_JSON_PATH"] = result_json_path
     ENV["WARMUP_ITRS"] = WARMUP_ITRS.to_s
-    if rss
-      ENV["RSS_CSV_PATH"] = File.join(out_path, 'rss.csv')
-    end
 
     # Set up the benchmarking command
     cmd = []
@@ -263,13 +272,20 @@ def run_benchmarks(ruby:, ruby_description:, categories:, name_filters:, out_pat
 
     # Read the benchmark data
     # Convert times to ms
-    ruby_description, *times = File.readlines(ENV["OUT_CSV_PATH"])
-    times = times.map { |v| 1000 * Float(v) }
-    bench_times[bench_name] = times
+    out_data = JSON.parse(File.read result_json_path)
+    File.unlink(result_json_path)
+    ruby_description = out_data.delete("RUBY_DESCRIPTION")
 
-    # Read the RSS data, converting bytes to MiB
-    if rss
-      bench_rss[bench_name] = File.read(ENV["RSS_CSV_PATH"]).to_i / 1024.0 / 1024.0
+    out_data.each do |name, value|
+      if name.end_with?(":rss")
+        bench_rss[name.delete_suffix(":rss")] = value.to_i / 1024.0 / 1024.0 if rss
+      else
+        # "Values" is a special-case name
+        name = bench_name if name == "values"
+
+        times = value.map { |v| 1000 * Float(v) }
+        bench_times[name] = times
+      end
     end
   end
 

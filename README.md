@@ -12,8 +12,8 @@ run, and writes timing values into an output file.
 
 The `run_benchmarks.rb` script (optional) traverses the `benchmarks` directory and
 runs the benchmarks in there. It reads the
-CSV file written by the benchmarking harness. The output is written to
-an output CSV file at the end, so that results can be easily viewed or
+output file written by the benchmarking harness. The output is written to
+multiple files at the end -- CSV, text and JSON -- so that results can be easily viewed or
 graphed in any spreadsheet editor.
 
 ## Installation
