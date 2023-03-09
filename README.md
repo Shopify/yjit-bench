@@ -48,21 +48,21 @@ This runs for a few minutes and produces a table like this in the console (resul
 ```
 -------------  -----------  ----------  ---------  ----------  -----------  ------------
 bench          interp (ms)  stddev (%)  yjit (ms)  stddev (%)  interp/yjit  yjit 1st itr
-30k_ifelse     2372.0       0.0         447.6      0.1         5.30         4.16        
-30k_methods    6328.3       0.0         963.4      0.0         6.57         6.25        
-activerecord   171.7        0.8         144.2      0.7         1.19         1.15        
-binarytrees    445.8        2.1         389.5      2.5         1.14         1.14        
-cfunc_itself   105.7        0.2         58.7       0.7         1.80         1.80        
-fannkuchredux  6697.3       0.1         6714.4     0.1         1.00         1.00        
-fib            245.3        0.1         77.1       0.4         3.18         3.19        
-getivar        97.3         0.9         44.3       0.6         2.19         0.98        
-lee            1269.7       0.9         1172.9     1.0         1.08         1.08        
-liquid-render  204.5        1.0         172.4      1.3         1.19         1.18        
-nbody          121.9        0.1         121.6      0.3         1.00         1.00        
-optcarrot      6260.2       0.5         4723.1     0.3         1.33         1.33        
-railsbench     3827.9       0.9         3581.3     1.3         1.07         1.05        
-respond_to     259.0        0.6         197.1      0.4         1.31         1.31        
-setivar        73.1         0.2         53.3       0.7         1.37         1.00        
+30k_ifelse     2372.0       0.0         447.6      0.1         5.30         4.16
+30k_methods    6328.3       0.0         963.4      0.0         6.57         6.25
+activerecord   171.7        0.8         144.2      0.7         1.19         1.15
+binarytrees    445.8        2.1         389.5      2.5         1.14         1.14
+cfunc_itself   105.7        0.2         58.7       0.7         1.80         1.80
+fannkuchredux  6697.3       0.1         6714.4     0.1         1.00         1.00
+fib            245.3        0.1         77.1       0.4         3.18         3.19
+getivar        97.3         0.9         44.3       0.6         2.19         0.98
+lee            1269.7       0.9         1172.9     1.0         1.08         1.08
+liquid-render  204.5        1.0         172.4      1.3         1.19         1.18
+nbody          121.9        0.1         121.6      0.3         1.00         1.00
+optcarrot      6260.2       0.5         4723.1     0.3         1.33         1.33
+railsbench     3827.9       0.9         3581.3     1.3         1.07         1.05
+respond_to     259.0        0.6         197.1      0.4         1.31         1.31
+setivar        73.1         0.2         53.3       0.7         1.37         1.00
 -------------  -----------  ----------  ---------  ----------  -----------  ------------
 ```
 
@@ -76,7 +76,13 @@ By default, `run_benchmarks.rb` runs all three [benchmark categories](./benchmar
 `--category headline,other,micro`. You can run only benchmarks with specific categories:
 
 ```
-./run_benchmarks.rb --category headline
+./run_benchmarks.rb --category micro
+```
+
+You can also only the headline benchmarks with the `--headline` option:
+
+```
+./run_benchmarks.rb --headline
 ```
 
 ### Specific benchmarks
