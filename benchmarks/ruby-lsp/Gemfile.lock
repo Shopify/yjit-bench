@@ -17,7 +17,7 @@ GEM
     parser (3.1.2.1)
       ast (~> 2.4.1)
     prettier_print (1.2.0)
-    rack (3.0.0)
+    rack (3.0.4.2)
     rainbow (3.1.1)
     regexp_parser (2.6.0)
     rexml (3.2.5)
