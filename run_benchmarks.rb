@@ -320,6 +320,10 @@ OptionParser.new do |opts|
     args.categories += v.split(",")
   end
 
+  opts.on("--headline", "when given, headline benchmarks will be run") do |v|
+    args.categories += ["headline"]
+  end
+
   opts.on("--name_filters=x,y,z", Array, "when given, only benchmarks with names that contain one of these strings will run") do |list|
     args.name_filters = list
   end
