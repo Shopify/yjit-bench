@@ -2,7 +2,15 @@ require_relative "../harness/harness-common"
 
 puts RUBY_DESCRIPTION
 
-def run_benchmark(_)
+# Takes a block as input. "values" is a special name-value that names the results after this benchmark.
+def run_benchmark(num_itrs_hint, benchmark_name: "values", &block)
+  calculate_benchmark(num_itrs_hint, benchmark_name:benchmark_name) { Benchmark.realtime { yield } }
+end
+
+# For calculate_benchmark, the block calculates a time value in fractional seconds and returns it.
+# This permits benchmarks that add or subtract multiple times, or import times from a different
+# runner.
+def calculate_benchmark(_, benchmark_name: "values")
   iterations = 1
   start_time = Process.clock_gettime(Process::CLOCK_MONOTONIC)
 

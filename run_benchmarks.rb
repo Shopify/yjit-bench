@@ -218,11 +218,9 @@ def run_benchmarks(ruby:, ruby_description:, categories:, name_filters:, out_pat
     end
 
     # Set up the environment for the benchmarking command
-    ENV["OUT_CSV_PATH"] = File.join(out_path, 'temp.csv')
+    result_json_path = File.join(out_path, "temp#{Process.pid}.json")
+    ENV["RESULT_JSON_PATH"] = result_json_path
     ENV["WARMUP_ITRS"] = WARMUP_ITRS.to_s
-    if rss
-      ENV["RSS_CSV_PATH"] = File.join(out_path, 'rss.csv')
-    end
 
     # Set up the benchmarking command
     cmd = []
@@ -263,13 +261,20 @@ def run_benchmarks(ruby:, ruby_description:, categories:, name_filters:, out_pat
 
     # Read the benchmark data
     # Convert times to ms
-    ruby_description, *times = File.readlines(ENV["OUT_CSV_PATH"])
-    times = times.map { |v| 1000 * Float(v) }
-    bench_times[bench_name] = times
+    out_data = JSON.parse(File.read result_json_path)
+    File.unlink(result_json_path)
+    ruby_description = out_data.delete("RUBY_DESCRIPTION")
 
-    # Read the RSS data, converting bytes to MiB
-    if rss
-      bench_rss[bench_name] = File.read(ENV["RSS_CSV_PATH"]).to_i / 1024.0 / 1024.0
+    out_data.each do |name, value|
+      if name.end_with?(":rss")
+        bench_rss[name.delete_suffix(":rss")] = value.to_i / 1024.0 / 1024.0 if rss
+      else
+        # "Values" is a special-case name
+        name = bench_name if name == "values"
+
+        times = value.map { |v| 1000 * Float(v) }
+        bench_times[name] = times
+      end
     end
   end
 

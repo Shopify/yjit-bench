@@ -8,9 +8,6 @@ MAX_TIME = Integer(ENV['MAX_TIME'] || 20 * 60)
 MAD_TARGET = Float(ENV['MAD_TARGET'] || 0.001)
 MAD_INCREASE_PER_ITER = Float(ENV['MAD_INCREASE_PER_ITER'] || 0.0001)
 
-default_path = "results-#{RUBY_ENGINE}-#{RUBY_ENGINE_VERSION}-#{Time.now.strftime('%F-%H%M%S')}.csv"
-OUT_CSV_PATH = File.expand_path(ENV.fetch('OUT_CSV_PATH', default_path))
-
 puts RUBY_DESCRIPTION
 
 def ms(seconds)
@@ -36,8 +33,15 @@ def print_stats(times, elapsed)
   puts "range: [#{ms(stats.min)}-#{ms(stats.max)}]ms"
 end
 
-# Takes a block as input
-def run_benchmark(num_itrs_hint)
+# Takes a block as input. "values" is a special name-value that names the results after this benchmark.
+def run_benchmark(num_itrs_hint, benchmark_name: "values", &block)
+  calculate_benchmark(num_itrs_hint, benchmark_name:benchmark_name) { Benchmark.realtime { yield } }
+end
+
+# For calculate_benchmark, the block calculates a time value in fractional seconds and returns it.
+# This permits benchmarks that add or subtract multiple times, or import times from a different
+# runner.
+def calculate_benchmark(num_itrs_hint, benchmark_name: "values")
   start = monotonic_time
   times = []
 
@@ -66,8 +70,7 @@ def run_benchmark(num_itrs_hint)
     end
   end until times.size >= MIN_ITERS and elapsed >= MIN_TIME and mad <= threshold
 
-  # Write each time value on its own line
-  File.write(OUT_CSV_PATH, "#{RUBY_DESCRIPTION}\n#{times.join("\n")}\n")
+  return_results(benchmark_name, times)
 
   print_stats(times, elapsed)
 end
