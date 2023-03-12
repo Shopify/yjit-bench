@@ -204,7 +204,7 @@ def sort_benchmarks(bench_names)
 end
 
 # Run all the benchmarks and record execution times
-def run_benchmarks(ruby:, ruby_description:, categories:, name_filters:, out_path:, pre_init:, rss:)
+def run_benchmarks(ruby:, ruby_description:, categories:, name_filters:, out_path:, harness:, pre_init:, rss:)
   bench_times = {}
   bench_rss = {}
 
@@ -249,7 +249,7 @@ def run_benchmarks(ruby:, ruby_description:, categories:, name_filters:, out_pat
 
     cmd += [
       *ruby,
-      "-I", "./harness",
+      "-I", harness,
       *pre_init,
       script_path,
     ].compact
@@ -290,6 +290,7 @@ end
 args = OpenStruct.new({
   executables: {},
   out_path: "./data",
+  harness: "harness",
   yjit_opts: "",
   categories: [],
   name_filters: [],
@@ -336,6 +337,10 @@ OptionParser.new do |opts|
 
   opts.on("--name_filters=x,y,z", Array, "when given, only benchmarks with names that contain one of these strings will run") do |list|
     args.name_filters = list
+  end
+
+  opts.on("--harness=HARNESS_DIR", "which harness to use") do |v|
+    args.harness = v
   end
 
   opts.on("--yjit_opts=OPT_STRING", "string of command-line options to run YJIT with (ignored if you use -e)") do |str|
@@ -396,6 +401,7 @@ args.executables.each do |name, executable|
     categories: args.categories,
     name_filters: args.name_filters,
     out_path: args.out_path,
+    harness: args.harness,
     pre_init: args.with_pre_init,
     rss: args.rss,
   )
