@@ -53,45 +53,57 @@ def check_output(*command)
   IO.popen(*command, &:read)
 end
 
-def set_bench_config()
-  # Only available on intel systems
-  if File.exist?('/sys/devices/system/cpu/intel_pstate')
-    # sudo requires the flag '-S' in order to take input from stdin
-    check_call("sudo -S sh -c 'echo 1 > /sys/devices/system/cpu/intel_pstate/no_turbo'")
-    check_call("sudo -S sh -c 'echo 100 > /sys/devices/system/cpu/intel_pstate/min_perf_pct'")
-  end
-end
-
 def have_yjit?(ruby)
   ruby_version = check_output("#{ruby} -v --yjit", err: File::NULL).strip
   ruby_version.downcase.include?("yjit")
 end
 
-def check_pstate()
-  # Only available on intel systems
-  if !File.exist?('/sys/devices/system/cpu/intel_pstate/no_turbo')
-    return
+def set_bench_config
+  if File.exist?('/sys/devices/system/cpu/intel_pstate') # Intel
+    # sudo requires the flag '-S' in order to take input from stdin
+    check_call("sudo -S sh -c 'echo 1 > /sys/devices/system/cpu/intel_pstate/no_turbo'")
+    check_call("sudo -S sh -c 'echo 100 > /sys/devices/system/cpu/intel_pstate/min_perf_pct'")
+  elsif File.exist?('/sys/devices/system/cpu/cpufreq/boost') # AMD
+    check_call("sudo -S sh -c 'echo 0 > /sys/devices/system/cpu/cpufreq/boost'") unless amd_no_boost?
+    check_call("sudo -S cpupower frequency-set -g performance") unless performance_governor?
   end
+end
 
-  File.open('/sys/devices/system/cpu/intel_pstate/no_turbo', mode='r') do |file|
-    if file.read.strip != '1'
+def check_pstate
+  if File.exist?('/sys/devices/system/cpu/intel_pstate') # Intel
+    if File.read('/sys/devices/system/cpu/intel_pstate/no_turbo').strip != '1'
       puts("You forgot to disable turbo:")
       puts("  sudo sh -c 'echo 1 > /sys/devices/system/cpu/intel_pstate/no_turbo'")
       exit(-1)
     end
-  end
 
-  if !File.exist?('/sys/devices/system/cpu/intel_pstate/min_perf_pct')
-    return
-  end
-
-  File.open('/sys/devices/system/cpu/intel_pstate/min_perf_pct', mode='r') do |file|
-    if file.read.strip != '100'
+    if File.read('/sys/devices/system/cpu/intel_pstate/min_perf_pct').strip != '100'
       puts("You forgot to set the min perf percentage to 100:")
       puts("  sudo sh -c 'echo 100 > /sys/devices/system/cpu/intel_pstate/min_perf_pct'")
       exit(-1)
     end
+  elsif File.exist?('/sys/devices/system/cpu/cpufreq/boost') # AMD
+    unless amd_no_boost?
+      puts("You forgot to disable boost:")
+      puts("  sudo sh -c 'echo 0 > /sys/devices/system/cpu/cpufreq/boost'")
+      exit(-1)
+    end
+
+    unless performance_governor?
+      puts("You forgot to set the performance governor:")
+      puts("  sudo cpupower frequency-set -g performance")
+      exit(-1)
+    end
   end
+end
+
+def amd_no_boost?
+  File.read('/sys/devices/system/cpu/cpufreq/boost').strip == '0'
+end
+
+def performance_governor?
+  frequency_info = check_output('cpupower frequency-info')
+  frequency_info.include?('The governor "performance" may decide which speed to use')
 end
 
 def table_to_str(table_data, format)
@@ -362,10 +374,10 @@ if args.executables.empty?
 end
 
 # Disable CPU frequency scaling
-set_bench_config()
+set_bench_config
 
 # Check pstate status
-check_pstate()
+check_pstate
 
 # Create the output directory
 FileUtils.mkdir_p(args.out_path)
@@ -395,7 +407,7 @@ bench_names = sort_benchmarks(bench_times.first.last.keys)
 
 bench_total_time = (bench_end_time - bench_start_time).to_i
 puts("Total time spent benchmarking: #{bench_total_time}s")
-puts()
+puts
 
 # Table for the data we've gathered
 base_name, *other_names = args.executables.keys
