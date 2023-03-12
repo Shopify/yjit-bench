@@ -1,3 +1,4 @@
+benchmarks/*/vendor/bundle
 data
 *.csv
 *.dump
