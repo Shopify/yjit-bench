@@ -1,7 +1,7 @@
-benchmarks/*/vendor/bundle
-data
+/benchmarks/*/vendor/bundle
+/data
 *.csv
 *.dump
 
 __pycache__
-benchmarks/discourse
+/benchmarks/discourse
