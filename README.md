@@ -156,6 +156,7 @@ You can find several test harnesses in this repository:
 * harness-bips - a harness that measures iterations/second until stable
 * harness-continuous - a harness that adjusts the batch sizes of iterations to run in stable iteration size batches
 * harness-stats - count method calls and loop iterations
+* harness-warmup - a harness which runs as long as needed to find warmed up (peak) performance
 
 To use it, run a benchmark script directly, specifying a harness directory with `-I`:
 
