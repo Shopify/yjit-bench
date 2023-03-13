@@ -1,5 +1,6 @@
 data
 *.csv
+*.dump
 
 __pycache__
 benchmarks/discourse
