@@ -1,39 +1,30 @@
 require 'harness'
 
 def foo
-  throw 'error'
+  yield
 end
 
-def foo1
-  foo
-end
-
-def foo2
-  foo1
-end
-
-def foo3
-  begin
-    foo2
-  rescue => err
-    err
-  end
+# This generates the throw instruction to exit from the block
+# Usage based on what was seen in liquid:
+# https://github.com/Shopify/liquid/blob/48cb643c026557f48e524dfd39cc9ff90aa3db95/lib/liquid/context.rb#L247
+def bar
+  foo { return 1 }
 end
 
 run_benchmark(50) do
   i = 0
-  while i < 10_000
+  while i < 20_000
     # Call 10 times to reduce loop overhead
-    foo3
-    foo3
-    foo3
-    foo3
-    foo3
-    foo3
-    foo3
-    foo3
-    foo3
-    foo3
+    bar
+    bar
+    bar
+    bar
+    bar
+    bar
+    bar
+    bar
+    bar
+    bar
     i += 1
   end
 end
