@@ -98,3 +98,7 @@ str_concat:
   desc: str_concat tests the performance of string concatenation in multiple different encodings.
   category: micro
   single_file: true
+throw:
+  desc: microbenchmark for the throw instruction and stack unwinding.
+  category: micro
+  single_file: true
