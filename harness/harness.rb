@@ -39,18 +39,11 @@ def run_benchmark(_num_itrs_hint)
     total_time += time
   end until num_itrs >= WARMUP_ITRS + MIN_BENCH_ITRS and total_time >= MIN_BENCH_TIME
 
-  if RSS_CSV_PATH
-    # Collect our own peak mem usage as soon as reasonable after finishing the last iteration.
-    # This method is only accurate to kilobytes, but is nicely portable to Mac and Linux
-    # and doesn't require any extra gems/dependencies.
-    mem = `ps -o rss= -p #{Process.pid}`
-    peak_mem_bytes = 1024 * mem.to_i
-    File.write(RSS_CSV_PATH, peak_mem_bytes.to_s)
-    puts "RSS: %.1fMiB" % (peak_mem_bytes / 1024.0 / 1024.0)
-  end
+  # Collect our own peak mem usage as soon as reasonable after finishing the last iteration.
+  peak_mem_bytes = get_rss
+  puts "RSS: %.1fMiB" % (peak_mem_bytes / 1024.0 / 1024.0)
 
-  # Write each time value on its own line
-  File.write(OUT_CSV_PATH, "#{RUBY_DESCRIPTION}\n#{times.join("\n")}\n")
+  return_results("values" => times, "rss" => peak_mem_bytes)
 
   non_warmups = times[WARMUP_ITRS..-1]
   if non_warmups.size > 1

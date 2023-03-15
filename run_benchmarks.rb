@@ -230,11 +230,9 @@ def run_benchmarks(ruby:, ruby_description:, categories:, name_filters:, out_pat
     end
 
     # Set up the environment for the benchmarking command
-    ENV["OUT_CSV_PATH"] = File.join(out_path, 'temp.csv')
+    result_json_path = File.join(out_path, "temp#{Process.pid}.json")
+    ENV["RESULT_JSON_PATH"] = result_json_path
     ENV["WARMUP_ITRS"] = WARMUP_ITRS.to_s
-    if rss
-      ENV["RSS_CSV_PATH"] = File.join(out_path, 'rss.csv')
-    end
 
     # Set up the benchmarking command
     cmd = []
@@ -275,14 +273,14 @@ def run_benchmarks(ruby:, ruby_description:, categories:, name_filters:, out_pat
 
     # Read the benchmark data
     # Convert times to ms
-    ruby_description, *times = File.readlines(ENV["OUT_CSV_PATH"])
-    times = times.map { |v| 1000 * Float(v) }
-    bench_times[bench_name] = times
+    out_data = JSON.parse(File.read result_json_path)
+    File.unlink(result_json_path)
+    ruby_description = out_data["RUBY_DESCRIPTION"]
 
-    # Read the RSS data, converting bytes to MiB
     if rss
-      bench_rss[bench_name] = File.read(ENV["RSS_CSV_PATH"]).to_i / 1024.0 / 1024.0
+      bench_rss[bench_name] = out_data["rss"]
     end
+    bench_times[bench_name] = out_data["values"]
   end
 
   return bench_times, bench_rss
