@@ -120009,8 +120009,10 @@ end
 
 require 'harness'
 
+INTERNAL_ITRS = ENV.fetch("INTERNAL_ITRS", 2000).to_i
+
 run_benchmark(10) do
-  2000.times do
+  INTERNAL_ITRS.times do
     fun_l0_n0
     fun_l0_n1
     fun_l0_n2
