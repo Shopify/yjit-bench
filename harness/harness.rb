@@ -2,13 +2,13 @@ require 'benchmark'
 require_relative "./harness-common"
 
 # Warmup iterations
-WARMUP_ITRS = ENV.fetch('WARMUP_ITRS', 15).to_i
+WARMUP_ITRS = Integer(ENV.fetch('WARMUP_ITRS', 15))
 
 # Minimum number of benchmarking iterations
-MIN_BENCH_ITRS = ENV.fetch('MIN_BENCH_ITRS', 10).to_i
+MIN_BENCH_ITRS = Integer(ENV.fetch('MIN_BENCH_ITRS', 10))
 
 # Minimum benchmarking time in seconds
-MIN_BENCH_TIME = ENV.fetch('MIN_BENCH_TIME', 10).to_i
+MIN_BENCH_TIME = Integer(ENV.fetch('MIN_BENCH_TIME', 10))
 
 default_path = "data/results-#{RUBY_ENGINE}-#{RUBY_ENGINE_VERSION}-#{Time.now.strftime('%F-%H%M%S')}.csv"
 OUT_CSV_PATH = File.expand_path(ENV.fetch('OUT_CSV_PATH', default_path))

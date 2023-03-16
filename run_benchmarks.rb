@@ -12,7 +12,7 @@ require 'etc'
 require 'yaml'
 require_relative 'misc/stats'
 
-WARMUP_ITRS = ENV.fetch('WARMUP_ITRS', 15).to_i
+WARMUP_ITRS = Integer(ENV.fetch('WARMUP_ITRS', 15))
 
 # Check which OS we are running
 def os

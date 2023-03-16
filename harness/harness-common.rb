@@ -36,14 +36,14 @@ def get_rss
   mem_rollup_file = "/proc/#{Process.pid}/smaps_rollup"
   if File.exist?(mem_rollup_file)
     # First, grab a line like "62796 kB". Checking the Linux kernel source, Rss will always be in kB.
-    rss_desc = File.read(mem_rollup_file).lines.detect { |line| line.start_with?("Rss") }.split(":", 2)[1].strip
-    1024 * rss_desc.to_i
+    rss_desc = File.read(mem_rollup_file).lines.detect { |line| line.start_with?("Rss") }.split(":", 2)[1][/(\d+)/, 1]
+    1024 * Integer(rss_desc)
   else
     # Collect our own peak mem usage as soon as reasonable after finishing the last iteration.
     # This method is only accurate to kilobytes, but is nicely portable and doesn't require
     # any extra gems/dependencies.
     mem = `ps -o rss= -p #{Process.pid}`
-    1024 * mem.to_i
+    1024 * Integer(mem)
   end
 end
 
