@@ -341,6 +341,7 @@ OptionParser.new do |opts|
   end
 
   opts.on("--harness=HARNESS_DIR", "which harness to use") do |v|
+    v = "harness-#{v}" unless v.start_with?('harness')
     args.harness = v
   end
 
