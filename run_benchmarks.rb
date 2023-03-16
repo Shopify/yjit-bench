@@ -272,15 +272,16 @@ def run_benchmarks(ruby:, ruby_description:, categories:, name_filters:, out_pat
     check_call(cmd.shelljoin, env: env)
 
     # Read the benchmark data
-    # Convert times to ms
     out_data = JSON.parse(File.read result_json_path)
     File.unlink(result_json_path)
     ruby_description = out_data["RUBY_DESCRIPTION"]
 
     if rss
-      bench_rss[bench_name] = out_data["rss"]
+      # Convert RSS to MiB
+      bench_rss[bench_name] = out_data["rss"] / 1024.0 / 1024.0
     end
-    bench_times[bench_name] = out_data["values"]
+    # Convert times to ms
+    bench_times[bench_name] = out_data["values"].map { |v| 1000 * Float(v) }
   end
 
   return bench_times, bench_rss
