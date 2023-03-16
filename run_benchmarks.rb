@@ -471,8 +471,9 @@ file_no = free_file_no(args.out_path)
 out_json_path = File.join(args.out_path, "output_%03d.json" % file_no)
 File.open(out_json_path, "w") do |file|
   out_data = {
-    'metadata': ruby_descriptions,
+    metadata: ruby_descriptions,
   }
+  out_data[:rss] = bench_rss if args.rss
   out_data.merge!(bench_times)
   json_str = JSON.generate(out_data)
   file.write json_str
