@@ -12,7 +12,7 @@ require 'etc'
 require 'yaml'
 require_relative 'misc/stats'
 
-WARMUP_ITRS = ENV.fetch('WARMUP_ITRS', 15).to_i
+WARMUP_ITRS = Integer(ENV.fetch('WARMUP_ITRS', 15))
 
 # Check which OS we are running
 def os
@@ -204,7 +204,7 @@ def sort_benchmarks(bench_names)
 end
 
 # Run all the benchmarks and record execution times
-def run_benchmarks(ruby:, ruby_description:, categories:, name_filters:, out_path:, pre_init:, rss:)
+def run_benchmarks(ruby:, ruby_description:, categories:, name_filters:, out_path:, harness:, pre_init:, rss:)
   bench_times = {}
   bench_rss = {}
 
@@ -249,7 +249,7 @@ def run_benchmarks(ruby:, ruby_description:, categories:, name_filters:, out_pat
 
     cmd += [
       *ruby,
-      "-I", "./harness",
+      "-I", harness,
       *pre_init,
       script_path,
     ].compact
@@ -272,15 +272,16 @@ def run_benchmarks(ruby:, ruby_description:, categories:, name_filters:, out_pat
     check_call(cmd.shelljoin, env: env)
 
     # Read the benchmark data
-    # Convert times to ms
     out_data = JSON.parse(File.read result_json_path)
     File.unlink(result_json_path)
     ruby_description = out_data["RUBY_DESCRIPTION"]
 
     if rss
-      bench_rss[bench_name] = out_data["rss"]
+      # Convert RSS to MiB
+      bench_rss[bench_name] = out_data["rss"] / 1024.0 / 1024.0
     end
-    bench_times[bench_name] = out_data["values"]
+    # Convert times to ms
+    bench_times[bench_name] = out_data["values"].map { |v| 1000 * Float(v) }
   end
 
   return bench_times, bench_rss
@@ -290,6 +291,7 @@ end
 args = OpenStruct.new({
   executables: {},
   out_path: "./data",
+  harness: "harness",
   yjit_opts: "",
   categories: [],
   name_filters: [],
@@ -338,6 +340,11 @@ OptionParser.new do |opts|
     args.name_filters = list
   end
 
+  opts.on("--harness=HARNESS_DIR", "which harness to use") do |v|
+    v = "harness-#{v}" unless v.start_with?('harness')
+    args.harness = v
+  end
+
   opts.on("--yjit_opts=OPT_STRING", "string of command-line options to run YJIT with (ignored if you use -e)") do |str|
     args.yjit_opts=str
   end
@@ -347,7 +354,7 @@ OptionParser.new do |opts|
     args.with_pre_init = str
   end
 
-  opts.on("--rss", "measure RSS after benchmark iterations") do
+  opts.on("--rss", "show RSS in the output (measured after benchmark iterations)") do
     args.rss = true
   end
 
@@ -396,6 +403,7 @@ args.executables.each do |name, executable|
     categories: args.categories,
     name_filters: args.name_filters,
     out_path: args.out_path,
+    harness: args.harness,
     pre_init: args.with_pre_init,
     rss: args.rss,
   )
@@ -463,8 +471,9 @@ file_no = free_file_no(args.out_path)
 out_json_path = File.join(args.out_path, "output_%03d.json" % file_no)
 File.open(out_json_path, "w") do |file|
   out_data = {
-    'metadata': ruby_descriptions,
+    metadata: ruby_descriptions,
   }
+  out_data[:rss] = bench_rss if args.rss
   out_data.merge!(bench_times)
   json_str = JSON.generate(out_data)
   file.write json_str

@@ -240012,7 +240012,7 @@ end
 
 require 'harness'
 
-INTERNAL_ITRS = ENV.fetch("INTERNAL_ITRS", 600).to_i
+INTERNAL_ITRS = Integer(ENV.fetch("INTERNAL_ITRS", 600))
 
 run_benchmark(10) do
   INTERNAL_ITRS.times do

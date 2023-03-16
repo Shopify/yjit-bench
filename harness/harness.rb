@@ -2,13 +2,13 @@ require 'benchmark'
 require_relative "./harness-common"
 
 # Warmup iterations
-WARMUP_ITRS = ENV.fetch('WARMUP_ITRS', 15).to_i
+WARMUP_ITRS = Integer(ENV.fetch('WARMUP_ITRS', 15))
 
 # Minimum number of benchmarking iterations
-MIN_BENCH_ITRS = ENV.fetch('MIN_BENCH_ITRS', 10).to_i
+MIN_BENCH_ITRS = Integer(ENV.fetch('MIN_BENCH_ITRS', 10))
 
 # Minimum benchmarking time in seconds
-MIN_BENCH_TIME = ENV.fetch('MIN_BENCH_TIME', 10).to_i
+MIN_BENCH_TIME = Integer(ENV.fetch('MIN_BENCH_TIME', 10))
 
 default_path = "data/results-#{RUBY_ENGINE}-#{RUBY_ENGINE_VERSION}-#{Time.now.strftime('%F-%H%M%S')}.csv"
 OUT_CSV_PATH = File.expand_path(ENV.fetch('OUT_CSV_PATH', default_path))
@@ -39,11 +39,7 @@ def run_benchmark(_num_itrs_hint)
     total_time += time
   end until num_itrs >= WARMUP_ITRS + MIN_BENCH_ITRS and total_time >= MIN_BENCH_TIME
 
-  # Collect our own peak mem usage as soon as reasonable after finishing the last iteration.
-  peak_mem_bytes = get_rss
-  puts "RSS: %.1fMiB" % (peak_mem_bytes / 1024.0 / 1024.0)
-
-  return_results("values" => times, "rss" => peak_mem_bytes)
+  return_results(times)
 
   non_warmups = times[WARMUP_ITRS..-1]
   if non_warmups.size > 1
