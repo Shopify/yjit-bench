@@ -39,11 +39,7 @@ def run_benchmark(_num_itrs_hint)
     total_time += time
   end until num_itrs >= WARMUP_ITRS + MIN_BENCH_ITRS and total_time >= MIN_BENCH_TIME
 
-  # Collect our own peak mem usage as soon as reasonable after finishing the last iteration.
-  peak_mem_bytes = get_rss
-  puts "RSS: %.1fMiB" % (peak_mem_bytes / 1024.0 / 1024.0)
-
-  return_results("values" => times, "rss" => peak_mem_bytes)
+  return_results(times)
 
   non_warmups = times[WARMUP_ITRS..-1]
   if non_warmups.size > 1

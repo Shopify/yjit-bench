@@ -52,12 +52,20 @@ default_path = "data/results-#{RUBY_ENGINE}-#{RUBY_ENGINE_VERSION}-#{Time.now.st
 yb_env_var = ENV.fetch("RESULT_JSON_PATH", default_path)
 YB_OUTPUT_FILE = File.expand_path yb_env_var
 
-def return_results(data)
+def return_results(times)
+  # Collect our own peak mem usage as soon as reasonable after finishing the last iteration.
+  peak_mem_bytes = get_rss
+  puts "RSS: %.1fMiB" % (peak_mem_bytes / 1024.0 / 1024.0)
+
   require "json"
   out_path = YB_OUTPUT_FILE
   system('mkdir', '-p', File.dirname(out_path))
 
-  yjit_bench_results = { "RUBY_DESCRIPTION" => RUBY_DESCRIPTION }.merge(data)
+  yjit_bench_results = {
+    "RUBY_DESCRIPTION" => RUBY_DESCRIPTION,
+    "values" => times,
+    "rss" => peak_mem_bytes
+  }
 
   # Using default path? Print where we put it.
   puts "Writing file #{out_path}" unless ENV["RESULT_JSON_PATH"]
