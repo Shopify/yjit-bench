@@ -354,7 +354,7 @@ OptionParser.new do |opts|
     args.with_pre_init = str
   end
 
-  opts.on("--rss", "measure RSS after benchmark iterations") do
+  opts.on("--rss", "show RSS in the output (measured after benchmark iterations)") do
     args.rss = true
   end
 
