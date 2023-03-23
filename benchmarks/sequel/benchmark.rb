@@ -46,20 +46,21 @@ class Post < Sequel::Model
 end
 
 10000.times {
-  Post.create(title: Random.alphanumeric(30),
-              type_name: Random.alphanumeric(10),
-              key: Random.alphanumeric(10),
-              body: Random.alphanumeric(100),
-              upvotes: rand(30),
-              author_id: rand(30))
+  DB[:posts].insert(
+    title: Random.alphanumeric(30),
+    type_name: Random.alphanumeric(10),
+    key: Random.alphanumeric(10),
+    body: Random.alphanumeric(100),
+    upvotes: rand(30),
+    author_id: rand(30))
 }
 
 # heat any caches
-Post.where(id: 1).first.title
+Post[1].title
 
 run_benchmark(10) do
   1.upto(1000) do |i|
-    post = Post.where(id: i).first
+    post = Post[i]
     "#{post.title}\n#{post.body}" \
     "type: #{post.type_name}, votes: #{post.upvotes}, updated on: #{post.updated_at}"
   end
