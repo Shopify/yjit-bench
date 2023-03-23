@@ -46,13 +46,12 @@ class Post < Sequel::Model
 end
 
 10000.times {
-  DB[:posts].insert(
-    title: Random.alphanumeric(30),
-    type_name: Random.alphanumeric(10),
-    key: Random.alphanumeric(10),
-    body: Random.alphanumeric(100),
-    upvotes: rand(30),
-    author_id: rand(30))
+  Post.create(title: Random.alphanumeric(30),
+              type_name: Random.alphanumeric(10),
+              key: Random.alphanumeric(10),
+              body: Random.alphanumeric(100),
+              upvotes: rand(30),
+              author_id: rand(30))
 }
 
 # heat any caches
