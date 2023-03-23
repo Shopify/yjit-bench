@@ -94,6 +94,10 @@ setivar_object:
   desc: setivar_object tests the performance of setting instance variables to an object, to test write barrier speed.
   category: micro
   single_file: true
+setivar_young_object:
+  desc: setivar_object tests the performance of setting instance variables to an object, to test write barrier speed on young objects.
+  category: micro
+  single_file: true
 str_concat:
   desc: str_concat tests the performance of string concatenation in multiple different encodings.
   category: micro
