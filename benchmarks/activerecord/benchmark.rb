@@ -31,11 +31,11 @@ class Post < ActiveRecord::Base; end
 }
 
 # heat any caches
-Post.where(id: 1).first.title
+Post.find(1).title
 
 run_benchmark(10) do
   1.upto(1000) do |i|
-    post = Post.where(id: i).first
+    post = Post.find(i)
     "#{post.title}\n#{post.body}" \
     "type: #{post.type_name}, votes: #{post.upvotes}, updated on: #{post.updated_at}"
   end
