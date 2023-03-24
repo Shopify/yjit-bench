@@ -6,14 +6,6 @@ use_gemfile
 
 require "sequel"
 
-# Sequel with common plugins & extensions
-%i[
-  escaped_like
-  migration
-  sql_log_normalizer 
-  sqlite_json_ops
-].each { |name| Sequel.extension name }
-
 DB = Sequel.sqlite
 
 DB.create_table :posts do
@@ -28,18 +20,6 @@ DB.create_table :posts do
   DateTime :updated_at, default: Sequel::CURRENT_TIMESTAMP
 end
 
-%i[
-  association_dependencies
-  auto_validations
-  json_serializer
-  nested_attributes
-  prepared_statements
-  require_valid_schema
-  subclasses
-  validation_helpers
-].each { |name| Sequel::Model.plugin name }
-
-Sequel::Model.plugin :serialization, :json, :data
 Sequel::Model.plugin :timestamps, update_on_create: true 
 
 class Post < Sequel::Model 
