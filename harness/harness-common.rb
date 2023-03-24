@@ -57,18 +57,19 @@ def return_results(times)
   peak_mem_bytes = get_rss
   puts "RSS: %.1fMiB" % (peak_mem_bytes / 1024.0 / 1024.0)
 
-  require "json"
   out_path = YB_OUTPUT_FILE
   system('mkdir', '-p', File.dirname(out_path))
 
-  yjit_bench_results = {
-    "RUBY_DESCRIPTION" => RUBY_DESCRIPTION,
-    "values" => times,
-    "rss" => peak_mem_bytes
-  }
+  File.open(out_path, 'w') do |io|
+    io.puts '{'
+    io.puts %Q{  "RUBY_DESCRIPTION": #{RUBY_DESCRIPTION.dump},}
+    io.puts '  "values": ['
+    io.puts "    " + times.join(",\n    ")
+    io.puts '  ],'
+    io.puts %Q{  "rss": #{peak_mem_bytes}}
+    io.write '}'
+  end
 
   # Using default path? Print where we put it.
   puts "Writing file #{out_path}" unless ENV["RESULT_JSON_PATH"]
-
-  File.write(out_path, JSON.pretty_generate(yjit_bench_results))
 end
