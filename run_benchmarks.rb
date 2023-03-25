@@ -102,8 +102,9 @@ def amd_no_boost?
 end
 
 def performance_governor?
-  frequency_info = check_output('cpupower frequency-info')
-  frequency_info.include?('The governor "performance" may decide which speed to use')
+  Dir.glob('/sys/devices/system/cpu/cpu*/cpufreq/scaling_governor').all? do |governor|
+    File.read(governor).strip == 'performance'
+  end
 end
 
 def table_to_str(table_data, format)
