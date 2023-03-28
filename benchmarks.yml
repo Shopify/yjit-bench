@@ -94,7 +94,7 @@ setivar_object:
   desc: setivar_object tests the performance of setting instance variables to an object, to test write barrier speed.
   category: micro
   single_file: true
-setivar_young_object:
+setivar_young:
   desc: setivar_object tests the performance of setting instance variables to an object, to test write barrier speed on young objects.
   category: micro
   single_file: true
