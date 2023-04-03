@@ -141,6 +141,6 @@ end
 
 # Public domain football data taken from:
 # https://github.com/openfootball/football.json/blob/master/2011-12/at.1.json
-source = IO.read("benchmarks/ruby-json/data.json")
+source = IO.read("#{__dir__}/data.json")
 
 run_benchmark(50) { 1000.times { JSONParser.new(source).parse } }
