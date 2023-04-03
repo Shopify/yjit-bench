@@ -6,7 +6,11 @@ use_gemfile
 
 require "sequel"
 
-DB = Sequel.sqlite
+if RUBY_ENGINE == "jruby"
+  DB = Sequel.connect("jdbc:sqlite:") # Can add :memory: afterward for mem DB
+else
+  DB = Sequel.sqlite
+end
 
 DB.create_table :posts do
   primary_key :id
