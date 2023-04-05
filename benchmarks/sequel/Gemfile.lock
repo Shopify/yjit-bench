@@ -12,6 +12,7 @@ PLATFORMS
   x86_64-linux
 
 DEPENDENCIES
+  jdbc-sqlite3 (~> 3.32.3)
   sequel (~> 5.63)
   sqlite3 (~> 1.4)
 
