@@ -10,8 +10,11 @@ erubi_rails:
 hexapdf:
   desc: hexapdf benchmarks the hexapdf Ruby gem by line-wrapping The Odyssey with specific line-length and font.
   category: headline
+liquid-compile:
+  desc: compiles a chosen-for-profiling Liquid theme repeatedly.
+  category: headline
 liquid-render:
-  desc: liquid-render renders a chosen-for-profiling Liquid theme repeatedly.
+  desc: renders a chosen-for-profiling Liquid theme repeatedly.
   category: headline
 mail:
   desc: mail tests the Mail gem by repeatedly creating an email from a text file and converting it to a string for sending.
