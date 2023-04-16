@@ -7,7 +7,7 @@ use_gemfile
 require "sequel"
 
 if RUBY_ENGINE == "jruby"
-  DB = Sequel.connect("jdbc:sqlite:") # Can add :memory: afterward for mem DB
+  DB = Sequel.connect("jdbc:sqlite::memory:")
 else
   DB = Sequel.sqlite
 end
