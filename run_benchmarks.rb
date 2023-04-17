@@ -433,11 +433,11 @@ other_names.each do |name|
   end
 end
 other_names.each do |name|
-  table[0] += ["#{base_name}/#{name}"]
+  table[0] += ["#{name} 1st itr"]
   format   += ["%.2f"]
 end
 other_names.each do |name|
-  table[0] += ["#{name} 1st itr"]
+  table[0] += ["#{base_name}/#{name}"]
   format   += ["%.2f"]
 end
 
@@ -460,7 +460,7 @@ bench_names.each do |bench_name|
     row += [mean(other_t), 100 * stddev(other_t) / mean(other_t), other_rss]
   end
 
-  row += ratios + ratio_1sts
+  row += ratio_1sts + ratios
 
   table.append(row.compact)
 end
@@ -506,8 +506,8 @@ output_str += table_to_str(table, format) + "\n"
 unless other_names.empty?
   output_str << "Legend:\n"
   other_names.each do |name|
-    output_str << "- #{base_name}/#{name}: ratio of #{base_name}/#{name} time. Higher is better for #{name}. Above 1 represents a speedup.\n"
     output_str << "- #{name} 1st itr: ratio of #{base_name}/#{name} time for the first benchmarking iteration.\n"
+    output_str << "- #{base_name}/#{name}: ratio of #{base_name}/#{name} time. Higher is better for #{name}. Above 1 represents a speedup.\n"
   end
 end
 out_txt_path = File.join(args.out_path, "output_%03d.txt" % file_no)
