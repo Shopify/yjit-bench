@@ -37,7 +37,7 @@ def render_graph(csv_path, png_path, title_font_size: 16.0, legend_font_size: 12
   rubies.drop(1).each_with_index do |ruby, index|
     speedup = table.drop(1).map do |row|
       num_rests = rubies.size - 1
-      row.last(num_rests * 2).first(num_rests)[index]
+      row.last(num_rests)[index]
     end
     g.data ruby, speedup.map(&:to_f)
   end
