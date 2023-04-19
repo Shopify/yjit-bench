@@ -236,7 +236,7 @@ Usage: misc/graph.rb [options] CSV_PATH
 
 ## Disabling CPU Frequency Scaling
 
-To disable CPU frequency scaling on an AWS instance with an Intel CPU, edit `/etc/default/grub.d/50-cloudimg-settings.cfg` and add `intel_pstate=no_hwp` to `GRUB_CMDLINE_LINUX_DEFAULT`. It’s a space-separated list.
+To disable CPU frequency scaling with an Intel CPU, edit `/etc/default/grub` or `/etc/default/grub.d/50-cloudimg-settings.cfg` and add `intel_pstate=no_hwp` to `GRUB_CMDLINE_LINUX_DEFAULT`. It’s a space-separated list.
 
 Then:
 ```bash
@@ -251,5 +251,4 @@ To verify things worked:
  - `cat /sys/devices/system/cpu/intel_pstate/no_turbo` should say `1`
 
 Helpful docs:
- - https://01.org/linuxgraphics/gfx-docs/drm/admin-guide/pm/intel_pstate.html
  - https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/processor_state_control.html#baseline-perf
