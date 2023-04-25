@@ -205,7 +205,7 @@ def sort_benchmarks(bench_names)
 end
 
 # Run all the benchmarks and record execution times
-def run_benchmarks(ruby:, ruby_description:, categories:, name_filters:, out_path:, harness:, pre_init:, rss:)
+def run_benchmarks(ruby:, ruby_description:, categories:, name_filters:, out_path:, harness:, pre_init:, rss:, no_pinning:)
   bench_times = {}
   bench_rss = {}
 
@@ -243,7 +243,7 @@ def run_benchmarks(ruby:, ruby_description:, categories:, name_filters:, out_pat
 
       # Pin the process to one given core to improve caching and reduce variance on CRuby
       # Other Rubies need to use multiple cores, e.g., for JIT threads
-      if ruby_description.start_with?('ruby ')
+      if ruby_description.start_with?('ruby ') && !no_pinning
         cmd += ["taskset", "-c", "#{Etc.nprocessors - 1}"]
       end
     end
@@ -298,6 +298,7 @@ args = OpenStruct.new({
   name_filters: [],
   rss: false,
   graph: false,
+  no_pinninng: false,
 })
 
 OptionParser.new do |opts|
@@ -362,6 +363,10 @@ OptionParser.new do |opts|
   opts.on("--graph", "generate a graph image of benchmark results") do
     args.graph = true
   end
+
+  opts.on("--no-pinning", "don't pin ruby to a specific CPU core") do
+    args.no_pinning = true
+  end
 end.parse!
 
 # Remaining arguments are treated as benchmark name filters
@@ -407,6 +412,7 @@ args.executables.each do |name, executable|
     harness: args.harness,
     pre_init: args.with_pre_init,
     rss: args.rss,
+    no_pinning: args.no_pinning
   )
 end
 bench_end_time = Time.now.to_f
