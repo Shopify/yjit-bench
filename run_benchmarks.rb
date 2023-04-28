@@ -208,6 +208,7 @@ end
 def run_benchmarks(ruby:, ruby_description:, categories:, name_filters:, out_path:, harness:, pre_init:, rss:, no_pinning:)
   bench_times = {}
   bench_rss = {}
+  bench_data = {}
 
   # Get the list of benchmark files/directories matching name filters
   bench_files = Dir.children('benchmarks').sort.filter do |entry|
@@ -281,11 +282,14 @@ def run_benchmarks(ruby:, ruby_description:, categories:, name_filters:, out_pat
       # Convert RSS to MiB
       bench_rss[bench_name] = out_data["rss"] / 1024.0 / 1024.0
     end
+
     # Convert times to ms
     bench_times[bench_name] = out_data["values"].map { |v| 1000 * Float(v) }
+
+    bench_data[bench_name] = out_data
   end
 
-  return bench_times, bench_rss
+  return bench_times, bench_rss, bench_data
 end
 
 # Default values for command-line arguments
@@ -402,8 +406,9 @@ end
 bench_start_time = Time.now.to_f
 bench_times = {}
 bench_rss = {}
+bench_data = {}
 args.executables.each do |name, executable|
-  bench_times[name], bench_rss[name] = run_benchmarks(
+  bench_times[name], bench_rss[name], bench_data[name] = run_benchmarks(
     ruby: executable,
     ruby_description: ruby_descriptions[name],
     categories: args.categories,
@@ -481,6 +486,7 @@ File.open(out_json_path, "w") do |file|
     metadata: ruby_descriptions,
   }
   out_data[:rss] = bench_rss if args.rss
+  out_data[:raw_data] = bench_data
   out_data.merge!(bench_times)
   json_str = JSON.generate(out_data)
   file.write json_str
