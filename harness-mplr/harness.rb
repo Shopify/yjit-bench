@@ -26,5 +26,5 @@ def run_benchmark(_num_itrs_hint)
     total_time += time
   end until num_itrs >= MAX_BENCH_ITRS || total_time >= MAX_BENCH_SECONDS
 
-  return_results(times)
+  return_results([], times)
 end

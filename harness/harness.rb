@@ -39,7 +39,8 @@ def run_benchmark(_num_itrs_hint)
     total_time += time
   end until num_itrs >= WARMUP_ITRS + MIN_BENCH_ITRS and total_time >= MIN_BENCH_TIME
 
-  return_results(times)
+  warmup, bench = times[0...WARMUP_ITRS], times[WARMUP_ITRS..-1]
+  return_results(warmup, bench)
 
   non_warmups = times[WARMUP_ITRS..-1]
   if non_warmups.size > 1
