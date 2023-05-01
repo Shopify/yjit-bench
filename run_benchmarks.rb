@@ -302,7 +302,7 @@ args = OpenStruct.new({
   name_filters: [],
   rss: false,
   graph: false,
-  no_pinninng: false,
+  no_pinning: false,
 })
 
 OptionParser.new do |opts|
