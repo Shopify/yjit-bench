@@ -12,8 +12,6 @@ gem 'activerecord-jdbcsqlite3-adapter', '~> 60.4', platform: :jruby
 # Use webrick for the web server since it's easy to install.
 # The web server is not used during the benchmark.
 gem 'webrick', '~> 1.7.0'
-# Use SCSS for stylesheets
-gem 'sass-rails', '>= 6'
 # Build JSON APIs with ease. Read more: https://github.com/rails/jbuilder
 # Needed in the benchmark for json responses
 gem 'jbuilder', '~> 2.7'
