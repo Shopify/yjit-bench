@@ -2,7 +2,7 @@ GEM
   remote: https://rubygems.org/
   specs:
     mini_portile2 (2.8.1)
-    sequel (5.64.0)
+    sequel (5.68.0)
     sqlite3 (1.5.4)
       mini_portile2 (~> 2.8.0)
 
