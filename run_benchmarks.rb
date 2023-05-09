@@ -249,6 +249,9 @@ def run_benchmarks(ruby:, ruby_description:, categories:, name_filters:, out_pat
       end
     end
 
+    # Fix for jruby/jruby#7394 in JRuby 9.4.2.0
+    script_path = File.expand_path(script_path)
+
     cmd += [
       *ruby,
       "-I", harness,
