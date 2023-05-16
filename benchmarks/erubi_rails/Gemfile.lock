@@ -234,4 +234,4 @@ DEPENDENCIES
   webpacker (~> 5.0)
 
 BUNDLED WITH
-   2.2.30
+   2.4.13
