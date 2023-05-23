@@ -494,6 +494,7 @@ File.open(out_json_path, "w") do |file|
   json_str = JSON.generate(out_data)
   file.write json_str
 end
+puts "Output: #{out_json_path}"
 
 # Save data as CSV so we can produce tables/graphs in a spreasheet program
 # NOTE: we don't do any number formatting for the output file because
@@ -527,6 +528,7 @@ unless other_names.empty?
 end
 out_txt_path = File.join(args.out_path, "output_%03d.txt" % file_no)
 File.open(out_txt_path, "w") { |f| f.write output_str }
+puts "Output: #{out_txt_path}"
 
 # Print the table to the console, with numbers truncated
 puts(output_str)
