@@ -47,6 +47,28 @@ def get_rss
   end
 end
 
+def get_maxrss
+  require 'fiddle'
+  require 'rbconfig/sizeof'
+
+  unless Fiddle::SIZEOF_LONG == 8 and RbConfig::CONFIG["host_os"] =~ /linux|darwin/
+    # The code below assumes 64-bit alignment and Linux or macOS
+    return 0
+  end
+
+  libc = Fiddle.dlopen(nil)
+  getrusage = Fiddle::Function.new(libc['getrusage'], [Fiddle::TYPE_INT, Fiddle::TYPE_VOIDP], Fiddle::TYPE_INT)
+
+  buffer = "\0".b * 1024 # more than enough, the actual struct is about 144 bytes
+  sizeof_timeval = RbConfig::SIZEOF['time_t'] + Fiddle::SIZEOF_LONG
+  offset = sizeof_timeval * 2
+  rusage_self = 0
+  result = getrusage.call(rusage_self, buffer)
+  raise unless result.zero?
+  maxrss_kb = buffer[offset, Fiddle::SIZEOF_LONG].unpack1('q')
+  1024 * maxrss_kb
+end
+
 # Do expand_path at require-time, not when returning results, before the benchmark is likely to chdir
 default_path = "data/results-#{RUBY_ENGINE}-#{RUBY_ENGINE_VERSION}-#{Time.now.strftime('%F-%H%M%S')}.json"
 yb_env_var = ENV.fetch("RESULT_JSON_PATH", default_path)
@@ -60,9 +82,12 @@ def return_results(warmup_iterations, bench_iterations)
   }
 
   # Collect our own peak mem usage as soon as reasonable after finishing the last iteration.
-  peak_mem_bytes = get_rss
-  puts "RSS: %.1fMiB" % (peak_mem_bytes / 1024.0 / 1024.0)
-  yjit_bench_results["rss"] = peak_mem_bytes
+  rss = get_rss
+  maxrss = get_maxrss
+  puts "RSS: %.1fMiB" % (rss / 1024.0 / 1024.0)
+  puts "MAXRSS: %.1fMiB" % (maxrss / 1024.0 / 1024.0)
+  yjit_bench_results["rss"] = rss
+  yjit_bench_results["maxrss"] = maxrss
 
   if defined?(RubyVM::YJIT) && RubyVM::YJIT.stats_enabled?
     yjit_bench_results["yjit_stats"] = RubyVM::YJIT.runtime_stats
