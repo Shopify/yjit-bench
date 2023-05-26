@@ -12,8 +12,6 @@ require 'etc'
 require 'yaml'
 require_relative 'misc/stats'
 
-WARMUP_ITRS = Integer(ENV.fetch('WARMUP_ITRS', 15))
-
 # Check which OS we are running
 def os
   @os ||= (
@@ -205,9 +203,7 @@ def sort_benchmarks(bench_names)
 end
 
 # Run all the benchmarks and record execution times
-def run_benchmarks(ruby:, ruby_description:, categories:, name_filters:, out_path:, harness:, pre_init:, rss:, no_pinning:)
-  bench_times = {}
-  bench_rss = {}
+def run_benchmarks(ruby:, ruby_description:, categories:, name_filters:, out_path:, harness:, pre_init:, no_pinning:)
   bench_data = {}
 
   # Get the list of benchmark files/directories matching name filters
@@ -234,7 +230,6 @@ def run_benchmarks(ruby:, ruby_description:, categories:, name_filters:, out_pat
     # Set up the environment for the benchmarking command
     result_json_path = File.join(out_path, "temp#{Process.pid}.json")
     ENV["RESULT_JSON_PATH"] = result_json_path
-    ENV["WARMUP_ITRS"] = WARMUP_ITRS.to_s
 
     # Set up the benchmarking command
     cmd = []
@@ -279,20 +274,11 @@ def run_benchmarks(ruby:, ruby_description:, categories:, name_filters:, out_pat
     # Read the benchmark data
     out_data = JSON.parse(File.read result_json_path)
     File.unlink(result_json_path)
-    ruby_description = out_data["RUBY_DESCRIPTION"]
-
-    if rss
-      # Convert RSS to MiB
-      bench_rss[bench_name] = out_data["rss"] / 1024.0 / 1024.0
-    end
-
-    # Convert times to ms
-    bench_times[bench_name] = out_data["values"].map { |v| 1000 * Float(v) }
 
     bench_data[bench_name] = out_data
   end
 
-  return bench_times, bench_rss, bench_data
+  bench_data
 end
 
 # Default values for command-line arguments
@@ -407,11 +393,9 @@ end
 
 # Benchmark with and without YJIT
 bench_start_time = Time.now.to_f
-bench_times = {}
-bench_rss = {}
 bench_data = {}
 args.executables.each do |name, executable|
-  bench_times[name], bench_rss[name], bench_data[name] = run_benchmarks(
+  bench_data[name] = run_benchmarks(
     ruby: executable,
     ruby_description: ruby_descriptions[name],
     categories: args.categories,
@@ -419,26 +403,22 @@ args.executables.each do |name, executable|
     out_path: args.out_path,
     harness: args.harness,
     pre_init: args.with_pre_init,
-    rss: args.rss,
     no_pinning: args.no_pinning
   )
 end
 bench_end_time = Time.now.to_f
-bench_names = sort_benchmarks(bench_times.first.last.keys)
+bench_names = sort_benchmarks(bench_data.first.last.keys)
 
 bench_total_time = (bench_end_time - bench_start_time).to_i
 puts("Total time spent benchmarking: #{bench_total_time}s")
 puts
 
 # Table for the data we've gathered
-base_name, *other_names = args.executables.keys
-table  = [["bench", "#{base_name} (ms)", "stddev (%)"]]
-format =  ["%s",    "%.1f",              "%.1f"]
-if args.rss
-  table[0] += ["RSS (MiB)"]
-  format   += ["%.1f"]
-end
-other_names.each do |name|
+all_names = args.executables.keys
+base_name, *other_names = all_names
+table  = [["bench"]]
+format = ["%s"]
+all_names.each do |name|
   table[0] += ["#{name} (ms)", "stddev (%)"]
   format   += ["%.1f",         "%.1f"]
   if args.rss
@@ -457,26 +437,27 @@ end
 
 # Format the results table
 bench_names.each do |bench_name|
-  other_ts = other_names.map { |other_name| bench_times[other_name][bench_name] }
-  other_rsss = other_names.map { |other_name| bench_rss[other_name][bench_name] }
-  base_t = bench_times[base_name][bench_name]
-  base_rss = bench_rss[base_name][bench_name]
+  t0s = all_names.map { |name| (bench_data[name][bench_name]['warmup'][0] || bench_data[name][bench_name]['bench'][0]) * 1000.0 }
+  times_no_warmup = all_names.map { |name| bench_data[name][bench_name]['bench'].map { |v| v * 1000.0 } }
+  rsss = all_names.map { |name| bench_data[name][bench_name]['rss'] / 1024.0 / 1024.0 }
 
-  other_t0s = other_ts.map { |other_t| other_t[0] }
-  other_ts = other_ts.map { |other_t| other_t[WARMUP_ITRS..] }
-  base_t0 = base_t[0]
-  base_t = base_t[WARMUP_ITRS..]
+  base_t0, *other_t0s = t0s
+  base_t, *other_ts = times_no_warmup
+  base_rss, *other_rsss = rsss
+
   ratio_1sts = other_t0s.map { |other_t0| base_t0 / other_t0 }
   ratios = other_ts.map { |other_t| mean(base_t) / mean(other_t) }
 
-  row = [bench_name, mean(base_t), 100 * stddev(base_t) / mean(base_t), base_rss]
+  row = [bench_name, mean(base_t), 100 * stddev(base_t) / mean(base_t)]
+  row << base_rss if args.rss
   other_ts.zip(other_rsss).each do |other_t, other_rss|
-    row += [mean(other_t), 100 * stddev(other_t) / mean(other_t), other_rss]
+    row += [mean(other_t), 100 * stddev(other_t) / mean(other_t)]
+    row << other_rss if args.rss
   end
 
   row += ratio_1sts + ratios
 
-  table.append(row.compact)
+  table << row
 end
 
 # Find a free file index for the output files
@@ -487,10 +468,8 @@ out_json_path = File.join(args.out_path, "output_%03d.json" % file_no)
 File.open(out_json_path, "w") do |file|
   out_data = {
     metadata: ruby_descriptions,
+    raw_data: bench_data,
   }
-  out_data[:rss] = bench_rss if args.rss
-  out_data[:raw_data] = bench_data
-  out_data.merge!(bench_times)
   json_str = JSON.generate(out_data)
   file.write json_str
 end
