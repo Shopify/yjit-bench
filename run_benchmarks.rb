@@ -324,7 +324,7 @@ OptionParser.new do |opts|
     args.out_path = v
   end
 
-  opts.on("--out-exact=OUT_FILE", "write exactly this output file plus file extension, ignoring directories, overwriting if necessaryß") do |v|
+  opts.on("--out-name=OUT_FILE", "write exactly this output file plus file extension, ignoring directories, overwriting if necessary") do |v|
     args.out_override = v
   end
 
