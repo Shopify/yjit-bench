@@ -147,7 +147,7 @@ end
 
 def free_file_no(prefix)
   (1..).each do |file_no|
-    out_path = File.join(prefix, "output_%03d.csv" % file_no)
+    out_path = File.join(prefix, "#{BASE_NAME}_%03d.csv" % file_no)
     if !File.exist?(out_path)
       return file_no
     end
@@ -285,6 +285,7 @@ end
 args = OpenStruct.new({
   executables: {},
   out_path: "./data",
+  base_name: "output",
   harness: "harness",
   yjit_opts: "",
   categories: [],
@@ -321,6 +322,10 @@ OptionParser.new do |opts|
 
   opts.on("--out_path=OUT_PATH", "directory where to store output data files") do |v|
     args.out_path = v
+  end
+
+  opts.on("--base_name=BASE_OUT_NAME", "base name for output data files") do |v|
+    args.base_name = v
   end
 
   opts.on("--category=headline,other,micro", "when given, only benchmarks with specified categories will run") do |v|
@@ -376,6 +381,9 @@ if args.executables.empty?
     args.executables["ruby"] = [RbConfig.ruby]
   end
 end
+
+# Set as a constant so it's globally visible
+BASE_NAME = args.base_name
 
 # Disable CPU frequency scaling
 set_bench_config
@@ -464,7 +472,7 @@ end
 file_no = free_file_no(args.out_path)
 
 # Save the raw data as JSON
-out_json_path = File.join(args.out_path, "output_%03d.json" % file_no)
+out_json_path = File.join(args.out_path, "#{BASE_NAME}_%03d.json" % file_no)
 File.open(out_json_path, "w") do |file|
   out_data = {
     metadata: ruby_descriptions,
@@ -483,7 +491,7 @@ ruby_descriptions.each do |key, value|
 end
 output_rows.append([])
 output_rows.concat(table)
-out_tbl_path = File.join(args.out_path, 'output_%03d.csv' % file_no)
+out_tbl_path = File.join(args.out_path, "#{BASE_NAME}_%03d.csv" % file_no)
 CSV.open(out_tbl_path, "wb") do |csv|
   output_rows.each do |row|
     csv << row
@@ -504,7 +512,7 @@ unless other_names.empty?
     output_str << "- #{base_name}/#{name}: ratio of #{base_name}/#{name} time. Higher is better for #{name}. Above 1 represents a speedup.\n"
   end
 end
-out_txt_path = File.join(args.out_path, "output_%03d.txt" % file_no)
+out_txt_path = File.join(args.out_path, "#{BASE_NAME}_%03d.txt" % file_no)
 File.open(out_txt_path, "w") { |f| f.write output_str }
 
 # Print the table to the console, with numbers truncated
@@ -516,7 +524,7 @@ puts "Output:"
 puts out_tbl_path
 if args.graph
   require_relative 'misc/graph'
-  out_graph_path = File.join(args.out_path, "output_%03d.png" % file_no)
+  out_graph_path = File.join(args.out_path, "#{BASE_NAME}_%03d.png" % file_no)
   render_graph(out_tbl_path, out_graph_path)
   puts out_graph_path
 end
