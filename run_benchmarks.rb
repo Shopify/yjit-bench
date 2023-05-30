@@ -285,6 +285,7 @@ end
 args = OpenStruct.new({
   executables: {},
   out_path: "./data",
+  out_override: nil,
   harness: "harness",
   yjit_opts: "",
   categories: [],
@@ -321,6 +322,10 @@ OptionParser.new do |opts|
 
   opts.on("--out_path=OUT_PATH", "directory where to store output data files") do |v|
     args.out_path = v
+  end
+
+  opts.on("--out-name=OUT_FILE", "write exactly this output file plus file extension, ignoring directories, overwriting if necessary") do |v|
+    args.out_override = v
   end
 
   opts.on("--category=headline,other,micro", "when given, only benchmarks with specified categories will run") do |v|
@@ -460,11 +465,17 @@ bench_names.each do |bench_name|
   table << row
 end
 
-# Find a free file index for the output files
-file_no = free_file_no(args.out_path)
+output_path = nil
+if args.out_override
+  output_path = args.out_override
+else
+  # If no out path is specified, find a free file index for the output files
+  file_no = free_file_no(args.out_path)
+  output_path = File.join(args.out_path, "output_%03d" % file_no)
+end
 
 # Save the raw data as JSON
-out_json_path = File.join(args.out_path, "output_%03d.json" % file_no)
+out_json_path = output_path + ".json"
 File.open(out_json_path, "w") do |file|
   out_data = {
     metadata: ruby_descriptions,
@@ -483,7 +494,7 @@ ruby_descriptions.each do |key, value|
 end
 output_rows.append([])
 output_rows.concat(table)
-out_tbl_path = File.join(args.out_path, 'output_%03d.csv' % file_no)
+out_tbl_path = output_path + ".csv"
 CSV.open(out_tbl_path, "wb") do |csv|
   output_rows.each do |row|
     csv << row
@@ -504,7 +515,7 @@ unless other_names.empty?
     output_str << "- #{base_name}/#{name}: ratio of #{base_name}/#{name} time. Higher is better for #{name}. Above 1 represents a speedup.\n"
   end
 end
-out_txt_path = File.join(args.out_path, "output_%03d.txt" % file_no)
+out_txt_path = output_path + ".txt"
 File.open(out_txt_path, "w") { |f| f.write output_str }
 
 # Print the table to the console, with numbers truncated
@@ -516,7 +527,7 @@ puts "Output:"
 puts out_tbl_path
 if args.graph
   require_relative 'misc/graph'
-  out_graph_path = File.join(args.out_path, "output_%03d.png" % file_no)
+  out_graph_path = output_path + ".png"
   render_graph(out_tbl_path, out_graph_path)
   puts out_graph_path
 end
