@@ -4,6 +4,9 @@
 activerecord:
   desc: activerecord repeatedly queries entries in a SQLite table with highly-random names.
   category: headline
+chunky_png:
+  desc: A pure-Ruby implementation of PNG encoding
+  category: headline
 erubi_rails:
   desc: erubi_rails uses Rails template rendering to repeatedly render a stubbed Discourse view.
   category: headline
@@ -40,8 +43,6 @@ liquid-c:
 #
 binarytrees:
   desc: binarytrees from the Computer Language Benchmarks Game.
-chunky_png:
-  desc: A pure-Ruby implementation of PNG encoding
 erubi:
   desc: erubi compiles a simple Erb template into a method with erubi, then times evaluating that method.
 etanni:
