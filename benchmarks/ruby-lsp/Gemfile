@@ -3,6 +3,8 @@
 source "https://rubygems.org"
 
 gem "ruby-lsp"
-gem "rubocop"
-gem "rubocop-performance"
-gem "rubocop-rails"
+group :development do
+  gem "rubocop"
+  gem "rubocop-performance"
+  gem "rubocop-rails"
+end
