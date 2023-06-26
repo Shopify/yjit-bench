@@ -4,11 +4,11 @@
 activerecord:
   desc: activerecord repeatedly queries entries in a SQLite table with highly-random names.
   category: headline
-chunky_png:
+chunky-png:
   desc: A pure-Ruby implementation of PNG encoding
   category: headline
-erubi_rails:
-  desc: erubi_rails uses Rails template rendering to repeatedly render a stubbed Discourse view.
+erubi-rails:
+  desc: Uses Rails template rendering to repeatedly render a stubbed Discourse view.
   category: headline
 hexapdf:
   desc: hexapdf benchmarks the hexapdf Ruby gem by line-wrapping The Odyssey with specific line-length and font.
