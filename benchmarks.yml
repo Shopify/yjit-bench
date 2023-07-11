@@ -57,7 +57,7 @@ nbody:
   desc: nbody from the Computer Language Benchmarks Game.
 optcarrot:
   desc: optcarrot is a functional headless NES emulator, run on a specific game cartridge for a specific number of frames.
-rack-framework:
+rack:
   desc: test the performance of the Rack framework with barely any routing.
 rubykon:
   desc: Ruby solver for Go (the boardgame.) Runs 1,000 iterations forward from an initial starting board.
