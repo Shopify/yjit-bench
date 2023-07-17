@@ -35,7 +35,7 @@ ActiveRecord::Schema[7.0].define(version: 2022_08_06_200248) do
     t.boolean "is_moderated", default: false
     t.boolean "is_from_email", default: false
     t.bigint "hat_id", unsigned: true
-    t.index ["comment"], name: "index_comments_on_comment", type: :fulltext
+    t.index ["comment"], name: "index_comments_on_comment"#, type: :fulltext
     t.index ["confidence"], name: "confidence_idx"
     t.index ["hat_id"], name: "comments_hat_id_fk"
     t.index ["parent_comment_id"], name: "comments_parent_comment_id_fk"
@@ -204,14 +204,14 @@ ActiveRecord::Schema[7.0].define(version: 2022_08_06_200248) do
     t.boolean "user_is_following", default: false, null: false
     t.bigint "domain_id"
     t.index ["created_at"], name: "index_stories_on_created_at"
-    t.index ["description"], name: "index_stories_on_description", type: :fulltext
+    t.index ["description"], name: "index_stories_on_description"#, type: :fulltext
     t.index ["domain_id"], name: "index_stories_on_domain_id"
     t.index ["hotness"], name: "hotness_idx"
     t.index ["id", "is_deleted"], name: "index_stories_on_id_and_is_deleted"
     t.index ["merged_story_id"], name: "index_stories_on_merged_story_id"
     t.index ["score"], name: "index_stories_on_score"
     t.index ["short_id"], name: "unique_short_id", unique: true
-    t.index ["title"], name: "index_stories_on_title", type: :fulltext
+    t.index ["title"], name: "index_stories_on_title"#, type: :fulltext
     t.index ["twitter_id"], name: "index_stories_on_twitter_id"
     t.index ["url"], name: "url", length: 191
     t.index ["user_id"], name: "index_stories_on_user_id"
@@ -220,7 +220,7 @@ ActiveRecord::Schema[7.0].define(version: 2022_08_06_200248) do
   create_table "story_texts", charset: "utf8mb4", force: :cascade do |t|
     t.text "body", size: :medium, null: false
     t.timestamp "created_at", default: -> { "current_timestamp() ON UPDATE current_timestamp()" }, null: false
-    t.index ["body"], name: "index_story_texts_on_body", type: :fulltext
+    t.index ["body"], name: "index_story_texts_on_body"#, type: :fulltext
   end
 
   create_table "suggested_taggings", id: { type: :bigint, unsigned: true }, charset: "utf8mb3", force: :cascade do |t|
