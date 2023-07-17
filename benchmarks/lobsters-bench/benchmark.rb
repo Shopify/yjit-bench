@@ -7,7 +7,7 @@ ENV['RAILS_ENV'] ||= 'production'
 # NOTE: added an srand to lib/tasks/fake_data to allow repeatable runs
 
 Dir.chdir __dir__
-use_gemfile extra_setup_cmd: "bin/rails db:drop db:migrate && bin/rails fake_data"
+use_gemfile extra_setup_cmd: "bin/rails db:drop db:create db:schema:load && bin/rails fake_data"
 
 require_relative 'config/environment'
 
