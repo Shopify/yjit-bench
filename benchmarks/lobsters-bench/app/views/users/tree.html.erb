@@ -1,0 +1,52 @@
+<div class="box wide">
+  <h1><%= @title %> (<%= number_with_delimiter(@user_count) %>)</h1>
+
+  <% if @newest %>
+    <p>
+    Newest users:
+    <%= raw @newest.map{|u| "<a href=\"##{u.username}\" class=\"" <<
+      (u.is_new?? "new_user" : "") << "\">#{u.username}</a> " <<
+      "(#{u.karma})" }.join(", ") %>
+    </p>
+  <% end %>
+
+  <ul class="tree user_tree noparent">
+
+    <% subtree = @users_by_parent[nil] %>
+    <% ancestors = [] %>
+
+    <% while subtree %>
+      <% if (user = subtree.pop) %>
+        <li class="<%= user.invited_by_user_id ? "" : "noparent" %>">
+          <a name="<%= user.username %>" href="/u/<%= user.username %>"
+            <% if !user.is_active? %>
+              class="inactive_user"
+            <% elsif user.is_new? %>
+              class="new_user"
+            <% end %>
+            ><%= user.username %></a>
+          <% if user.is_admin? %>
+            (administrator)
+          <% elsif user.is_moderator? %>
+            (moderator)
+          <% else %>
+            (<%= user.karma %>)
+          <% end %>
+          <% if (children = @users_by_parent[user.id]) %>
+            <% # drill down deeper in the tree %>
+            <% ancestors << subtree %>
+            <% subtree = children %>
+            <ul class="user_tree">
+          <% else %>
+            </li>
+          <% end %>
+      <% else %>
+        <% # climb back out %>
+        <% subtree = ancestors.pop %>
+        <% if subtree %>
+          </ul></li>
+        <% end %>
+      <% end %>
+    <% end %>
+  </ul>
+</div>

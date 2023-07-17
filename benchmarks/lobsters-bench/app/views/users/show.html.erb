@@ -1,0 +1,271 @@
+<%= render partial: 'users/flag_warning' if @showing_user == @user && @show_flag_warning %>
+
+<% content_for :subnav do %>
+  <% if @user && @showing_user.is_active? && @showing_user != @user %>
+    <a href="/messages?to=<%= @showing_user.username %>">Send a Message</a>
+  <% end %>
+<% end %>
+
+<div class="box wide">
+  <% if @showing_user.is_active? %>
+    <div id="gravatar">
+      <%= avatar_img(@showing_user, 100) %>
+    </div>
+  <% end %>
+
+  <label class="required">Status:</label>
+  <span class="d"
+  <%= @showing_user.is_banned? ? raw("style=\"color: red;\"") : "" %>>
+    <% if @showing_user.is_banned? %>
+      Banned user
+    <% elsif !@showing_user.is_active? %>
+      Inactive user
+    <% else %>
+      Active
+      <%= @showing_user.is_admin? ? "administrator" :
+        (@showing_user.is_moderator? ? "moderator" : "user") %>
+      <% if !@showing_user.can_invite? %>
+        with invites
+        <% if !@showing_user.can_submit_stories? %>
+          and story submissions
+        <% end %>
+        disabled
+      <% end %>
+    <% end %>
+  </span>
+  <br>
+
+  <label class="required">Joined:</label>
+  <span class="d">
+    <%= time_ago_in_words_label(@showing_user.created_at) %>
+    <% if @showing_user.invited_by_user %>
+      by <a href="/u#<%= @showing_user.username %>">invitation</a> from
+      <%= link_to @showing_user.invited_by_user.try(:username),
+        @showing_user.invited_by_user %>
+    <% end %>
+  </span>
+  <br>
+
+  <% if @showing_user.is_banned? %>
+    <label class="required">Banned:</label>
+    <span class="d">
+      <%= time_ago_in_words_label(@showing_user.banned_at) %>
+      <% if @showing_user.banned_by_user %>
+        by <%= link_to @showing_user.banned_by_user.try(:username),
+          @showing_user.banned_by_user %>:
+          <em><%= @showing_user.banned_reason %></em>
+      <% end %>
+    </span>
+    <br>
+  <% end %>
+
+  <% if @showing_user.deleted_at? %>
+    <label class="required">Left:</label>
+    <span class="d">
+      <%= time_ago_in_words_label(@showing_user.deleted_at) %>
+    </span>
+    <br>
+  <% end %>
+
+  <% if !@showing_user.is_admin? %>
+    <label class="required">Karma:</label>
+    <span class="d">
+      <%= @showing_user.karma %>, averaging <%=
+        number_with_precision(@showing_user.average_karma, :precision => 2) %>
+        per story/comment
+    </span>
+    <br>
+  <% end %>
+
+  <label class="required">Stories Submitted:</label>
+  <span class="d">
+    <%= stories_submitted_content(@showing_user) %>
+  </span>
+  <br>
+
+  <label class="required">Comments Posted:</label>
+  <span class="d"><%= comments_posted_content(@showing_user) %></span>
+  <br>
+
+  <% if @showing_user.hats.any? %>
+    <label class="required">Hats:</label>
+    <div class="d">
+    <% @showing_user.hats.each do |hat| %>
+      <%= hat.to_html_label %>
+      <% if hat.doffed_at? %>
+        doffed <%= time_ago_in_words_label(hat.doffed_at) %>
+      <% end %>
+      <br>
+    <% end %>
+    </div>
+    <div style="clear: both;"></div>
+  <% end %>
+
+  <% if @showing_user.homepage.present? %>
+    <label class="required">Homepage:</label>
+
+    <span class="d">
+      <a href="<%= h(@showing_user.homepage) %>"
+        rel="me ugc"><%= h(@showing_user.homepage) %></a>
+      <% if @showing_user.homepage.start_with?('gemini://') %>
+        (<a href="https://portal.mozz.us/gemini/<% h(@showing_user.homepage[9..-1]) %>">proxy</a>)
+      <% elsif @showing_user.homepage.start_with?('gopher://') %>
+        (<a href="https://gopher.floodgap.com/gopher/gw?<% h(@showing_user.homepage[9..-1]) %>">proxy</a>)
+      <% end %>
+    </span>
+    <br>
+  <% end %>
+
+  <% if @showing_user.github_username.present? %>
+    <label class="required">GitHub:</label>
+
+    <span class="d">
+      <a href="https://github.com/<%= h(@showing_user.github_username) %>"
+        rel="me ugc">https://github.com/<%= h(@showing_user.github_username)
+        %></a>
+    </span>
+    <br>
+  <% end %>
+
+  <% if @showing_user.twitter_username.present? %>
+    <label class="required">Twitter:</label>
+
+    <span class="d">
+      <a href="https://twitter.com/<%= h(@showing_user.twitter_username) %>"
+        rel="me ugc">@<%= h(@showing_user.twitter_username) %></a>
+    </span>
+    <br>
+  <% end %>
+
+  <% if Keybase.enabled? && @showing_user.keybase_signatures? %>
+    <label class="required">Keybase:</label>
+    <span class="d">
+      <%= render :partial => "keybase_proofs/proofs", locals: { user: @showing_user, for_self: false } %>
+    </span>
+    <br>
+  <% end %>
+
+  <% if @showing_user.is_active? %>
+    <label class="required">About:</label>
+
+    <div class="d shorten_first_p">
+      <% if @showing_user.about.present? %>
+        <%= raw @showing_user.linkified_about %>
+      <% else %>
+        <span class="na">A mystery...</span>
+      <% end %>
+      <br>
+    </div>
+  <% end %>
+
+  <% if @user && @user.is_moderator? && !@showing_user.is_moderator? %>
+    <h2>Moderator Information</h2>
+
+    <label class="required">Flagged (1m):</label>
+    <span class="d">
+      <% if (stats = FlaggedCommenters.new('1m').check_list_for(@showing_user)) %>
+        <a href="/mod/commenters/1m#<%= @showing_user.username %>">#<%= stats[:rank] %></a> at <%= '%.2f' % stats[:sigma] %> &sigma;
+      <% else %>
+        No
+      <% end %>
+    </span>
+    <br>
+
+    <label class="required">Self Promoter:</label>
+    <span class="d">
+      <% if @showing_user.is_heavy_self_promoter? %>
+        <strong>Yes</strong>
+      <% else %>
+        No
+      <% end %>
+    </span>
+    <br>
+
+    <label class="required">Last 10 Notes:</label>
+    <%= render partial: 'mod_notes/table', locals: {
+      mod_notes: ModNote.for(@showing_user).limit(10),
+    } %>
+    <%= form_with model: @mod_note, method: :post do |f| %>
+      <%= errors_for @mod_note %>
+      <%= f.hidden_field :username %>
+      <div class="boxline">
+        <%= f.label :note, "New Note:", :class => "required" %>
+        <%= f.text_area :note, :style => "width: 500px;", :rows => 5 %>
+      </div>
+      <div class="boxline"><p></p><%= f.submit "ModNote" %></div>
+    <% end %>
+
+    <label class="required">Last 10 Moderations:</label>
+    <%= render partial: 'moderations/table', locals: {
+      moderations: Moderation.for(@showing_user).order('id desc').limit(10),
+    } %>
+
+
+    <% if @user.is_admin? %>
+      <h3>Admin Information</h3>
+
+      <label class="required">E-Mail:</label>
+      <span class="d">
+        <%= @showing_user.email %>
+      </span>
+      <br>
+
+      <label class="required">Recent Votes:</label>
+      <table class="data zebra clear tall">
+        <% @showing_user.votes_for_others.limit(15).each do |v| %><tr>
+          <td><%= v.vote == 1 ? '+' : v.reason %></td>
+          <% if v.comment_id %>
+            <td><a href="/u/<%= v.comment.user.try(:username) %>"><%= v.comment.user.try(:username) %></a></td>
+            <td>
+              <%= v.story.title %>
+              <a href="<%= v.comment.short_id_url %>">comment</a>:<br>
+              <%= v.comment.comment.split[0..10].join(' ') %>
+            </td>
+          <% elsif v.story_id && !v.comment_id %>
+            <td><a href="/u/<%= v.story.user.try(:username) %>"><%= v.story.user.try(:username) %></a></td>
+            <td><a href="<%= v.story.short_id_url %>"><%= v.story.title %></a></td>
+          <% end %>
+          </p>
+        </tr><% end %>
+      </table>
+
+      <% if @showing_user.is_banned? || @showing_user.banned_from_inviting? %>
+        <%= form_with url: user_unban_path, method: :post do |f| %>
+          <p>
+            <% if @showing_user.is_banned? %>
+              <div class="boxline">
+                <%= f.label :reason, "Reason:", :class => "required" %>
+                <%= f.text_field :reason, :size => 40 %>
+              </div>
+              <%= f.submit "Unban" %>
+            <% end %>
+            <% if @showing_user.banned_from_inviting? %>
+              <%= f.submit "Enable Invites", formaction: user_enable_invite_path %>
+            <% end %>
+          </p>
+        <% end %>
+      <% end %>
+
+      <% if !@showing_user.is_banned? || !@showing_user.banned_from_inviting? %>
+        <p>
+          Banning or disabling invites for a user will send an e-mail to the user with the reason below,
+          with your e-mail address as the Reply-To so the user can respond.
+        </p>
+        <%= form_with url: user_ban_path, method: :post do |f| %>
+          <div class="boxline">
+            <%= f.label :reason, "Reason:", :class => "required" %>
+            <%= f.text_field :reason, :size => 40 %>
+          </div>
+          <p>
+            <% if !@showing_user.is_banned? %>
+              <%= f.submit "Ban", class: 'deletion' %>
+            <% end %>
+            <% if !@showing_user.banned_from_inviting? %>
+              <%= f.submit "Disable Invites", formaction: user_disable_invite_path %>
+            <% end %>
+          </p>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+</div>

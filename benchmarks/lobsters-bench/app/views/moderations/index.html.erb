@@ -1,0 +1,26 @@
+<div class="box wide">
+  <%= form_with url: moderations_path, method: :get do |f| %>
+    <label class="normal" for="moderator">Moderator:</label>
+    <%= f.select 'moderator', options_for_select(@moderators, @moderator) %>
+    <% @what.each do |type, checked| %>
+      <%= check_box_tag "what[#{type}]", type, checked %>
+      <label class="normal" for="what_<%= type %>"><%= type.to_s.titlecase %></label>
+    <% end %>
+
+    <input type="submit" value="Filter">
+  <% end %><br>
+
+  <%= render partial: 'table', locals: { moderations: @moderations } %>
+</div>
+
+<div class="morelink">
+  <% if @page > 1 %>
+    <%= link_to "<< Page #{@page - 1}", request.query_parameters.merge({:page => @page - 1}) %>
+  <% end %>
+  <% if @pages > 1 && @page < @pages %>
+    <% if @page > 1 %>
+      |
+    <% end %>
+    <%= link_to "Page #{@page + 1} >>", request.query_parameters.merge({:page => @page + 1}) %>
+  <% end %>
+</div>
