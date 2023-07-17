@@ -1,13 +1,14 @@
 require 'harness'
 
 ENV['RAILS_ENV'] ||= 'production'
+ENV['DISABLE_DATABASE_ENVIRONMENT_CHECK'] = '1' # Benchmarks don't really have 'production', so trash it at will.
 
 # TODO: how to handle repeated runs and re-seeding without full drop-and-recreate?
 
 # NOTE: added an srand to lib/tasks/fake_data to allow repeatable runs
 
 Dir.chdir __dir__
-use_gemfile extra_setup_cmd: "bin/rails db:drop db:create db:schema:load && bin/rails fake_data"
+use_gemfile extra_setup_cmd: "bin/rails db:drop db:create db:schema:load db:seed fake_data"
 
 require_relative 'config/environment'
 
