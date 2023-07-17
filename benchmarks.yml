@@ -19,6 +19,9 @@ liquid-compile:
 liquid-render:
   desc: renders a chosen-for-profiling Liquid theme repeatedly.
   category: headline
+lobsters:
+  desc: test a wide variety of routes in the Lobste.rs Rails app
+  category: headline
 mail:
   desc: mail tests the Mail gem by repeatedly creating an email from a text file and converting it to a string for sending.
   category: headline
