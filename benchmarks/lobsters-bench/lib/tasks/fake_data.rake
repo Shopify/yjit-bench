@@ -2,7 +2,7 @@ require 'faker'
 
 Kernel.srand 1337
 class FakeDataGenerator
-  def initialize(users_count = ENV.fetch('LOBSTERS_FAKE_USERS', 1000), stories_count = ENV.fetch('LOBSTERS_FAKE_STORIES', 10_000), categories_count = ENV.fetch('LOBSTERS_FAKE_CATEGORIES', 15))
+  def initialize(users_count = 1000, stories_count = 10_000, categories_count = 15)
     @users_count = users_count
     @stories_count = stories_count
     @categories_count = categories_count
@@ -285,10 +285,47 @@ task fake_data: :environment do
   #fail "Refusing to add fake-data to a non-development environment" unless Rails.env.development?
 
   record_count = User.count + Tag.count + Story.count + Comment.count
+  if record_count == 0 # didn't run db:seed
+    fail "Must run db:seed before fake_data"
+  end
   if record_count > 3 # more than would be created by db:seed
     warn "Database has #{record_count} records, are you sure you want to add more? [y to continue]"
     fail "Cancelled" if STDIN.gets.chomp != 'y'
   end
 
-  FakeDataGenerator.new.generate
+  data = (User.pluck(:email) + Story.pluck(:title) + Comment.pluck(:comment)).join()
+  current_sha = Digest::SHA2.hexdigest data
+  puts "SHA: #{current_sha.inspect}"
+  if current_sha == 'abcdefgh'
+    puts "Current quick check data matches SHA, not regenerating"
+  else
+    FakeDataGenerator.new.generate
+  end
+end
+
+desc 'Ensure we have benchmarking fake data with known SHA'
+task benchmark_fake_data: :environment do
+  unless File.exist?("db/#{Rails.env}.sqlite3")
+    puts "Creating #{Rails.env} database"
+    Rake::Task['db:create'].invoke
+    Rake::Task['db:schema_load'].invoke
+  end
+
+  # Model Ruby code is loaded - have to be careful modifying DB schema
+  record_count = User.count + Tag.count + Story.count + Comment.count
+  if record_count < 3 # didn't run db:seed yet
+    puts "Seeding #{Rails.env} database"
+    Rake::Task['db:seed'].invoke
+  end
+
+  # This is what figures into the SHA256. Add SavedStory and Vote? Others?
+  data = (User.pluck(:email) + Story.pluck(:title) + Comment.pluck(:comment)).join()
+
+  current_sha = Digest::SHA2.hexdigest data
+  puts "SHA: #{current_sha.inspect}"
+  if current_sha == "071d14d429adbc169922ad75a1cf0733aa8839711974ff3e6dd59214c24068e9"
+    puts "Current quick check data matches SHA, not regenerating"
+  else
+    FakeDataGenerator.new.generate(ENV.fetch('LOBSTERS_FAKE_USERS', '1000').to_i, ENV.fetch('LOBSTERS_FAKE_STORIES', '10_000').to_i, ENV.fetch('LOBSTERS_FAKE_CATEGORIES', '15').to_i)
+  end
 end

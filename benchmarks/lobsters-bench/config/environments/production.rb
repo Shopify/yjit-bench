@@ -92,6 +92,8 @@ Rails.application.configure do
   # Do not dump schema after migrations.
   config.active_record.dump_schema_after_migration = false
 
+  config.secret_key_base = 'in general secret should not be in the git repo but this is a benchmark'
+
   # cache full pages for logged-out visitors without tag filters
   config.action_controller.page_cache_directory = "#{Rails.root}/public/cache"
 

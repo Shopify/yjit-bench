@@ -154,7 +154,7 @@ class Story < ApplicationRecord
 
   validate do
     if self.url.present?
-      already_posted_recently?
+      #already_posted_recently? # Disable because it requires RLIKE, which SQLite doesn't support
       check_not_tracking_domain
       check_not_new_domain_from_new_user
       errors.add(:url, "is not valid") unless url.match(URL_RE)
