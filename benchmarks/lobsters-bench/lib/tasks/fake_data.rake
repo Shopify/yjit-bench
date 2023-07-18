@@ -293,39 +293,21 @@ task fake_data: :environment do
     fail "Cancelled" if STDIN.gets.chomp != 'y'
   end
 
-  data = (User.pluck(:email) + Story.pluck(:title) + Comment.pluck(:comment)).join()
-  current_sha = Digest::SHA2.hexdigest data
-  puts "SHA: #{current_sha.inspect}"
-  if current_sha == 'abcdefgh'
-    puts "Current quick check data matches SHA, not regenerating"
-  else
-    FakeDataGenerator.new.generate
-  end
+  FakeDataGenerator.new.generate
 end
 
-desc 'Ensure we have benchmarking fake data with known SHA'
+desc 'Generate benchmarking fake data - allow changing size of tables'
 task benchmark_fake_data: :environment do
-  unless File.exist?("db/#{Rails.env}.sqlite3")
-    puts "Creating #{Rails.env} database"
-    Rake::Task['db:create'].invoke
-    Rake::Task['db:schema_load'].invoke
-  end
+  puts "Creating #{Rails.env} database"
+  Rake::Task['db:drop'].invoke
+  Rake::Task['db:create'].invoke
+  Rake::Task['db:schema:load'].invoke
+  puts "Seeding #{Rails.env} database"
+  Rake::Task['db:seed'].invoke
 
-  # Model Ruby code is loaded - have to be careful modifying DB schema
-  record_count = User.count + Tag.count + Story.count + Comment.count
-  if record_count < 3 # didn't run db:seed yet
-    puts "Seeding #{Rails.env} database"
-    Rake::Task['db:seed'].invoke
-  end
-
-  # This is what figures into the SHA256. Add SavedStory and Vote? Others?
-  data = (User.pluck(:email) + Story.pluck(:title) + Comment.pluck(:comment)).join()
-
-  current_sha = Digest::SHA2.hexdigest data
-  puts "SHA: #{current_sha.inspect}"
-  if current_sha == "071d14d429adbc169922ad75a1cf0733aa8839711974ff3e6dd59214c24068e9"
-    puts "Current quick check data matches SHA, not regenerating"
-  else
-    FakeDataGenerator.new.generate(ENV.fetch('LOBSTERS_FAKE_USERS', '1000').to_i, ENV.fetch('LOBSTERS_FAKE_STORIES', '10_000').to_i, ENV.fetch('LOBSTERS_FAKE_CATEGORIES', '15').to_i)
-  end
+  gen = FakeDataGenerator.new(
+    ENV.fetch('LOBSTERS_FAKE_USERS', '1000').to_i,
+    ENV.fetch('LOBSTERS_FAKE_STORIES', '10_000').to_i,
+    ENV.fetch('LOBSTERS_FAKE_CATEGORIES', '15').to_i)
+  gen.generate
 end
