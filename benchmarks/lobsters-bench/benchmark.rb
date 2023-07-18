@@ -3,12 +3,11 @@ require 'harness'
 ENV['RAILS_ENV'] ||= 'production'
 ENV['DISABLE_DATABASE_ENVIRONMENT_CHECK'] = '1' # Benchmarks don't really have 'production', so trash it at will.
 
-# TODO: how to handle repeated runs and re-seeding without full drop-and-recreate?
-
 # NOTE: added an srand to lib/tasks/fake_data to allow repeatable runs
 
 Dir.chdir __dir__
-use_gemfile extra_setup_cmd: "bin/rails benchmark_fake_data"
+#use_gemfile extra_setup_cmd: "cp db/benchmark_production.sqlite3 db/production.sqlite3"
+use_gemfile extra_setup_cmd: "bin/rails db:drop db:create && sqlite3 db/production.sqlite3 < db/faked_bench_data.sql"
 
 require_relative 'config/environment'
 
@@ -16,25 +15,35 @@ app = Rails.application
 
 # TODO: touching a selection of 'random' routes first might better show megamorphism in call sites
 
-# Note: for now possible_routes is sampled uniformly for simplicity.
+# Do we need to distinguish between e.g. banned and non-banned users?
 
-possible_routes = []
-possible_routes += []
+# Can turn off caching by logging in, or by setting a tag-filter cookie (see application_controller.rb)
+
+ROUTE_GROUPS = [
+  { num: 200, routes: ["/u"] }, # Users tree, showing order of invitation - lots of view logic
+  { num: 1000, routes: ["/active", "/newest", "/recent"] }, # These all get cached but need rendering
+  { num: 1000, routes: [ "/newest/:user" ] }, # Since it's per user, we hit cache less
+]
+
 #possible_routes += ['/posts', '/posts.json']
 #possible_routes.concat((1..100).map { |i| "/posts/#{i}"})
 
-visit_count = 2000
 rng = Random.new(0x1be52551fc152997)
-# for now possible_routes is sampled uniformly for simplicity.
-visiting_routes = Array.new(visit_count) { possible_routes.sample(random: rng) }
+visiting_routes = []
+ROUTE_GROUPS.each do |group|
+  group[:num].times do
+    visiting_routes.concat group[:routes].sample(group[:num], random: rng)
+  end
+end
 
 run_benchmark(10) do
   visiting_routes.each do |path|
-    # The app mutates `env` when reading body, so we should create one every time.
-    env = Rack::MockRequest::env_for("http://localhost#{path}")
+    # The app mutates `env` when reading body, so we should create one each iter just in case.
+    env = Rack::MockRequest::env_for("https://localhost#{path}")
+    env["HTTP_COOKIE"] = "tag_filters=NOCACHE" # Verify that this turns off file cache properly
     response_array = app.call(env)
     unless response_array.first == 200
-      raise "HTTP response is #{response_array.first} instead of 200. Is the benchmark app properly set up? See README.md."
+      raise "HTTP status is #{response_array.first} instead of 200. Is the benchmark app properly set up? See README.md. / #{response_array.inspect}"
     end
   end
 end
