@@ -37,8 +37,8 @@ end
 # Can turn off caching by logging in, or by setting a tag-filter cookie (see application_controller.rb)
 
 ROUTE_GROUPS = [
-  { num: 1000, routes: ["/u"] }, # Users tree, showing order of invitation - lots of view logic
-  { num: 1000, routes: ["/active", "/newest", "/recent"] }, # These all get cached but need rendering
+  { num: 50, routes: ["/u"] }, # Users tree, showing order of invitation - lots of view logic
+  { num: 50, routes: ["/active", "/newest", "/recent"] },
 ]
 
 #possible_routes += ['/posts', '/posts.json']
