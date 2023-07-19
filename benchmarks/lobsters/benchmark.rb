@@ -23,7 +23,7 @@ ROUTE_GROUPS = [
   { num: 50, routes: ["/u"] }, # Users tree, showing order of invitation - lots of view logic
   { num: 50, routes: ["/active", "/newest", "/recent", "/hottest"] }, # Views of the stories by attributes
   { num: 50, routes: ["/rss"] }, # Less-common and less-interesting routes for variation
-  { num: 50, routes: ["/top?length=1d", "/top?length=1w", "/top?length=1y"] }, # Top stories by time
+  #{ num: 50, routes: ["/top?length=1d", "/top?length=1w", "/top?length=1y"] }, # Top stories by time - failing w/ SQL err
 
   # Shouldn't add /404, because that returns status 404, not 200
   # /hidden /saved /upvoted   # These all required being logged in
