@@ -13,6 +13,23 @@ require_relative 'config/environment'
 
 app = Rails.application
 
+if ENV['TRACK_AR_TIME']
+  ar_total_duration = 0.0
+  process_start_t = Time.now
+
+  # Track sql.active_record events
+  ActiveSupport::Notifications.subscribe "sql.active_record" do |name, started, finished, unique_id, data|
+    duration = finished - started
+    ar_total_duration += duration
+  end
+
+  at_exit do
+    process_duration = Time.now - process_start_t
+    ar_percent = ar_total_duration * 100.0 / process_duration
+    puts "ActiveRecord time: #{ar_total_duration.round(2)}s (#{ar_percent.round(2)}%) PID: #{Process.pid}"
+  end
+end
+
 # TODO: touching a selection of 'random' routes first might better show megamorphism in call sites
 
 # Do we need to distinguish between e.g. banned and non-banned users?
