@@ -37,9 +37,8 @@ end
 # Can turn off caching by logging in, or by setting a tag-filter cookie (see application_controller.rb)
 
 ROUTE_GROUPS = [
-  { num: 200, routes: ["/u"] }, # Users tree, showing order of invitation - lots of view logic
+  { num: 1000, routes: ["/u"] }, # Users tree, showing order of invitation - lots of view logic
   { num: 1000, routes: ["/active", "/newest", "/recent"] }, # These all get cached but need rendering
-  { num: 1000, routes: [ "/newest/:user" ] }, # Since it's per user, we hit cache less
 ]
 
 #possible_routes += ['/posts', '/posts.json']
@@ -49,7 +48,7 @@ rng = Random.new(0x1be52551fc152997)
 visiting_routes = []
 ROUTE_GROUPS.each do |group|
   group[:num].times do
-    visiting_routes.concat group[:routes].sample(group[:num], random: rng)
+    visiting_routes << group[:routes].sample(random: rng)
   end
 end
 
@@ -57,7 +56,7 @@ run_benchmark(10) do
   visiting_routes.each do |path|
     # The app mutates `env` when reading body, so we should create one each iter just in case.
     env = Rack::MockRequest::env_for("https://localhost#{path}")
-    env["HTTP_COOKIE"] = "tag_filters=NOCACHE" # Verify that this turns off file cache properly
+    env["HTTP_COOKIE"] = "tag_filters=NOCACHE" # turn off the file cache
     response_array = app.call(env)
     unless response_array.first == 200
       raise "HTTP status is #{response_array.first} instead of 200. Is the benchmark app properly set up? See README.md. / #{response_array.inspect}"
