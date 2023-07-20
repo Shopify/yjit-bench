@@ -3,27 +3,22 @@ require 'harness'
 ENV['RAILS_ENV'] ||= 'production'
 ENV['DISABLE_DATABASE_ENVIRONMENT_CHECK'] = '1' # Benchmarks don't really have 'production', so trash it at will.
 
-# NOTE: added an srand to lib/tasks/fake_data to allow repeatable runs
-
 Dir.chdir __dir__
-#use_gemfile extra_setup_cmd: "cp db/benchmark_production.sqlite3 db/production.sqlite3"
 use_gemfile extra_setup_cmd: "bin/rails db:drop db:create && sqlite3 db/production.sqlite3 < db/faked_bench_data.sql"
 
 require_relative 'config/environment'
 
 app = Rails.application
 
-# TODO: touching a selection of 'random' routes first might better show megamorphism in call sites
+# TODO: a wider variety of routes might better show megamorphism in call sites
 
 # Do we need to distinguish between e.g. banned and non-banned users?
-
-# Can turn off caching by logging in, or by setting a tag-filter cookie (see application_controller.rb)
 
 ROUTE_GROUPS = [
   { num: 50, routes: ["/u"] }, # Users tree, showing order of invitation - lots of view logic
   { num: 50, routes: ["/active", "/newest", "/recent", "/hottest"] }, # Views of the stories by attributes
   { num: 50, routes: ["/rss"] }, # Less-common and less-interesting routes for variation
-  #{ num: 50, routes: ["/top?length=1d", "/top?length=1w", "/top?length=1y"] }, # Top stories by time - failing w/ SQL err
+  { num: 50, routes: ["/top?length=1d", "/top?length=1w", "/top?length=1y"] }, # Top stories by time
 
   # Shouldn't add /404, because that returns status 404, not 200
   # /hidden /saved /upvoted   # These all required being logged in
