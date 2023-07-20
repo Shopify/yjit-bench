@@ -21,6 +21,8 @@ ROUTE_GROUPS = [
   { num: 50, routes: ["/top?length=1d", "/top?length=1w", "/top?length=1y"] }, # Top stories by time
 
   # Shouldn't add /404, because that returns status 404, not 200
+  # The moderators controller isn't high-traffic, plus it has various SQL time code that needs porting - skip it
+
   # /hidden /saved /upvoted   # These all required being logged in
 ]
 
