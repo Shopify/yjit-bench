@@ -1,5 +1,6 @@
 require 'benchmark'
 require_relative "./harness-common"
+require 'stackprof'
 
 # Warmup iterations
 WARMUP_ITRS = Integer(ENV.fetch('WARMUP_ITRS', 15))
@@ -37,7 +38,15 @@ def run_benchmark(_num_itrs_hint)
     # We internally save the time in seconds to avoid loss of precision
     times << time
     total_time += time
+
+    if num_itrs == WARMUP_ITRS
+      puts "Starting profiling"
+      StackProf.start(mode: :wall, raw: true)
+    end
   end until num_itrs >= WARMUP_ITRS + MIN_BENCH_ITRS and total_time >= MIN_BENCH_TIME
+
+  StackProf.stop
+  StackProf.results('/tmp/lobsters-wall.marshal')
 
   warmup, bench = times[0...WARMUP_ITRS], times[WARMUP_ITRS..-1]
   return_results(warmup, bench)
