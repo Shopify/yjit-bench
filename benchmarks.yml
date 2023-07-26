@@ -49,6 +49,8 @@ etanni:
   desc: etanni is an older, extremely simple template-lang format that basically turns your template into an "eval" with a lot of heredocs.
 fannkuchredux:
   desc: fannkuchredux from the Computer Language Benchmarks Game.
+fluentd:
+  desc: fluentd is a log collector, which parses logs in a server and forwards them to various destinations.
 ruby-json:
   desc: an optimized version of the json_pure gem's pure Ruby JSON parser.
 lee:
