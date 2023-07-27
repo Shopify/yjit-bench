@@ -9,9 +9,16 @@ require 'fluent/engine'
 require 'fluent/parser'
 
 # Prepare a fixture
-ltsv = 1000000.times.map do
-  "time:2022-08-07 07:38:31,842	module:main.py	level:DEBUG	message:No kernel command line url found.\n"
-end.join
+time = Time.new(2023, 7, 27, 9, 00, 00)
+errors = [
+  "Skipping user-data validation. No user-data found.",
+  "Python version change detected. Purging cache",
+  "No instance datasource found.",
+  "No kernel command line url found.",
+  "No local datasource found",
+]
+ltsv = 1000.times.map { |i| "time:#{time + i}	module:main.py	level:DEBUG	message:#{errors.sample}\n" }.join
+ltsv *= 1000
 
 # Prepare an LTSV parser
 parser = Fluent::Plugin::LabeledTSVParser.new
