@@ -309,8 +309,10 @@ OptionParser.new do |opts|
   opts.on("--chruby=NAME::VERSION OPTIONS", "ruby version under chruby and options to be benchmarked") do |v|
     v.split(";").each do |name_version|
       name, version = name_version.split("::", 2)
+      # Convert `ruby --yjit` to `ruby::ruby --yjit`
       if version.nil?
-        version = name # allow skipping `NAME::`
+        version = name
+        name = name.shellsplit.first
       end
       version, *options = version.shellsplit
       unless executable = ["/opt/rubies/#{version}/bin/ruby", "#{ENV["HOME"]}/.rubies/#{version}/bin/ruby"].find { |path| File.executable?(path) }
