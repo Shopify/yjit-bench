@@ -1,14 +1,8 @@
-GIT
-  remote: https://github.com/k0kubun/cool.io.git
-  revision: 61e3caf8b961fb1a4d46b367eb58ebcddb45da4a
-  branch: ruby-3-3
-  specs:
-    cool.io (1.7.1)
-
 GEM
   remote: https://rubygems.org/
   specs:
     concurrent-ruby (1.2.2)
+    cool.io (1.8.0)
     fluentd (1.16.2)
       bundler
       cool.io (>= 1.4.5, < 2.0.0)
@@ -39,7 +33,6 @@ PLATFORMS
   x86_64-linux
 
 DEPENDENCIES
-  cool.io!
   fluentd
 
 BUNDLED WITH
