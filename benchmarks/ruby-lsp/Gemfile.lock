@@ -60,6 +60,7 @@ PLATFORMS
   x86_64-linux
 
 DEPENDENCIES
+  parser (>= 3.2.2.3)
   rubocop
   rubocop-performance
   rubocop-rails
