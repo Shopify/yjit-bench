@@ -1,0 +1,28 @@
+<p>
+Invitations are unlimited, but persons you invite will be associated with your
+account in the <a href="/u">user tree</a> and you may be responsible for them
+if they cause problems.  Please use your discretion when inviting persons you
+don't personally know.
+</p>
+
+<%= form_with url: invitations_path, method: :post do |f| %>
+  <% if defined?(return_home) && return_home %>
+    <%= f.hidden_field :return_home, value: 1 %>
+  <% end %>
+
+  <div class="boxline">
+    <%= f.label :email, "E-mail Address:", :class => "required" %>
+    <%= f.email_field :email, :size => 30, :autocomplete => "off" %>
+  </div>
+
+  <div class="boxline">
+    <%= f.label :memo, "Memo to User:", :class => "required" %>
+    <%= f.text_field :memo, :size => 60 %>
+  </div>
+
+  <div class="boxline">
+    <p></p>
+    <%= f.submit "Send Invitation" %>
+  </div>
+<% end %>
+

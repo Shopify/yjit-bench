@@ -1,0 +1,20 @@
+<%= render partial: @above if @above %>
+
+<ol class="stories list <%= action_name == "hidden" ? "show_hidden" : "" %>">
+  <%= render partial: "stories/listdetail", collection: @stories, as: :story %>
+</ol>
+
+<%= render partial: @below if @below %>
+
+<div class="morelink">
+  <% if @page && @page > 1 %>
+    <%= link_to raw("&lt;&lt; Page #{@page - 1}"), @root_path ? "/page/#{@page - 1}" : { controller: controller_name, action: action_name, page: @page - 1 } %>
+  <% end %>
+
+  <% if @show_more %>
+    <% if @page && @page > 1 %>
+      |
+    <% end %>
+    <%= link_to raw("Page #{@page + 1} &gt;&gt;"), @root_path ? "/page/#{@page + 1}" : { controller: controller_name, action: action_name, page: @page + 1 } %>
+  <% end %>
+</div>
