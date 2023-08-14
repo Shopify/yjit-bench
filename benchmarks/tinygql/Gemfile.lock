@@ -1,0 +1,13 @@
+GEM
+  remote: https://rubygems.org/
+  specs:
+    tinygql (0.1.1)
+
+PLATFORMS
+  arm64-darwin-22
+
+DEPENDENCIES
+  tinygql
+
+BUNDLED WITH
+   2.5.0.dev
