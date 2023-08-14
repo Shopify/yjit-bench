@@ -144,7 +144,6 @@ GEM
     exception_notification (4.5.0)
       actionmailer (>= 5.2, < 8)
       activesupport (>= 5.2, < 8)
-    execjs (2.8.1)
     factory_bot (6.2.1)
       activesupport (>= 5.0.0)
     factory_bot_rails (6.2.0)
@@ -327,8 +326,6 @@ GEM
     ttfunk (1.7.0)
     tzinfo (2.0.6)
       concurrent-ruby (~> 1.0)
-    uglifier (4.2.0)
-      execjs (>= 0.3.0, < 3)
     unicode-display_width (1.8.0)
     vcr (6.2.0)
     version_gem (1.1.3)
@@ -388,7 +385,6 @@ DEPENDENCIES
   stackprof
   svg-graph
   transaction_retry
-  uglifier (>= 1.3.0)
   vcr
   webmock
 
