@@ -67,7 +67,7 @@ rack:
 rubykon:
   desc: Ruby solver for Go (the boardgame.) Runs 1,000 iterations forward from an initial starting board.
 graphql:
-  desc: GraphQL gem parsing a large file
+  desc: GraphQL gem parsing a large file, uses Racc which has some Ruby->native->Ruby calls
 graphql-native:
   desc: GraphQL gem parsing a large file, but using a native parser
 tinygql:
