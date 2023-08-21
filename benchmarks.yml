@@ -71,7 +71,7 @@ graphql:
 graphql-native:
   desc: GraphQL gem parsing a large file, but using a native parser
 tinygql:
-  desc: TinyGQL gem parsing a large file
+  desc: TinyGQL gem parsing a large file in pure Ruby
 
 #
 # MicroBenchmarks
