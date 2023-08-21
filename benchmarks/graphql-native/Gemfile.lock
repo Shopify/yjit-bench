@@ -1,0 +1,18 @@
+GEM
+  remote: https://rubygems.org/
+  specs:
+    graphql (2.0.26)
+    graphql-c_parser (1.0.5)
+      graphql
+    racc (1.7.1)
+
+PLATFORMS
+  arm64-darwin-22
+
+DEPENDENCIES
+  graphql
+  graphql-c_parser
+  racc
+
+BUNDLED WITH
+   2.5.0.dev

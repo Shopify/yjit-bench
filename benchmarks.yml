@@ -66,6 +66,12 @@ rack:
   desc: test the performance of the Rack framework with barely any routing.
 rubykon:
   desc: Ruby solver for Go (the boardgame.) Runs 1,000 iterations forward from an initial starting board.
+graphql:
+  desc: GraphQL gem parsing a large file, uses Racc which has some Ruby->native->Ruby calls
+graphql-native:
+  desc: GraphQL gem parsing a large file, but using a native parser
+tinygql:
+  desc: TinyGQL gem parsing a large file in pure Ruby
 
 #
 # MicroBenchmarks
