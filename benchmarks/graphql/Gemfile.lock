@@ -6,9 +6,10 @@ GEM
 
 PLATFORMS
   arm64-darwin-22
+  x86_64-linux
 
 DEPENDENCIES
-  graphql (~> 2.0.26)
+  graphql
   racc
 
 BUNDLED WITH
