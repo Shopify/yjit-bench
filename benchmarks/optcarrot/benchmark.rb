@@ -1,4 +1,4 @@
-require 'harness'
+require_relative '../../harness/loader'
 require_relative "lib/optcarrot"
 
 rom_path = File.join(__dir__, "examples/Lan_Master.nes")

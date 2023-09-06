@@ -1,4 +1,4 @@
-require 'harness'
+require_relative '../../harness/loader'
 Dir.chdir __dir__
 
 # This is an Etanni translation of the Erb template in the Erubi

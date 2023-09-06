@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require "harness"
+require_relative "../../harness/loader"
 
 Dir.chdir(__dir__)
 use_gemfile

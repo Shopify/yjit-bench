@@ -1,4 +1,4 @@
-require 'harness'
+require_relative '../../harness/loader'
 
 ENV['RAILS_ENV'] ||= 'production'
 ENV['DISABLE_DATABASE_ENVIRONMENT_CHECK'] = '1' # Benchmarks don't really have 'production', so trash it at will.

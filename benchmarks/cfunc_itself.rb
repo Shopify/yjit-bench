@@ -1,4 +1,4 @@
-require 'harness'
+require_relative '../harness/loader'
 
 run_benchmark(50) do
   # 500K calls

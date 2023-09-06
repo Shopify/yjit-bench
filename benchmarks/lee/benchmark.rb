@@ -83,7 +83,7 @@ def lay(depth, solution)
   end
 end
 
-require "harness"
+require_relative "../../harness/loader"
 Dir.chdir __dir__
 use_gemfile
 

@@ -1,4 +1,4 @@
-require 'harness'
+require_relative '../harness/loader'
 
 def fib(n)
   if n < 2

@@ -97,10 +97,9 @@ To run one or more specific benchmarks and record the data:
 This is the easiest way to run a single benchmark.
 It requires no setup at all and assumes nothing about the Ruby you are benchmarking.
 It's also convenient for profiling, debugging, etc, especially since all benchmarked code runs in that process.
-You can also use another harness or make your own by passing a different directory for `-I`.
 
 ```
-ruby -Iharness benchmarks/some_benchmark.rb
+ruby benchmarks/some_benchmark.rb
 ```
 
 ## Ruby options
