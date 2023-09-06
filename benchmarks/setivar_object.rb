@@ -1,4 +1,4 @@
-require 'harness'
+require_relative '../harness/setup'
 
 class TheClass
   def initialize
