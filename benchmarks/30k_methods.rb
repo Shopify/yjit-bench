@@ -120007,7 +120007,7 @@ def inc()
   @count += 1
 end
 
-require_relative '../harness/setup'
+require_relative '../harness/loader'
 
 INTERNAL_ITRS = Integer(ENV.fetch("INTERNAL_ITRS", 2000))
 

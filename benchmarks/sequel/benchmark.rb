@@ -1,4 +1,4 @@
-require_relative "../../harness/setup"
+require_relative "../../harness/loader"
 require "securerandom" # Provides `Random::Formatter` in Ruby 2.6+
 
 Dir.chdir __dir__

@@ -56,7 +56,7 @@ end
 #n = (ARGV[0] || 1).to_i
 n = 9 # Benchmarks Game uses n = 12, but it's too slow
 
-require_relative '../../harness/setup'
+require_relative '../../harness/loader'
 
 run_benchmark(5) do
   5.times do

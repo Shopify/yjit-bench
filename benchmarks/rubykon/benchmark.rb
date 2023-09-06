@@ -2,7 +2,7 @@
 # https://github.com/benchmark-driver/sky2-bench/blob/master/benchmark/rubykon-benchmark.rb,
 # part of benchmark-driver's default benchmarking suite, by Takashi Kokubun.
 
-require_relative '../../harness/setup'
+require_relative '../../harness/loader'
 
 require_relative 'lib/rubykon'
 

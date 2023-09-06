@@ -1,4 +1,4 @@
-require_relative "../../harness/setup"
+require_relative "../../harness/loader"
 
 require "json"
 require "strscan"

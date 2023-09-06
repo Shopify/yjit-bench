@@ -240010,7 +240010,7 @@ end
 
 @x = 0
 
-require_relative '../harness/setup'
+require_relative '../harness/loader'
 
 INTERNAL_ITRS = Integer(ENV.fetch("INTERNAL_ITRS", 600))
 

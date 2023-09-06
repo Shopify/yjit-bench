@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-require_relative '../harness/setup'
+require_relative '../harness/loader'
 
 NUM_ITERS = 10 * 1024
 TEST_STR = 'sssssséé'

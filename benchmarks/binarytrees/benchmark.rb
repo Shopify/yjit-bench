@@ -22,7 +22,7 @@ min_depth = 4
 max_depth = min_depth + 2 if min_depth + 2 > max_depth
 stretch_depth = max_depth + 1
 
-require_relative '../../harness/setup'
+require_relative '../../harness/loader'
 
 run_benchmark(1) do
   stretch_tree = bottom_up_tree(stretch_depth)

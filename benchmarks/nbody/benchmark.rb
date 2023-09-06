@@ -133,7 +133,7 @@ n = 20000
 nbodies = BODIES.size
 dt = 0.01
 
-require_relative '../../harness/setup'
+require_relative '../../harness/loader'
 
 run_benchmark(10) do
   n.times do
