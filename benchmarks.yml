@@ -13,6 +13,9 @@ erubi-rails:
 hexapdf:
   desc: hexapdf benchmarks the hexapdf Ruby gem by line-wrapping The Odyssey with specific line-length and font.
   category: headline
+liquid-c:
+  desc: liquid-c renders a chosen-for-profiling Liquid theme repeatedly.
+  category: headline
 liquid-compile:
   desc: compiles a chosen-for-profiling Liquid theme repeatedly.
   category: headline
@@ -37,9 +40,6 @@ ruby-lsp:
 sequel:
   desc: sequel repeatedly queries entries in a SQLite table with highly-random names.
   category: headline
-liquid-c:
-  desc: liquid-c renders a chosen-for-profiling Liquid theme repeatedly.
-  category: headline
 
 #
 # Other Benchmarks
@@ -54,8 +54,10 @@ fannkuchredux:
   desc: fannkuchredux from the Computer Language Benchmarks Game.
 fluentd:
   desc: fluentd is a log collector, which parses logs in a server and forwards them to various destinations.
-ruby-json:
-  desc: an optimized version of the json_pure gem's pure Ruby JSON parser.
+graphql:
+  desc: GraphQL gem parsing a large file, uses Racc which has some Ruby->native->Ruby calls
+graphql-native:
+  desc: GraphQL gem parsing a large file, but using a native parser
 lee:
   desc: lee is a circuit-board layout solver, deployed in a plausibly reality-like way
 nbody:
@@ -64,12 +66,10 @@ optcarrot:
   desc: optcarrot is a functional headless NES emulator, run on a specific game cartridge for a specific number of frames.
 rack:
   desc: test the performance of the Rack framework with barely any routing.
+ruby-json:
+  desc: an optimized version of the json_pure gem's pure Ruby JSON parser.
 rubykon:
   desc: Ruby solver for Go (the boardgame.) Runs 1,000 iterations forward from an initial starting board.
-graphql:
-  desc: GraphQL gem parsing a large file, uses Racc which has some Ruby->native->Ruby calls
-graphql-native:
-  desc: GraphQL gem parsing a large file, but using a native parser
 tinygql:
   desc: TinyGQL gem parsing a large file in pure Ruby
 
