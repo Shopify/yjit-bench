@@ -7,15 +7,19 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        ruby: [ ruby, head, truffleruby-head ]
     steps:
       - uses: actions/checkout@v3
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:
-          ruby-version: 'head'
+          ruby-version: ${{ matrix.ruby }}
 
       - name: Run tests
-        run: ruby test/*_test.rb
+        run: ruby test/benchmarks_test.rb
 
       - name: Test run_benchmarks.rb
         run: ./run_benchmarks.rb
@@ -26,3 +30,4 @@ jobs:
 
       - name: Test run_once.sh
         run: ./run_once.sh --yjit-stats benchmarks/railsbench/benchmark.rb
+        if: matrix.ruby == 'head'
