@@ -10,7 +10,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        ruby: [ head, truffleruby-head ]
+        ruby: [ ruby, head, truffleruby-head ]
     steps:
       - uses: actions/checkout@v3
       - name: Set up Ruby
