@@ -1,6 +1,6 @@
 source "https://rubygems.org"
 
-gem "rails", github: "rails/rails"
+gem "rails", github: "rails/rails", ref: "d21d811ffece4d3959bcd37e58fec77590ff6f93"
 
 gem "sqlite3"
 #gem "mysql2"

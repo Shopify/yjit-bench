@@ -1,7 +1,27 @@
 GIT
   remote: https://github.com/rails/rails.git
   revision: d21d811ffece4d3959bcd37e58fec77590ff6f93
+  ref: d21d811ffece4d3959bcd37e58fec77590ff6f93
   specs:
+    rails (7.1.0.beta1)
+      actioncable (= 7.1.0.beta1)
+      actionmailbox (= 7.1.0.beta1)
+      actionmailer (= 7.1.0.beta1)
+      actionpack (= 7.1.0.beta1)
+      actiontext (= 7.1.0.beta1)
+      actionview (= 7.1.0.beta1)
+      activejob (= 7.1.0.beta1)
+      activemodel (= 7.1.0.beta1)
+      activerecord (= 7.1.0.beta1)
+      activestorage (= 7.1.0.beta1)
+      activesupport (= 7.1.0.beta1)
+      bundler (>= 1.15.0)
+      railties (= 7.1.0.beta1)
+
+GEM
+  remote: https://rubygems.org/
+  specs:
+    Ascii85 (1.1.0)
     actioncable (7.1.0.beta1)
       actionpack (= 7.1.0.beta1)
       activesupport (= 7.1.0.beta1)
@@ -37,6 +57,8 @@ GIT
       rack-test (>= 0.6.3)
       rails-dom-testing (~> 2.2)
       rails-html-sanitizer (~> 1.6)
+    actionpack-page_caching (1.2.4)
+      actionpack (>= 4.0.0)
     actiontext (7.1.0.beta1)
       actionpack (= 7.1.0.beta1)
       activerecord (= 7.1.0.beta1)
@@ -59,6 +81,8 @@ GIT
       activemodel (= 7.1.0.beta1)
       activesupport (= 7.1.0.beta1)
       timeout (>= 0.4.0)
+    activerecord-typedstore (1.5.1)
+      activerecord (>= 6.1)
     activestorage (7.1.0.beta1)
       actionpack (= 7.1.0.beta1)
       activejob (= 7.1.0.beta1)
@@ -75,37 +99,6 @@ GIT
       minitest (>= 5.1)
       mutex_m
       tzinfo (~> 2.0)
-    rails (7.1.0.beta1)
-      actioncable (= 7.1.0.beta1)
-      actionmailbox (= 7.1.0.beta1)
-      actionmailer (= 7.1.0.beta1)
-      actionpack (= 7.1.0.beta1)
-      actiontext (= 7.1.0.beta1)
-      actionview (= 7.1.0.beta1)
-      activejob (= 7.1.0.beta1)
-      activemodel (= 7.1.0.beta1)
-      activerecord (= 7.1.0.beta1)
-      activestorage (= 7.1.0.beta1)
-      activesupport (= 7.1.0.beta1)
-      bundler (>= 1.15.0)
-      railties (= 7.1.0.beta1)
-    railties (7.1.0.beta1)
-      actionpack (= 7.1.0.beta1)
-      activesupport (= 7.1.0.beta1)
-      irb
-      rackup (>= 1.0.0)
-      rake (>= 12.2)
-      thor (~> 1.0, >= 1.2.2)
-      zeitwerk (~> 2.6)
-
-GEM
-  remote: https://rubygems.org/
-  specs:
-    Ascii85 (1.1.0)
-    actionpack-page_caching (1.2.4)
-      actionpack (>= 4.0.0)
-    activerecord-typedstore (1.5.1)
-      activerecord (>= 6.1)
     addressable (2.8.4)
       public_suffix (>= 2.0.2, < 6.0)
     afm (0.2.2)
@@ -245,6 +238,14 @@ GEM
     rails-html-sanitizer (1.6.0)
       loofah (~> 2.21)
       nokogiri (~> 1.14)
+    railties (7.1.0.beta1)
+      actionpack (= 7.1.0.beta1)
+      activesupport (= 7.1.0.beta1)
+      irb
+      rackup (>= 1.0.0)
+      rake (>= 12.2)
+      thor (~> 1.0, >= 1.2.2)
+      zeitwerk (~> 2.6)
     rainbow (3.1.1)
     rake (13.0.6)
     rb-fsevent (0.11.2)
