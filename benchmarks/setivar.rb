@@ -30,6 +30,6 @@ end
 
 obj = TheClass.new
 
-run_benchmark(100) do
+run_benchmark(1000) do
   obj.set_value_loop
 end

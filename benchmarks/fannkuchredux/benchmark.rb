@@ -58,7 +58,7 @@ n = 9 # Benchmarks Game uses n = 12, but it's too slow
 
 require_relative '../../harness/loader'
 
-run_benchmark(5) do
+run_benchmark(10) do
   5.times do
     sum, flips = fannkuch(n)
 

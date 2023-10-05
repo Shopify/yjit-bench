@@ -87,7 +87,7 @@ require_relative "../../harness/loader"
 Dir.chdir __dir__
 use_gemfile
 
-run_benchmark(20) do
+run_benchmark(10) do
   depth = Lee::Matrix.new(board.height, board.width)
 
   solutions = {}

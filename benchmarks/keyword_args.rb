@@ -4,7 +4,7 @@ def add(left:, right:)
   left + right
 end
 
-run_benchmark(50) do
+run_benchmark(400) do
   # 500K calls
   500_000.times do |i|
     # Call 10 times to reduce loop overhead, emphasize call performance

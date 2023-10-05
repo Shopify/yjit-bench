@@ -11,7 +11,7 @@ def bar
   foo { return 1 }
 end
 
-run_benchmark(50) do
+run_benchmark(700) do
   i = 0
   while i < 20_000
     # Call 10 times to reduce loop overhead

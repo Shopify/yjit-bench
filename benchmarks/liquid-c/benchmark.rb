@@ -12,7 +12,7 @@ profiler = ThemeRunner.new
 
 profiler.compile
 
-run_benchmark(150) do
+run_benchmark(200) do
   # This benchmark is very quick
   # Run it multiple times to reduce time measurement noise
   20.times do

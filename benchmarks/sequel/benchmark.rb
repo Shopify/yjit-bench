@@ -41,7 +41,7 @@ end
 # heat any caches
 Post[1].title
 
-run_benchmark(10) do
+run_benchmark(200) do
   1.upto(1000) do |i|
     post = Post[i]
     "#{post.title}\n#{post.body}" \

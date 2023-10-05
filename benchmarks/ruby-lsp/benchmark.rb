@@ -15,7 +15,7 @@ rc_last = nil
 hl_last = nil
 
 # These benchmarks are representative of the three main operations executed by the Ruby LSP server
-run_benchmark(10) do
+run_benchmark(200) do
   # File parsing
   document = RubyLsp::Document.new(content)
 
