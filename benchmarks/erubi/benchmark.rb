@@ -51,7 +51,7 @@ eval "# frozen_string_literal: true\ndef run_erb; #{source}; end"
 result = run_erb
 check_result_size(result)
 
-run_benchmark(10) do
+run_benchmark(50) do
   250.times do
     #result = eval source
     result = run_erb

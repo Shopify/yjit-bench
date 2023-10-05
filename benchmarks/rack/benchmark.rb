@@ -18,7 +18,7 @@ end
 
 orig_env = Rack::MockRequest::env_for("http://localhost/ok")
 
-run_benchmark(10) do
+run_benchmark(100) do
   10_000.times do
     # The app may mutate `env`, so we need to create one every time.
     env = orig_env.dup

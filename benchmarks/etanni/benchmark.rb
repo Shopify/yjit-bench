@@ -47,7 +47,7 @@ end
 @values = JSON.load(File.read "gem_specs.json")
 result = run_etanni
 
-run_benchmark(10) do
+run_benchmark(25) do
   250.times do
     result = run_etanni
   end

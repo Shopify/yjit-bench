@@ -240014,7 +240014,7 @@ require_relative '../harness/loader'
 
 INTERNAL_ITRS = Integer(ENV.fetch("INTERNAL_ITRS", 600))
 
-run_benchmark(10) do
+run_benchmark(30) do
   INTERNAL_ITRS.times do
     @x = (@x < 1)? 1:0
     fun_l0_n0(@x)

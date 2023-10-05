@@ -28,7 +28,7 @@ class TheClass
   end
 end
 
-run_benchmark(100) do
+run_benchmark(400) do
   # Setting the ivar to an object rather than an immediate means we have to run write barrier code
   obj = TheClass.new
   obj.set_value_loop(obj)

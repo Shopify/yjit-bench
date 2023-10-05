@@ -24,7 +24,7 @@ stretch_depth = max_depth + 1
 
 require_relative '../../harness/loader'
 
-run_benchmark(1) do
+run_benchmark(60) do
   stretch_tree = bottom_up_tree(stretch_depth)
   stretch_tree = nil
 

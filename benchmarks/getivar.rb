@@ -34,6 +34,6 @@ end
 
 obj = TheClass.new
 
-run_benchmark(100) do
+run_benchmark(850) do
   obj.get_value_loop
 end

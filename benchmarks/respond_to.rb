@@ -17,7 +17,7 @@ end
 class C < A
 end
 
-run_benchmark(50) do
+run_benchmark(1000) do
   a = A.new
   b = B.new
   c = C.new

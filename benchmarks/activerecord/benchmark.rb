@@ -33,7 +33,7 @@ class Post < ActiveRecord::Base; end
 # heat any caches
 Post.find(1).title
 
-run_benchmark(10) do
+run_benchmark(300) do
   1.upto(1000) do |i|
     post = Post.find(i)
     "#{post.title}\n#{post.body}" \

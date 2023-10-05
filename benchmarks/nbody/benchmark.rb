@@ -135,7 +135,7 @@ dt = 0.01
 
 require_relative '../../harness/loader'
 
-run_benchmark(10) do
+run_benchmark(200) do
   n.times do
     i = 0
     while i < nbodies
