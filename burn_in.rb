@@ -10,40 +10,82 @@ require 'json'
 require 'rbconfig'
 require 'etc'
 require 'yaml'
+require 'open3'
 
-# Checked system - error if the command fails
-def check_call(command, verbose: false, env: {})
-  puts(command)
-
-  if verbose
-    status = system(env, command, out: $stdout, err: :out)
-  else
-    status = system(env, command)
-  end
-
-  unless status
-    puts "Command #{command.inspect} failed in directory #{Dir.pwd}"
-    raise RuntimeError.new
-  end
-end
-
-def check_output(*command)
-  IO.popen(*command, &:read)
-end
-
-def free_file_no(prefix)
+def free_file_path(parent_dir, name_prefix)
   (1..).each do |file_no|
-    out_path = File.join(prefix, "output_%03d.csv" % file_no)
+    out_path = File.join(parent_dir, "#{name_prefix}_%03d.txt" % file_no)
     if !File.exist?(out_path)
-      return file_no
+      return out_path
+    end
+  end
+end
+
+def run_benchmark(bench_name, logs_path, ruby_version)
+  script_path = File.join('benchmarks', bench_name, 'benchmark.rb')
+
+  env = {
+    "WARMUP_ITRS"=> "0",
+    "MIN_BENCH_TIME"=> "20",
+    "RUST_BACKTRACE"=> "1",
+  }
+
+  # Assemble random command-line options to test
+  yjit_options = [
+    "--yjit-call-threshold=#{[1, 10, 30].sample()}",
+    "--yjit-cold-threshold=#{[1, 2, 5, 10, 50_000].sample()}",
+    "--yjit-exec-mem-size=#{[1, 2, 10, 64, 128].sample()}",
+    ['--yjit-code-gc', nil].sample(),
+    ['--yjit-perf', nil].sample(),
+  ].compact
+
+  cmd = [
+    'ruby',
+    *yjit_options,
+    "-Iharness",
+    script_path,
+  ].compact
+
+  cmd_str = cmd.shelljoin
+
+  puts "pid #{Process.pid} running benchmark #{bench_name}:"
+  puts cmd_str
+
+  output, status = Open3.capture2e(env, cmd_str)
+
+  if !status.success?
+    puts "ERROR"
+
+    # Write command executed and output
+    out_path = free_file_path(logs_path, "error_#{bench_name}")
+    puts "writing output file #{out_path}"
+    contents = ruby_version + "\n\n" + cmd_str + "\n\n" + output
+    File.write(out_path, contents)
+
+    return true
+  end
+
+  return false
+end
+
+def test_loop(bench_names, logs_path, ruby_version)
+  error_found = false
+
+  while true
+    bench_name = bench_names.sample()
+    error = run_benchmark(bench_name, logs_path, ruby_version)
+    error_found ||= error
+
+    if error_found
+      puts "ERROR ENCOUNTERED"
     end
   end
 end
 
 # Default values for command-line arguments
 args = OpenStruct.new({
-  out_path: "./burn_in_logs",
-  num_procs: 32,
+  logs_path: "./logs_burn_in",
+  num_procs: 8,
   categories: ['headline', 'other'],
 })
 
@@ -62,7 +104,6 @@ OptionParser.new do |opts|
 end.parse!
 
 puts "num processes: #{args.num_procs}"
-#puts args.categories
 
 metadata = YAML.load_file('benchmarks.yml')
 
@@ -74,15 +115,20 @@ end
 bench_names = metadata.map { |name, entry| name }
 bench_names.sort!
 
-puts bench_names
-
 # Create the output directory
-FileUtils.mkdir_p(args.out_path)
+FileUtils.mkdir_p(args.logs_path)
 
+ruby_version = IO.popen("ruby -v --yjit", &:read).strip
+puts ruby_version
 
+args.num_procs.times do
+  pid = Process.fork do
+    test_loop(bench_names, args.logs_path, ruby_version)
+  end
+end
 
-
-
-
-
-
+# We need some kind of busy loop to not exit?
+# Loop and sleep, report if forked processes crashed?
+while true
+  sleep(50 * 0.001)
+end
