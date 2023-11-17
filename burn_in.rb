@@ -26,7 +26,7 @@ def run_benchmark(bench_name, logs_path, ruby_version)
 
   env = {
     "WARMUP_ITRS"=> "0",
-    "MIN_BENCH_TIME"=> "20",
+    "MIN_BENCH_TIME"=> (3600 * 3).to_s,
     "RUST_BACKTRACE"=> "1",
   }
 
