@@ -2,6 +2,7 @@
 /data
 *.csv
 *.dump
+logs*
 
 __pycache__
 /benchmarks/discourse
