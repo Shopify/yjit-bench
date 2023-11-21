@@ -106,6 +106,13 @@ OptionParser.new do |opts|
   end
 end.parse!
 
+# Create the output directory
+if Dir.exist?(args.logs_path)
+  puts("Logs directory already exists. Move or delete before running.")
+  exit(-1)
+end
+FileUtils.mkdir_p(args.logs_path)
+
 # Get Ruby version string
 ruby_version = IO.popen("ruby -v --yjit", &:read).strip
 puts ruby_version
@@ -113,7 +120,7 @@ puts ruby_version
 # Check if debug info is included in Ruby binary (this only works on Linux, not macOS)
 output = IO.popen("file `which ruby`", &:read).strip
 if !output.include?("debug_info")
-  puts("WARNING: could not detect debug info in ruby binary!")
+  puts("WARNING: could not detect debug info in ruby binary! You may want to rebuild in dev mode!")
   puts()
   sleep(10)
 end
@@ -126,9 +133,6 @@ metadata = metadata.filter do |bench_name, entry|
 end
 bench_names = metadata.map { |name, entry| name }
 bench_names.sort!
-
-# Create the output directory
-FileUtils.mkdir_p(args.logs_path)
 
 # Fork the test processes
 puts "num processes: #{args.num_procs}"
