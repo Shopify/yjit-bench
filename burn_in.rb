@@ -1,5 +1,6 @@
 #!/usr/bin/env ruby
 
+require 'etc'
 require 'optparse'
 require 'ostruct'
 require 'pathname'
@@ -86,7 +87,7 @@ end
 # Default values for command-line arguments
 args = OpenStruct.new({
   logs_path: "./logs_burn_in",
-  num_procs: 8,
+  num_procs: Etc.nprocessors,
   categories: ['headline', 'other'],
 })
 
