@@ -27,15 +27,15 @@ def run_benchmark(bench_name, logs_path, ruby_version)
 
   env = {
     "WARMUP_ITRS"=> "0",
-    "MIN_BENCH_TIME"=> (3600 * 3).to_s,
+    "MIN_BENCH_TIME"=> (10).to_s,
     "RUST_BACKTRACE"=> "1",
   }
 
   # Assemble random command-line options to test
   yjit_options = [
-    "--yjit-call-threshold=#{[1, 10, 30].sample()}",
-    "--yjit-cold-threshold=#{[1, 2, 5, 10, 50_000].sample()}",
-    "--yjit-exec-mem-size=#{[1, 2, 10, 64, 128].sample()}",
+    "--yjit-call-threshold=#{[1, 2, 10, 30].sample()}",
+    "--yjit-cold-threshold=#{[1, 2, 5, 10, 500, 50_000].sample()}",
+    "--yjit-exec-mem-size=#{[1, 2, 3, 4, 5, 10, 64, 128].sample()}",
     ['--yjit-code-gc', nil].sample(),
     ['--yjit-perf', nil].sample(),
     ['--yjit-stats', nil].sample(),
