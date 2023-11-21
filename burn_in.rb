@@ -37,6 +37,7 @@ def run_benchmark(bench_name, logs_path, ruby_version)
     "--yjit-exec-mem-size=#{[1, 2, 10, 64, 128].sample()}",
     ['--yjit-code-gc', nil].sample(),
     ['--yjit-perf', nil].sample(),
+    ['--yjit-stats', nil].sample(),
   ].compact
 
   cmd = [
@@ -89,6 +90,7 @@ args = OpenStruct.new({
   categories: ['headline', 'other'],
 })
 
+# Parse the command-line options
 OptionParser.new do |opts|
   opts.on("--out_path=OUT_PATH", "directory where to store output data files") do |v|
     args.out_path = v
@@ -103,11 +105,20 @@ OptionParser.new do |opts|
   end
 end.parse!
 
-puts "num processes: #{args.num_procs}"
+# Get Ruby version string
+ruby_version = IO.popen("ruby -v --yjit", &:read).strip
+puts ruby_version
 
-metadata = YAML.load_file('benchmarks.yml')
+# Check if debug info is included in Ruby binary (this only works on Linux, not macOS)
+output = IO.popen("file `which ruby`", &:read).strip
+if !output.include?("debug_info")
+  puts("WARNING: could not detect debug info in ruby binary!")
+  puts()
+  sleep(10)
+end
 
 # Extract the names of benchmarks in the categories we want
+metadata = YAML.load_file('benchmarks.yml')
 metadata = metadata.filter do |bench_name, entry|
   category = entry.fetch('category', 'other')
   args.categories.include? category
@@ -118,9 +129,8 @@ bench_names.sort!
 # Create the output directory
 FileUtils.mkdir_p(args.logs_path)
 
-ruby_version = IO.popen("ruby -v --yjit", &:read).strip
-puts ruby_version
-
+# Fork the test processes
+puts "num processes: #{args.num_procs}"
 args.num_procs.times do
   pid = Process.fork do
     test_loop(bench_names, args.logs_path, ruby_version)
