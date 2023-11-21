@@ -22,12 +22,12 @@ def free_file_path(parent_dir, name_prefix)
   end
 end
 
-def run_benchmark(bench_name, logs_path, ruby_version)
+def run_benchmark(bench_name, logs_path, run_time, ruby_version)
   script_path = File.join('benchmarks', bench_name, 'benchmark.rb')
 
   env = {
     "WARMUP_ITRS"=> "0",
-    "MIN_BENCH_TIME"=> (10).to_s,
+    "MIN_BENCH_TIME"=> run_time.to_s,
     "RUST_BACKTRACE"=> "1",
   }
 
@@ -70,12 +70,12 @@ def run_benchmark(bench_name, logs_path, ruby_version)
   return false
 end
 
-def test_loop(bench_names, logs_path, ruby_version)
+def test_loop(bench_names, logs_path, run_time, ruby_version)
   error_found = false
 
   while true
     bench_name = bench_names.sample()
-    error = run_benchmark(bench_name, logs_path, ruby_version)
+    error = run_benchmark(bench_name, logs_path, run_time, ruby_version)
     error_found ||= error
 
     if error_found
@@ -132,9 +132,10 @@ FileUtils.mkdir_p(args.logs_path)
 
 # Fork the test processes
 puts "num processes: #{args.num_procs}"
-args.num_procs.times do
+args.num_procs.times do |i|
   pid = Process.fork do
-    test_loop(bench_names, args.logs_path, ruby_version)
+    run_time = (i < args.num_procs / 2)? 10:(3600 * 2)
+    test_loop(bench_names, args.logs_path, run_time, ruby_version)
   end
 end
 
