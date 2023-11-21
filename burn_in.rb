@@ -61,7 +61,7 @@ def run_benchmark(bench_name, logs_path, run_time, ruby_version)
     # Write command executed and output
     out_path = free_file_path(logs_path, "error_#{bench_name}")
     puts "writing output file #{out_path}"
-    contents = ruby_version + "\n\n" + cmd_str + "\n\n" + output
+    contents = ruby_version + "\n\n" + "pid #{status.pid}\n" + cmd_str + "\n\n" + output
     File.write(out_path, contents)
 
     return true
@@ -108,7 +108,7 @@ end.parse!
 
 # Create the output directory
 if Dir.exist?(args.logs_path)
-  puts("Logs directory already exists. Move or delete before running.")
+  puts("Logs directory already exists. Move or delete #{args.logs_path} before running.")
   exit(-1)
 end
 FileUtils.mkdir_p(args.logs_path)
