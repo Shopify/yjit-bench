@@ -131,6 +131,12 @@ FileUtils.mkdir_p(args.logs_path)
 ruby_version = IO.popen("ruby -v --yjit", &:read).strip
 puts ruby_version
 
+# Check that YJIT is available
+if !ruby_version.include?("+YJIT")
+  puts("Ruby version string doesn't include +YJIT. You may want to run `chruby ruby-yjit`.")
+  exit(-1)
+end
+
 # Check if debug info is included in Ruby binary (this only works on Linux, not macOS)
 output = IO.popen("file `which ruby`", &:read).strip
 if !output.include?("debug_info")
