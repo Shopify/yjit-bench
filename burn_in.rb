@@ -13,6 +13,38 @@ require 'etc'
 require 'yaml'
 require 'open3'
 
+# Default values for command-line arguments
+args = OpenStruct.new({
+  logs_path: "./logs_burn_in",
+  delete_old_logs: false,
+  num_procs: Etc.nprocessors,
+  num_long_runs: 4,
+  categories: ['headline', 'other'],
+})
+
+# Parse the command-line options
+OptionParser.new do |opts|
+  opts.on("--logs_path=OUT_PATH", "directory where to store output data files") do |v|
+    args.logs_path = v
+  end
+
+  opts.on("--delete_old_logs") do
+    args.delete_old_logs = true
+  end
+
+  opts.on("--num_procs=N", "number of processes to use in total") do |v|
+    args.num_procs = v.to_i
+  end
+
+  opts.on("--num_long_runs=N", "number of processes to use for long runs") do |v|
+    args.num_long_runs = v.to_i
+  end
+
+  opts.on("--category=headline,other,micro", "when given, only benchmarks with specified categories will run") do |v|
+    args.categories = v.split(",")
+  end
+end.parse!
+
 def free_file_path(parent_dir, name_prefix)
   (1..).each do |file_no|
     out_path = File.join(parent_dir, "#{name_prefix}_%03d.txt" % file_no)
@@ -84,32 +116,14 @@ def test_loop(bench_names, logs_path, run_time, ruby_version)
   end
 end
 
-# Default values for command-line arguments
-args = OpenStruct.new({
-  logs_path: "./logs_burn_in",
-  num_procs: Etc.nprocessors,
-  categories: ['headline', 'other'],
-})
-
-# Parse the command-line options
-OptionParser.new do |opts|
-  opts.on("--out_path=OUT_PATH", "directory where to store output data files") do |v|
-    args.out_path = v
-  end
-
-  opts.on("--num_procs", "number of processes to use") do |v|
-    args.categories = v.to_i
-  end
-
-  opts.on("--category=headline,other,micro", "when given, only benchmarks with specified categories will run") do |v|
-    args.categories = v.split(",")
-  end
-end.parse!
-
 # Create the output directory
 if Dir.exist?(args.logs_path)
-  puts("Logs directory already exists. Move or delete #{args.logs_path} before running.")
-  exit(-1)
+  if args.delete_old_logs
+    Dir.rmdir(args.logs_path)
+  else
+    puts("Logs directory already exists. Move or delete #{args.logs_path} before running.")
+    exit(-1)
+  end
 end
 FileUtils.mkdir_p(args.logs_path)
 
@@ -138,7 +152,7 @@ bench_names.sort!
 puts "num processes: #{args.num_procs}"
 args.num_procs.times do |i|
   pid = Process.fork do
-    run_time = (i < args.num_procs / 2)? 10:(3600 * 2)
+    run_time = (i < args.num_long_runs)? (3600 * 2):10
     test_loop(bench_names, args.logs_path, run_time, ruby_version)
   end
 end
