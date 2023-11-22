@@ -119,7 +119,7 @@ end
 # Create the output directory
 if Dir.exist?(args.logs_path)
   if args.delete_old_logs
-    Dir.rmdir(args.logs_path)
+    FileUtils.rm_r(args.logs_path)
   else
     puts("Logs directory already exists. Move or delete #{args.logs_path} before running.")
     exit(-1)
