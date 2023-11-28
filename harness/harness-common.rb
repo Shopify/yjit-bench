@@ -4,6 +4,9 @@ unless ruby_in_path == RbConfig.ruby
   abort "The ruby running this script (#{RbConfig.ruby}) is not the first ruby in PATH (#{ruby_in_path})"
 end
 
+# Support enabling GC auto-compaction via environment variable
+GC.auto_compact = !!ENV["RUBY_GC_AUTO_COMPACT"]
+
 # Seed the global random number generator for repeatability between runs
 Random.srand(1337)
 
