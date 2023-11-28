@@ -57,14 +57,21 @@ end
 def run_benchmark(bench_name, logs_path, run_time, ruby_version)
   script_path = File.join('benchmarks', bench_name, 'benchmark.rb')
 
+  # Assemble random environment variable options to test
+  test_env_vars = {}
+  if rand < 0.5
+    test_env_vars["RUBY_GC_AUTO_COMPACT"] = "1"
+  end
+
   env = {
     "WARMUP_ITRS"=> "0",
     "MIN_BENCH_TIME"=> run_time.to_s,
     "RUST_BACKTRACE"=> "1",
   }
+  env.merge!(test_env_vars)
 
   # Assemble random command-line options to test
-  yjit_options = [
+  test_options = [
     "--yjit-call-threshold=#{[1, 2, 10, 30].sample()}",
     "--yjit-cold-threshold=#{[1, 2, 5, 10, 500, 50_000].sample()}",
     "--yjit-exec-mem-size=#{[1, 2, 3, 4, 5, 10, 64, 128].sample()}",
@@ -73,18 +80,25 @@ def run_benchmark(bench_name, logs_path, run_time, ruby_version)
     ['--yjit-stats', nil].sample(),
   ].compact
 
+  # Assemble the command string
   cmd = [
     'ruby',
-    *yjit_options,
+    *test_options,
     "-Iharness",
     script_path,
   ].compact
-
   cmd_str = cmd.shelljoin
 
-  puts "pid #{Process.pid} running benchmark #{bench_name}:"
-  puts cmd_str
+  # Prepend the tested environment variables to the command string
+  # that we show to the user. We produce this separate command string
+  # because capture2e doesn't support this syntax.
+  user_cmd_str = cmd_str.dup
+  test_env_vars.each do |name, value|
+    user_cmd_str = "export #{name}=#{value} && " + user_cmd_str
+  end
 
+  puts "pid #{Process.pid} running benchmark #{bench_name}:"
+  puts user_cmd_str
   output, status = Open3.capture2e(env, cmd_str)
 
   if !status.success?
@@ -93,7 +107,7 @@ def run_benchmark(bench_name, logs_path, run_time, ruby_version)
     # Write command executed and output
     out_path = free_file_path(logs_path, "error_#{bench_name}")
     puts "writing output file #{out_path}"
-    contents = ruby_version + "\n\n" + "pid #{status.pid}\n" + cmd_str + "\n\n" + output
+    contents = ruby_version + "\n\n" + "pid #{status.pid}\n" + user_cmd_str + "\n\n" + output
     File.write(out_path, contents)
 
     return true
@@ -140,7 +154,7 @@ end
 # Check if debug info is included in Ruby binary (this only works on Linux, not macOS)
 output = IO.popen("file `which ruby`", &:read).strip
 if !output.include?("debug_info")
-  puts("WARNING: could not detect debug info in ruby binary! You may want to rebuild in dev mode!")
+  puts("WARNING: could not detect debug info in ruby binary! You may want to rebuild in dev mode so you can produce useful core dumps!")
   puts()
   sleep(10)
 end
