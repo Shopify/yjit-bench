@@ -2,7 +2,7 @@ GEM
   remote: https://rubygems.org/
   specs:
     graphql (2.0.26)
-    graphql-c_parser (1.0.5)
+    graphql-c_parser (1.0.7)
       graphql
     racc (1.7.1)
 
