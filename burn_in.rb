@@ -101,7 +101,18 @@ def run_benchmark(bench_name, logs_path, run_time, ruby_version)
   puts user_cmd_str
   output, status = Open3.capture2e(env, cmd_str)
 
+  # If we got an error
   if !status.success?
+    # Lobsters can run into connection errors with multiprocessing (port already taken, etc.), ignore that
+    if bench_name == "lobsters" && output.include?("HTTP status is")
+      return false
+    end
+
+    # Hexapdf can run into errors due to multiprocessing due to filesystem side-effects, ignore that
+    if bench_name == "hexapdf" && output.include?("Incorrect size")
+      return false
+    end
+
     puts "ERROR"
 
     # Write command executed and output
@@ -110,9 +121,11 @@ def run_benchmark(bench_name, logs_path, run_time, ruby_version)
     contents = ruby_version + "\n\n" + "pid #{status.pid}\n" + user_cmd_str + "\n\n" + output
     File.write(out_path, contents)
 
+    # Error
     return true
   end
 
+  # No error
   return false
 end
 
