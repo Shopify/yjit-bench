@@ -72,6 +72,12 @@ rubykon:
   desc: Ruby solver for Go (the boardgame.) Runs 1,000 iterations forward from an initial starting board.
 tinygql:
   desc: TinyGQL gem parsing a large file in pure Ruby
+nqueens:
+  desc: solver for the N-Queens problem
+sudoku:
+  desc: sudoku solver
+matmul:
+  desc: matrix multiplication benchmark
 
 #
 # MicroBenchmarks
