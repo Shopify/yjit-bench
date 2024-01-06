@@ -347,6 +347,16 @@ OptionParser.new do |opts|
     args.harness = v
   end
 
+  opts.on("--warmup=N", "the number of warmup iterations (default: 15)") do |n|
+    ENV["WARMUP_ITRS"] = n
+  end
+
+  opts.on("--bench=N", "the number of benchmark iterations (default: 10)") do |n|
+    ENV["WARMUP_ITRS"] ||= "0"
+    ENV["MIN_BENCH_ITRS"] = n
+    ENV["MIN_BENCH_TIME"] ||= "0"
+  end
+
   opts.on("--yjit_opts=OPT_STRING", "string of command-line options to run YJIT with (ignored if you use -e)") do |str|
     args.yjit_opts=str
   end
