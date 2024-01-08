@@ -59,8 +59,8 @@ end
 def set_bench_config
   if File.exist?('/sys/devices/system/cpu/intel_pstate') # Intel
     # sudo requires the flag '-S' in order to take input from stdin
-    check_call("sudo -S sh -c 'echo 1 > /sys/devices/system/cpu/intel_pstate/no_turbo'")
-    check_call("sudo -S sh -c 'echo 100 > /sys/devices/system/cpu/intel_pstate/min_perf_pct'")
+    check_call("sudo -S sh -c 'echo 1 > /sys/devices/system/cpu/intel_pstate/no_turbo'") unless intel_no_turbo?
+    check_call("sudo -S sh -c 'echo 100 > /sys/devices/system/cpu/intel_pstate/min_perf_pct'") unless intel_perf_100pct?
   elsif File.exist?('/sys/devices/system/cpu/cpufreq/boost') # AMD
     check_call("sudo -S sh -c 'echo 0 > /sys/devices/system/cpu/cpufreq/boost'") unless amd_no_boost?
     check_call("sudo -S cpupower frequency-set -g performance") unless performance_governor?
@@ -69,13 +69,13 @@ end
 
 def check_pstate
   if File.exist?('/sys/devices/system/cpu/intel_pstate') # Intel
-    if File.read('/sys/devices/system/cpu/intel_pstate/no_turbo').strip != '1'
+    unless intel_no_turbo?
       puts("You forgot to disable turbo:")
       puts("  sudo sh -c 'echo 1 > /sys/devices/system/cpu/intel_pstate/no_turbo'")
       exit(-1)
     end
 
-    if File.read('/sys/devices/system/cpu/intel_pstate/min_perf_pct').strip != '100'
+    unless intel_perf_100pct?
       puts("You forgot to set the min perf percentage to 100:")
       puts("  sudo sh -c 'echo 100 > /sys/devices/system/cpu/intel_pstate/min_perf_pct'")
       exit(-1)
@@ -93,6 +93,14 @@ def check_pstate
       exit(-1)
     end
   end
+end
+
+def intel_no_turbo?
+  File.read('/sys/devices/system/cpu/intel_pstate/no_turbo').strip == '1'
+end
+
+def intel_perf_100pct?
+  File.read('/sys/devices/system/cpu/intel_pstate/min_perf_pct').strip == '100'
 end
 
 def amd_no_boost?
