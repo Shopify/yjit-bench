@@ -174,14 +174,17 @@ can be controlled by the following environment variables:
 * `MIN_BENCH_ITRS`: The minimum number of benchmark iterations (default: 10)
 * `MIN_BENCH_TIME`: The minimum seconds for benchmark (default: 10)
 
-You can also use `--warmup` and `--bench` to set these environment variables:
+You can also use `--warmup`, `--bench`, or `--once` to set these environment variables:
 
 ```sh
 # same as: WARMUP_ITRS=2 MIN_BENCH_ITRS=3 MIN_BENCH_TIME=0 ./run_benchmarks.rb railsbench
 ./run_benchmarks.rb railsbench --warmup=2 --bench=3
+
+# same as: WARMUP_ITRS=0 MIN_BENCH_ITRS=1 MIN_BENCH_TIME=0 ./run_benchmarks.rb railsbench
+./run_benchmarks.rb railsbench --once
 ```
 
-There is a handy script for running benchmarks just once using
+There is also a handy script for running benchmarks just once using
 `WARMUP_ITRS=0 MIN_BENCH_ITRS=1 MIN_BENCH_TIME=0`, for example
 with the `--yjit-stats` command-line option:
 

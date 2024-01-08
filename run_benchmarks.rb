@@ -356,6 +356,12 @@ OptionParser.new do |opts|
     ENV["MIN_BENCH_TIME"] ||= "0"
   end
 
+  opts.on("--once", "benchmarks only 1 iteration with no warmup for the default harness") do
+    ENV["WARMUP_ITRS"] = "0"
+    ENV["MIN_BENCH_ITRS"] = "1"
+    ENV["MIN_BENCH_TIME"] = "0"
+  end
+
   opts.on("--yjit_opts=OPT_STRING", "string of command-line options to run YJIT with (ignored if you use -e)") do |str|
     args.yjit_opts=str
   end
