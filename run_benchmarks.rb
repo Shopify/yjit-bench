@@ -347,7 +347,7 @@ OptionParser.new do |opts|
     args.harness = v
   end
 
-  opts.on("--warmup=N", "the number of warmup iterations (default: 15)") do |n|
+  opts.on("--warmup=N", "the number of warmup iterations for the default harness (default: 15)") do |n|
     ENV["WARMUP_ITRS"] = n
   end
 
