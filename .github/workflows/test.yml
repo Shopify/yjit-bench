@@ -10,7 +10,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        ruby: [ ruby, head, truffleruby-head ]
+        include:
+          - { ruby: ruby }
+          - { ruby: head }
+          - { ruby: truffleruby-head, skip: fluentd }
     steps:
       - uses: actions/checkout@v3
       - name: Set up Ruby
@@ -22,12 +25,16 @@ jobs:
         run: ruby test/benchmarks_test.rb
 
       - name: Test run_benchmarks.rb
-        run: ./run_benchmarks.rb
+        run: |
+          for benchmark in $SKIP_BENCHMARKS; do
+            rm -rf "benchmarks/${benchmark}.rb" "benchmarks/${benchmark}/"
+          done
+          ./run_benchmarks.rb
         env:
           WARMUP_ITRS: '1'
           MIN_BENCH_ITRS: '1'
           MIN_BENCH_TIME: '0'
-        continue-on-error: ${{ matrix.ruby == 'truffleruby-head' }}
+          SKIP_BENCHMARKS: ${{ matrix.skip }}
 
       - name: Test run_once.sh
         run: ./run_once.sh --yjit-stats benchmarks/railsbench/benchmark.rb
