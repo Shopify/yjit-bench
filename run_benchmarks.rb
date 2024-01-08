@@ -352,7 +352,6 @@ OptionParser.new do |opts|
   end
 
   opts.on("--bench=N", "the number of benchmark iterations (default: 10)") do |n|
-    ENV["WARMUP_ITRS"] ||= "0"
     ENV["MIN_BENCH_ITRS"] = n
     ENV["MIN_BENCH_TIME"] ||= "0"
   end
