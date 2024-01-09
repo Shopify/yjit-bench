@@ -11,9 +11,10 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { ruby: ruby }
-          - { ruby: head }
-          - { ruby: truffleruby-head, skip: "fluentd liquid-c lobsters" }
+          - ruby: ruby
+          - ruby: head
+          - ruby: truffleruby-head
+            skip: fluentd liquid-c lobsters
     steps:
       - uses: actions/checkout@v3
       - name: Set up Ruby
