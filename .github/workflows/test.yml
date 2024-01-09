@@ -14,7 +14,7 @@ jobs:
           - ruby: ruby
           - ruby: head
           - ruby: truffleruby-head
-            skip: fluentd liquid-c lobsters
+            skip: liquid-c lobsters
     steps:
       - uses: actions/checkout@v3
       - name: Set up Ruby
