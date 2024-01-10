@@ -90,6 +90,7 @@ GEM
     mini_mime (1.1.0)
     mini_portile2 (2.8.2)
     minitest (5.17.0)
+    mutex_m (0.2.0)
     net-imap (0.2.3)
       digest
       net-protocol
@@ -183,6 +184,7 @@ DEPENDENCIES
   activerecord-jdbcsqlite3-adapter (~> 60.4)
   jbuilder (~> 2.7)
   listen (~> 3.2)
+  mutex_m
   net-imap (~> 0.2.1)
   net-pop (~> 0.1.1)
   net-smtp (~> 0.2.1)
