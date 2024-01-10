@@ -4,6 +4,8 @@ on:
     branches:
       - main
   pull_request:
+  schedule:
+    - cron: "00 15 * * *"
 jobs:
   test:
     runs-on: ubuntu-latest
