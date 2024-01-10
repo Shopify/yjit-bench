@@ -16,6 +16,7 @@ GEM
     i18n (1.12.0)
       concurrent-ruby (~> 1.0)
     minitest (5.17.0)
+    mutex_m (0.2.0)
     sqlite3 (1.4.2)
     thread_safe (0.3.6)
     tzinfo (1.2.11)
@@ -31,6 +32,7 @@ PLATFORMS
 DEPENDENCIES
   activerecord (~> 6.0.6)
   activerecord-jdbcsqlite3-adapter (~> 60.4)
+  mutex_m
   sqlite3 (~> 1.4)
 
 BUNDLED WITH

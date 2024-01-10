@@ -33,6 +33,7 @@ gem 'jbuilder', '~> 2.7'
 #gem 'bootsnap', '>= 1.4.2', require: false
 
 gem 'psych', '~> 3.3.2'
+gem 'mutex_m'
 
 group :development do
   gem 'listen', '~> 3.2'
