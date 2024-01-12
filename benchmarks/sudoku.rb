@@ -1,103 +1,191 @@
 require_relative '../harness/loader'
 
-def sd_genmat()
+def sd_genmat
   mr = Array.new(324) { [] }
-  mc = Array.new(729) { [] }
+  mc = Array.new(729) { Array.new(4, 0) }
   r = 0
-  (0...9).each do |i|
-    (0...9).each do |j|
-      (0...9).each do |k|
-        mc[r] = [ 9 * i + j, (i/3*3 + j/3) * 9 + k + 81, 9 * i + k + 162, 9 * j + k + 243 ]
+
+  i = 0
+  while i < 9
+    j = 0
+    while j < 9
+      k = 0
+      while k < 9
+        mcr = mc[r]
+        mcr[0] = 9 * i + j
+        mcr[1] = (i / 3 * 3 + j / 3) * 9 + k + 81
+        mcr[2] = 9 * i + k + 162
+        mcr[3] = 9 * j + k + 243
         r += 1
+        k += 1
       end
+      j += 1
     end
+    i += 1
   end
-  (0...729).each do |r|
-    (0...4).each do |c2|
-      mr[mc[r][c2]].push(r)
+
+  r2 = 0
+  while r2 < 729
+    c2 = 0
+    while c2 < 4
+      mr[mc[r2][c2]] << r2
+      c2 += 1
     end
+    r2 += 1
   end
-  return mr, mc
+
+  [mr, mc]
 end
 
-def sd_update(mr, mc, sr, sc, r, v)
-  min, min_c = 10, 0
-  (0...4).each do |c2|
-    if v > 0 then sc[mc[r][c2]] += 128
-    else sc[mc[r][c2]] -= 128 end
+def sd_update_forward(mr, mc, sr, sc, r)
+  min = 10
+  min_c = 0
+  mcr = mc[r]
+
+  c2 = 0
+  while c2 < 4
+    sc[mcr[c2]] += 128
+    c2 += 1
   end
-  (0...4).each do |c2|
-    c = mc[r][c2]
-    if v > 0 then
-      (0...9).each do |r2|
-        rr = mr[c][r2]
-        sr[rr] += + 1
-        if sr[rr] == 1 then
-          p = mc[rr]
-          sc[p[0]] -= 1; sc[p[1]] -= 1; sc[p[2]] -= 1; sc[p[3]] -= 1
-          if sc[p[0]] < min then min, min_c = sc[p[0]], p[0] end
-          if sc[p[1]] < min then min, min_c = sc[p[1]], p[1] end
-          if sc[p[2]] < min then min, min_c = sc[p[2]], p[2] end
-          if sc[p[3]] < min then min, min_c = sc[p[3]], p[3] end
+
+  c2 = 0
+  while c2 < 4
+    mrc = mr[mcr[c2]]
+    r2 = 0
+    while r2 < 9
+      rr = mrc[r2]
+      if (sr[rr] += 1) == 1
+        p = mc[rr]
+        cc2 = 0
+        while cc2 < 4
+          cc = p[cc2]
+          if (sc[cc] -= 1) < min
+            min = sc[cc]
+            min_c = cc
+          end
+          cc2 += 1
         end
       end
-    else
-      (0...9).each do |r2|
-        rr = mr[c][r2]
-        sr[rr] -= 1
-        if sr[rr] == 0 then
-          p = mc[rr]
-          sc[p[0]] += 1; sc[p[1]] += 1; sc[p[2]] += 1; sc[p[3]] += 1
-        end
-      end
+      r2 += 1
     end
+    c2 += 1
   end
-  return min, min_c
+
+  [min, min_c]
+end
+
+def sd_update_reverse(mr, mc, sr, sc, r)
+  c2 = 0
+  while c2 < 4
+    sc[mc[r][c2]] -= 128
+    c2 += 1
+  end
+
+  c2 = 0
+  while c2 < 4
+    c = mc[r][c2]
+    r2 = 0
+    while r2 < 9
+      rr = mr[c][r2]
+      if (sr[rr] -= 1) == 0
+        p = mc[rr]
+
+        sc[p[0]] += 1
+        sc[p[1]] += 1
+        sc[p[2]] += 1
+        sc[p[3]] += 1
+      end
+      r2 += 1
+    end
+    c2 += 1
+  end
 end
 
 def sd_solve(mr, mc, s)
-  ret, sr, sc, hints = [], Array.new(729) { 0 }, Array.new(324) { 9 }, 0
-  (0...81).each do |i|
-    a = (s[i].chr >= '1' and s[i].chr <= '9')? s[i].ord - 49 : -1
-    if a >= 0 then sd_update(mr, mc, sr, sc, i * 9 + a, 1); hints += 1 end
+  sr = Array.new(729, 0)
+  sc = Array.new(324, 9)
+  hints = 0
+
+  i = 0
+  while i < 81
+    char = s[i]
+    a = (char >= '1' && char <= '9') ? char.ord - 49 : -1
+    if a >= 0
+      sd_update_forward(mr, mc, sr, sc, i * 9 + a)
+      hints += 1
+    end
+    i += 1
   end
-  cr, cc = Array.new(81) { -1 }, Array.new(81) { 0 }
-  i, min, dir = 0, 10, 1
-  loop do
-    while i >= 0 and i < 81 - hints do
-      if dir == 1 then
-        if min > 1 then
-          (0...324).each do |c|
-            if sc[c] < min then
-              min, cc[i] = sc[c], c
-              if min < 2 then break end
+
+  cr = Array.new(81, -1)
+  cc = Array.new(81, 0)
+  i = 0
+  min = 10
+  dir = 1
+
+  while true
+    while i >= 0 && i < 81 - hints
+      if dir == 1
+        if min > 1
+          c = 0
+          while c < 324
+            if sc[c] < min
+              min = sc[c]
+              cc[i] = c
+              break if min < 2
             end
+            c += 1
           end
         end
-        if min == 0 or min == 10 then cr[i], dir, i = -1, -1, i - 1 end
+
+        if min == 0 || min == 10
+          cr[i] = dir = -1
+          i -= 1
+        end
       end
+
       c = cc[i]
-      if dir == -1 and cr[i] >= 0 then sd_update(mr, mc, sr, sc, mr[c][cr[i]], -1) end
-      r2_ = 9
-      (cr[i]+1...9).each do |r2|
-        if sr[mr[c][r2]] == 0 then r2_ = r2; break end
+      if dir == -1 && cr[i] >= 0
+        sd_update_reverse(mr, mc, sr, sc, mr[c][cr[i]])
       end
-      if r2_ < 9 then
-        min, cc[i+1] = sd_update(mr, mc, sr, sc, mr[c][r2_], 1)
-        cr[i], dir, i = r2_, 1, i + 1
-      else cr[i], dir, i = -1, -1, i - 1 end
+
+      r2 = cr[i] + 1
+      while r2 < 9 && sr[mr[c][r2]] != 0
+        r2 += 1
+      end
+
+      if r2 < 9
+        min, cc[i + 1] = sd_update_forward(mr, mc, sr, sc, mr[c][r2])
+        cr[i] = r2
+        dir = 1
+        i += 1
+      else
+        cr[i] = -1
+        dir = -1
+        i -= 1
+      end
     end
-    if i < 0 then break end
-    o = []
-    (0...81).each do |j| o.push(s[j].ord - 48) end
-    (0...i).each do |j|
+
+    break if i < 0
+
+    o = Array.new(81, 0)
+    j = 0
+    while j < 81
+      o[j] = s[j].ord - 48
+      j += 1
+    end
+
+    j = 0
+    while j < i
       r = mr[cc[j]][cr[j]]
-      o[r/9] = r % 9 + 1
+      o[r / 9] = r % 9 + 1
+      j += 1
     end
-    ret.push(o)
-    i, dir = i - 1, -1
+    o.join # puts o.join
+
+    i -= 1
+    dir = -1
   end
-  return ret
 end
 
 hard20 = [
@@ -122,14 +210,21 @@ hard20 = [
   "1.......2.9.4...5...6...7...5.3.4.......6........58.4...2...6...3...9.8.7.......1",
   ".....1.2.3...4.5.....6....7..2.....1.8..9..3.4.....8..5....2....9..3.4....67....."
 ]
-mr, mc = sd_genmat()
+
+mr, mc = sd_genmat
+
+n = 4
+if ARGV.length > 0
+  n = ARGV[0].to_i
+end
 
 run_benchmark(20) do
-  n = 4
-  (0...n).each do |i|
-    hard20.each do |l|
-      ret = sd_solve(mr, mc, l)
-      ret.each do |s| s.join end
+  i = 0
+  while i < n
+    hard20.each do |line|
+      sd_solve(mr, mc, line)
+      # puts ""
     end
+    i += 1
   end
 end
