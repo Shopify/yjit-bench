@@ -194,11 +194,15 @@ with the `--yjit-stats` command-line option:
 
 ### Using perf
 
-There is also a harness to run benchmarks for a fixed
-number of iterations, for example to use with the `perf stat` tool:
+There is also a harness to use Linux perf. By default, it only runs a fixed number of iterations.
+If `PERF` environment variable is present, it starts the perf subcommand after warmup.
 
-```
-ruby --yjit-stats -I./harness-perf benchmarks/lee/benchmark.rb
+```sh
+# Use `perf record` for both warmup and benchmark
+perf record ruby --yjit-perf=map -Iharness-perf benchmarks/railsbench/benchmark.rb
+
+# Use `perf record` only for benchmark
+PERF=record ruby --yjit-perf=map -Iharness-perf benchmarks/railsbench/benchmark.rb
 ```
 
 This is the only harness that uses `run_benchmark`'s argument, `num_itrs_hint`.
