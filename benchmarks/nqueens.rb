@@ -36,11 +36,13 @@ def nq_solve(n)
   m
 end
 
-n = 12
+n = 10
 if ARGV.length > 0
   n = ARGV[0].to_i
 end
 
 run_benchmark(40) do
-  nq_solve(n)
+  10.times do
+    nq_solve(n)
+  end
 end
