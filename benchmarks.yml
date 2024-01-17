@@ -79,7 +79,7 @@ sudoku:
 matmul:
   desc: matrix multiplication benchmark
 blurhash:
-  desc: Blurhash calculations
+  desc: blurhash (blurred preview image) calculation
 
 #
 # MicroBenchmarks
