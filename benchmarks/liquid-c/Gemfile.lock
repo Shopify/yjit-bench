@@ -8,6 +8,8 @@ GIT
 GEM
   remote: https://rubygems.org/
   specs:
+    base64 (0.2.0)
+    bigdecimal (3.1.6)
     liquid-c (4.1.0)
       liquid (>= 5.0.1)
 
@@ -17,6 +19,8 @@ PLATFORMS
   x86_64-linux
 
 DEPENDENCIES
+  base64
+  bigdecimal
   liquid!
   liquid-c (= 4.1.0)
 

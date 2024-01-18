@@ -1,5 +1,6 @@
 source "https://rubygems.org"
 
+gem "base64"
 gem "graphql"
 gem "graphql-c_parser"
 gem "racc"

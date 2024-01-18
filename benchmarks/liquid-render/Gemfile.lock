@@ -8,12 +8,16 @@ GIT
 GEM
   remote: https://rubygems.org/
   specs:
+    base64 (0.2.0)
+    bigdecimal (3.1.6)
 
 PLATFORMS
   ruby
   x86_64-linux
 
 DEPENDENCIES
+  base64
+  bigdecimal
   liquid!
 
 BUNDLED WITH

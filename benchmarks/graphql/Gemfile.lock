@@ -1,14 +1,17 @@
 GEM
   remote: https://rubygems.org/
   specs:
+    base64 (0.2.0)
     graphql (2.0.26)
     racc (1.7.1)
 
 PLATFORMS
   arm64-darwin-22
+  arm64-darwin-23
   x86_64-linux
 
 DEPENDENCIES
+  base64
   graphql
   racc
 
