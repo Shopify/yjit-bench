@@ -61,6 +61,8 @@ GEM
       minitest (~> 5.1)
       tzinfo (~> 1.1)
       zeitwerk (~> 2.2, >= 2.2.2)
+    base64 (0.2.0)
+    bigdecimal (3.1.6)
     builder (3.2.4)
     concurrent-ruby (1.2.2)
     crass (1.0.6)
@@ -176,12 +178,15 @@ GEM
 PLATFORMS
   arm64-darwin-21
   arm64-darwin-22
+  arm64-darwin-23
   universal-java-11
   x86_64-darwin-20
   x86_64-linux
 
 DEPENDENCIES
   activerecord-jdbcsqlite3-adapter (~> 60.4)
+  base64
+  bigdecimal
   jbuilder (~> 2.7)
   listen (~> 3.2)
   mutex_m
