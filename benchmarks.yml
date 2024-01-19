@@ -34,8 +34,11 @@ psych-load:
 railsbench:
   desc: railsbench is a read-only tiny SQLite-backed Rails app, querying a small selection of .html.erb routes and JSON routes.
   category: headline
+rubocop:
+  desc: Run the RuboCop auto correction on a sizable file.
+  category: headline
 ruby-lsp:
-  desc: Run several operations with the Ruby language server used by VSCode
+  desc: Run the Ruby LSP's indexing mechanism.
   category: headline
 sequel:
   desc: sequel repeatedly queries entries in a SQLite table with highly-random names.
