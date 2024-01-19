@@ -1,0 +1,8 @@
+# frozen_string_literal: true
+
+source "https://rubygems.org"
+
+gem "parser", ">= 3.2.2.3" # Avoid a fun ruby-lsp/rubocop bug
+gem "rubocop"
+gem "rubocop-performance"
+gem "rubocop-rails"
