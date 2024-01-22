@@ -594,4 +594,10 @@ if args.graph
   puts out_graph_path
 end
 
-exit(bench_failures.empty? ? 0 : 1)
+if !bench_failures.empty?
+  puts "\nFailed benchmarks:"
+  bench_failures.each do |name, data|
+    puts "  #{name}: #{data.keys.join(", ")}"
+  end
+  exit(1)
+end
