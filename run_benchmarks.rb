@@ -32,14 +32,10 @@ def os
 end
 
 # Checked system - error if the command fails
-def check_call(command, verbose: false, env: {})
+def check_call(command, env: {})
   puts(command)
 
-  if verbose
-    status = system(env, command, out: $stdout, err: :out)
-  else
-    status = system(env, command)
-  end
+  status = system(env, command)
 
   unless status
     puts "Command #{command.inspect} failed in directory #{Dir.pwd}"
