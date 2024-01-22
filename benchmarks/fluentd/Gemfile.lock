@@ -4,6 +4,7 @@ GEM
     base64 (0.2.0)
     concurrent-ruby (1.2.2)
     cool.io (1.8.0)
+    csv (3.2.8)
     fluentd (1.16.2)
       bundler
       cool.io (>= 1.4.5, < 2.0.0)
@@ -36,6 +37,7 @@ PLATFORMS
 
 DEPENDENCIES
   base64
+  csv
   fluentd
 
 BUNDLED WITH
