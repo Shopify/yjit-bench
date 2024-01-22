@@ -43,6 +43,26 @@ def check_call(command, env: {})
   end
 end
 
+# Call system, capture stderr, return that with result.
+def run_benchmark_command(command, env: {})
+  puts(command)
+
+  result = {}
+
+  IO.pipe do |reader, writer|
+    result[:success] = system(env, command, err: writer)
+    writer.close
+    result[:err] = reader.read
+  end
+
+  unless result[:success]
+    puts "Command #{command.inspect} failed in directory #{Dir.pwd}"
+    puts result[:err]
+  end
+
+  result
+end
+
 def check_output(*command)
   IO.popen(*command, &:read)
 end
@@ -209,6 +229,7 @@ end
 # Run all the benchmarks and record execution times
 def run_benchmarks(ruby:, ruby_description:, categories:, name_filters:, out_path:, harness:, pre_init:, no_pinning:)
   bench_data = {}
+  bench_failures = {}
 
   # Get the list of benchmark files/directories matching name filters
   bench_files = Dir.children('benchmarks').sort.filter do |entry|
@@ -273,16 +294,19 @@ def run_benchmarks(ruby:, ruby_description:, categories:, name_filters:, out_pat
     end
 
     # Do the benchmarking
-    check_call(cmd.shelljoin, env: env)
+    result = run_benchmark_command(cmd.shelljoin, env: env)
 
-    # Read the benchmark data
-    out_data = JSON.parse(File.read result_json_path)
-    File.unlink(result_json_path)
+    if result[:success]
+      bench_data[bench_name] = JSON.parse(File.read result_json_path).tap do
+        File.unlink(result_json_path)
+      end
+    else
+      bench_failures[bench_name] = result[:err]
+    end
 
-    bench_data[bench_name] = out_data
   end
 
-  bench_data
+  [bench_data, bench_failures]
 end
 
 # Default values for command-line arguments
@@ -420,8 +444,9 @@ end
 # Benchmark with and without YJIT
 bench_start_time = Time.now.to_f
 bench_data = {}
+bench_failures = {}
 args.executables.each do |name, executable|
-  bench_data[name] = run_benchmarks(
+  bench_data[name], failures = run_benchmarks(
     ruby: executable,
     ruby_description: ruby_descriptions[name],
     categories: args.categories,
@@ -431,12 +456,28 @@ args.executables.each do |name, executable|
     pre_init: args.with_pre_init,
     no_pinning: args.no_pinning
   )
+  # Make it easier to query later.
+  bench_failures[name] = failures unless failures.empty?
 end
+
+if !bench_failures.empty?
+  bench_failures.each do |name, data|
+    data.each do |bench, result|
+      STDERR.puts "\nError output for #{bench} (#{name}):\n#{result}\n"
+    end
+  end
+end
+
 bench_end_time = Time.now.to_f
 bench_names = sort_benchmarks(bench_data.first.last.keys)
 
 bench_total_time = (bench_end_time - bench_start_time).to_i
 puts("Total time spent benchmarking: #{bench_total_time}s")
+
+if !bench_failures.empty?
+  puts("Failed benchmarks: #{bench_failures.map { |k, v| v.size }.sum}")
+end
+
 puts
 
 # Table for the data we've gathered
@@ -552,3 +593,5 @@ if args.graph
   render_graph(out_tbl_path, out_graph_path)
   puts out_graph_path
 end
+
+exit(bench_failures.empty? ? 0 : 1)
