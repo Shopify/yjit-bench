@@ -129,11 +129,14 @@ def performance_governor?
   end
 end
 
-def table_to_str(table_data, format)
+def table_to_str(table_data, format, failures)
   # Trim numbers to one decimal for console display
   # Keep two decimals for the speedup ratios
 
-  table_data = table_data.first(1) + table_data.drop(1).map { |row|
+  failure_rows = failures.map { |_exe, data| data.keys }.flatten.uniq
+                         .map { |name| [name] + (['N/A'] * (table_data.first.size - 1)) }
+
+  table_data = table_data.first(1) + failure_rows + table_data.drop(1).map { |row|
     format.zip(row).map { |fmt, data| fmt % data }
   }
 
@@ -469,7 +472,8 @@ if !bench_failures.empty?
 end
 
 bench_end_time = Time.now.to_f
-bench_names = sort_benchmarks(bench_data.first.last.keys)
+# Get keys from all rows in case a benchmark failed for only some executables.
+bench_names = sort_benchmarks(bench_data.map { |k, v| v.keys }.flatten.uniq)
 
 bench_total_time = (bench_end_time - bench_start_time).to_i
 puts("Total time spent benchmarking: #{bench_total_time}s")
@@ -504,6 +508,9 @@ end
 
 # Format the results table
 bench_names.each do |bench_name|
+  # Skip this bench_name if we failed to get data for any of the executables.
+  next unless bench_data.all? { |(_k, v)| v[bench_name] }
+
   t0s = all_names.map { |name| (bench_data[name][bench_name]['warmup'][0] || bench_data[name][bench_name]['bench'][0]) * 1000.0 }
   times_no_warmup = all_names.map { |name| bench_data[name][bench_name]['bench'].map { |v| v * 1000.0 } }
   rsss = all_names.map { |name| bench_data[name][bench_name]['rss'] / 1024.0 / 1024.0 }
@@ -569,7 +576,7 @@ ruby_descriptions.each do |key, value|
   output_str << "#{key}: #{value}\n"
 end
 output_str += "\n"
-output_str += table_to_str(table, format) + "\n"
+output_str += table_to_str(table, format, bench_failures) + "\n"
 unless other_names.empty?
   output_str << "Legend:\n"
   other_names.each do |name|
