@@ -211,7 +211,7 @@ def sort_benchmarks(bench_names)
 end
 
 # Run all the benchmarks and record execution times
-def run_benchmarks(ruby:, ruby_description:, categories:, name_filters:, out_path:, harness:, pre_init:, no_pinning:)
+def run_benchmarks(name:, ruby:, ruby_description:, categories:, name_filters:, out_path:, harness:, pre_init:, no_pinning:)
   bench_data = {}
 
   # Get the list of benchmark files/directories matching name filters
@@ -274,6 +274,11 @@ def run_benchmarks(ruby:, ruby_description:, categories:, name_filters:, out_pat
       ["GEM_HOME", "GEM_PATH"].each do |var|
         env[var] = nil if ENV.key?(var)
       end
+    end
+
+    if name == "mutable"
+      cmd = ["env", "MUTABLE_STRINGS=true", *cmd]
+      # env["MUTABLE_STRINGS"] = "true"
     end
 
     # Do the benchmarking
@@ -392,6 +397,8 @@ OptionParser.new do |opts|
   end
 end.parse!
 
+args.categories = ["headline"]
+
 # Remaining arguments are treated as benchmark name filters
 if ARGV.length > 0
   args.name_filters += ARGV
@@ -399,12 +406,8 @@ end
 
 # If -e is not specified, benchmark the current Ruby. Compare it with YJIT if available.
 if args.executables.empty?
-  if have_yjit?(RbConfig.ruby)
-    args.executables["interp"] = [RbConfig.ruby]
-    args.executables["yjit"] = [RbConfig.ruby, "--yjit", *args.yjit_opts.shellsplit]
-  else
-    args.executables["ruby"] = [RbConfig.ruby]
-  end
+  args.executables["mutable"] = [RbConfig.ruby, "--yjit", *args.yjit_opts.shellsplit]
+  args.executables["frozen"] = [RbConfig.ruby, "--yjit", *args.yjit_opts.shellsplit]
 end
 
 # Disable CPU frequency scaling
@@ -426,6 +429,7 @@ bench_start_time = Time.now.to_f
 bench_data = {}
 args.executables.each do |name, executable|
   bench_data[name] = run_benchmarks(
+    name: name,
     ruby: executable,
     ruby_description: ruby_descriptions[name],
     categories: args.categories,
