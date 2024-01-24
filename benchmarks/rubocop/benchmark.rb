@@ -21,7 +21,7 @@ class RuboCopRunner < RuboCop::Runner
           "--format",
           "RuboCop::Formatter::BaseFormatter",
           "--raise-cop-error",
-          "--auto-correct",
+          "--autocorrect",
         ]
       ).first,
       ::RuboCop::ConfigStore.new
