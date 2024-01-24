@@ -3,9 +3,20 @@ git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 
 #ruby '3.0.0'
 
-gem 'stackprof', platforms: :mri
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails'
-gem 'rails', '~> 6.0.3', '>= 6.0.3.6'
+
+# Everything except Action Cable. It's unused and it installs native gems.
+%w[
+  actionmailbox actionmailer actionpack actionview
+  actiontext activejob activemodel activerecord
+  activestorage activesupport railties
+].each do |rails_gem|
+  gem rails_gem, '~> 6.0.3', '>= 6.0.3.6'
+end
+
+gem 'sprockets-rails', '3.2.2'
+
+gem 'stackprof', platforms: :mri
 # Use sqlite3 as the database for Active Record
 gem 'sqlite3', '~> 1.4', platform: :ruby
 gem 'activerecord-jdbcsqlite3-adapter', '~> 60.4', platform: :jruby

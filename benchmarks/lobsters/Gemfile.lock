@@ -3,31 +3,6 @@ GIT
   revision: d21d811ffece4d3959bcd37e58fec77590ff6f93
   ref: d21d811ffece4d3959bcd37e58fec77590ff6f93
   specs:
-    rails (7.1.0.beta1)
-      actioncable (= 7.1.0.beta1)
-      actionmailbox (= 7.1.0.beta1)
-      actionmailer (= 7.1.0.beta1)
-      actionpack (= 7.1.0.beta1)
-      actiontext (= 7.1.0.beta1)
-      actionview (= 7.1.0.beta1)
-      activejob (= 7.1.0.beta1)
-      activemodel (= 7.1.0.beta1)
-      activerecord (= 7.1.0.beta1)
-      activestorage (= 7.1.0.beta1)
-      activesupport (= 7.1.0.beta1)
-      bundler (>= 1.15.0)
-      railties (= 7.1.0.beta1)
-
-GEM
-  remote: https://rubygems.org/
-  specs:
-    Ascii85 (1.1.0)
-    actioncable (7.1.0.beta1)
-      actionpack (= 7.1.0.beta1)
-      activesupport (= 7.1.0.beta1)
-      nio4r (~> 2.0)
-      websocket-driver (>= 0.6.1)
-      zeitwerk (~> 2.6)
     actionmailbox (7.1.0.beta1)
       actionpack (= 7.1.0.beta1)
       activejob (= 7.1.0.beta1)
@@ -57,8 +32,6 @@ GEM
       rack-test (>= 0.6.3)
       rails-dom-testing (~> 2.2)
       rails-html-sanitizer (~> 1.6)
-    actionpack-page_caching (1.2.4)
-      actionpack (>= 4.0.0)
     actiontext (7.1.0.beta1)
       actionpack (= 7.1.0.beta1)
       activerecord (= 7.1.0.beta1)
@@ -81,8 +54,6 @@ GEM
       activemodel (= 7.1.0.beta1)
       activesupport (= 7.1.0.beta1)
       timeout (>= 0.4.0)
-    activerecord-typedstore (1.5.1)
-      activerecord (>= 6.1)
     activestorage (7.1.0.beta1)
       actionpack (= 7.1.0.beta1)
       activejob (= 7.1.0.beta1)
@@ -99,6 +70,23 @@ GEM
       minitest (>= 5.1)
       mutex_m
       tzinfo (~> 2.0)
+    railties (7.1.0.beta1)
+      actionpack (= 7.1.0.beta1)
+      activesupport (= 7.1.0.beta1)
+      irb
+      rackup (>= 1.0.0)
+      rake (>= 12.2)
+      thor (~> 1.0, >= 1.2.2)
+      zeitwerk (~> 2.6)
+
+GEM
+  remote: https://rubygems.org/
+  specs:
+    Ascii85 (1.1.0)
+    actionpack-page_caching (1.2.4)
+      actionpack (>= 4.0.0)
+    activerecord-typedstore (1.5.1)
+      activerecord (>= 6.1)
     addressable (2.8.4)
       public_suffix (>= 2.0.2, < 6.0)
     afm (0.2.2)
@@ -136,9 +124,6 @@ GEM
     drb (2.1.1)
       ruby2_keywords
     erubi (1.12.0)
-    exception_notification (4.5.0)
-      actionmailer (>= 5.2, < 8)
-      activesupport (>= 5.2, < 8)
     factory_bot (6.2.1)
       activesupport (>= 5.0.0)
     factory_bot_rails (6.2.0)
@@ -193,7 +178,6 @@ GEM
       timeout
     net-smtp (0.3.3)
       net-protocol
-    nio4r (2.5.9)
     nokogiri (1.15.4)
       mini_portile2 (~> 2.8.2)
       racc (~> 1.4)
@@ -216,8 +200,6 @@ GEM
     psych (5.1.0)
       stringio
     public_suffix (5.0.3)
-    puma (6.3.0)
-      nio4r (~> 2.0)
     racc (1.7.1)
     rack (2.2.8)
     rack-attack (6.6.1)
@@ -238,14 +220,6 @@ GEM
     rails-html-sanitizer (1.6.0)
       loofah (~> 2.21)
       nokogiri (~> 1.14)
-    railties (7.1.0.beta1)
-      actionpack (= 7.1.0.beta1)
-      activesupport (= 7.1.0.beta1)
-      irb
-      rackup (>= 1.0.0)
-      rake (>= 12.2)
-      thor (~> 1.0, >= 1.2.2)
-      zeitwerk (~> 2.6)
     rainbow (3.1.1)
     rake (13.0.6)
     rb-fsevent (0.11.2)
@@ -343,9 +317,6 @@ GEM
       crack (>= 0.3.2)
       hashdiff (>= 0.4.0, < 2.0.0)
     webrick (1.8.1)
-    websocket-driver (0.7.6)
-      websocket-extensions (>= 0.1.0)
-    websocket-extensions (0.1.5)
     xpath (3.2.0)
       nokogiri (~> 1.8)
     zeitwerk (2.6.11)
@@ -354,14 +325,23 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  actionmailbox!
+  actionmailer!
+  actionpack!
   actionpack-page_caching
+  actiontext!
+  actionview!
+  activejob!
+  activemodel!
+  activerecord!
   activerecord-typedstore
+  activestorage!
+  activesupport!
   bcrypt (~> 3.1.2)
   byebug
   capybara
   commonmarker (>= 0.23.6)
   database_cleaner
-  exception_notification
   factory_bot_rails
   faker
   flamegraph
@@ -374,10 +354,9 @@ DEPENDENCIES
   nokogiri (>= 1.13.9)
   oauth
   pdf-reader
-  puma (>= 5.6.2)
   rack-attack
   rack-mini-profiler
-  rails!
+  railties!
   rb-readline
   rotp
   rqrcode
