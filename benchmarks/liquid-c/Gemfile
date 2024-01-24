@@ -8,7 +8,7 @@ end
 # Use `gem github:` to also get the performance/ directory
 gem "liquid", github: "Shopify/liquid", ref: "v5.4.0"
 
-gem "liquid-c", "4.1.0"
+gem "liquid-c", "4.2.0"
 
 gem "base64"
 gem "bigdecimal"
