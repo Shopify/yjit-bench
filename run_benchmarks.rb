@@ -32,19 +32,35 @@ def os
 end
 
 # Checked system - error if the command fails
-def check_call(command, verbose: false, env: {})
+def check_call(command, env: {})
   puts(command)
 
-  if verbose
-    status = system(env, command, out: $stdout, err: :out)
-  else
-    status = system(env, command)
-  end
+  status = system(env, command)
 
   unless status
     puts "Command #{command.inspect} failed in directory #{Dir.pwd}"
     raise RuntimeError.new
   end
+end
+
+# Call system, capture stderr, return that with result.
+def run_benchmark_command(command, env: {})
+  puts(command)
+
+  result = {}
+
+  IO.pipe do |reader, writer|
+    result[:success] = system(env, command, err: writer)
+    writer.close
+    result[:err] = reader.read
+  end
+
+  unless result[:success]
+    puts "Command #{command.inspect} failed in directory #{Dir.pwd}"
+    puts result[:err]
+  end
+
+  result
 end
 
 def check_output(*command)
@@ -113,11 +129,14 @@ def performance_governor?
   end
 end
 
-def table_to_str(table_data, format)
+def table_to_str(table_data, format, failures)
   # Trim numbers to one decimal for console display
   # Keep two decimals for the speedup ratios
 
-  table_data = table_data.first(1) + table_data.drop(1).map { |row|
+  failure_rows = failures.map { |_exe, data| data.keys }.flatten.uniq
+                         .map { |name| [name] + (['N/A'] * (table_data.first.size - 1)) }
+
+  table_data = table_data.first(1) + failure_rows + table_data.drop(1).map { |row|
     format.zip(row).map { |fmt, data| fmt % data }
   }
 
@@ -213,6 +232,7 @@ end
 # Run all the benchmarks and record execution times
 def run_benchmarks(ruby:, ruby_description:, categories:, name_filters:, out_path:, harness:, pre_init:, no_pinning:)
   bench_data = {}
+  bench_failures = {}
 
   # Get the list of benchmark files/directories matching name filters
   bench_files = Dir.children('benchmarks').sort.filter do |entry|
@@ -277,16 +297,19 @@ def run_benchmarks(ruby:, ruby_description:, categories:, name_filters:, out_pat
     end
 
     # Do the benchmarking
-    check_call(cmd.shelljoin, env: env)
+    result = run_benchmark_command(cmd.shelljoin, env: env)
 
-    # Read the benchmark data
-    out_data = JSON.parse(File.read result_json_path)
-    File.unlink(result_json_path)
+    if result[:success]
+      bench_data[bench_name] = JSON.parse(File.read result_json_path).tap do
+        File.unlink(result_json_path)
+      end
+    else
+      bench_failures[bench_name] = result[:err]
+    end
 
-    bench_data[bench_name] = out_data
   end
 
-  bench_data
+  [bench_data, bench_failures]
 end
 
 # Default values for command-line arguments
@@ -424,8 +447,9 @@ end
 # Benchmark with and without YJIT
 bench_start_time = Time.now.to_f
 bench_data = {}
+bench_failures = {}
 args.executables.each do |name, executable|
-  bench_data[name] = run_benchmarks(
+  bench_data[name], failures = run_benchmarks(
     ruby: executable,
     ruby_description: ruby_descriptions[name],
     categories: args.categories,
@@ -435,12 +459,29 @@ args.executables.each do |name, executable|
     pre_init: args.with_pre_init,
     no_pinning: args.no_pinning
   )
+  # Make it easier to query later.
+  bench_failures[name] = failures unless failures.empty?
 end
+
+if !bench_failures.empty?
+  bench_failures.each do |name, data|
+    data.each do |bench, result|
+      STDERR.puts "\nError output for #{bench} (#{name}):\n#{result}\n"
+    end
+  end
+end
+
 bench_end_time = Time.now.to_f
-bench_names = sort_benchmarks(bench_data.first.last.keys)
+# Get keys from all rows in case a benchmark failed for only some executables.
+bench_names = sort_benchmarks(bench_data.map { |k, v| v.keys }.flatten.uniq)
 
 bench_total_time = (bench_end_time - bench_start_time).to_i
 puts("Total time spent benchmarking: #{bench_total_time}s")
+
+if !bench_failures.empty?
+  puts("Failed benchmarks: #{bench_failures.map { |k, v| v.size }.sum}")
+end
+
 puts
 
 # Table for the data we've gathered
@@ -467,6 +508,9 @@ end
 
 # Format the results table
 bench_names.each do |bench_name|
+  # Skip this bench_name if we failed to get data for any of the executables.
+  next unless bench_data.all? { |(_k, v)| v[bench_name] }
+
   t0s = all_names.map { |name| (bench_data[name][bench_name]['warmup'][0] || bench_data[name][bench_name]['bench'][0]) * 1000.0 }
   times_no_warmup = all_names.map { |name| bench_data[name][bench_name]['bench'].map { |v| v * 1000.0 } }
   rsss = all_names.map { |name| bench_data[name][bench_name]['rss'] / 1024.0 / 1024.0 }
@@ -532,7 +576,7 @@ ruby_descriptions.each do |key, value|
   output_str << "#{key}: #{value}\n"
 end
 output_str += "\n"
-output_str += table_to_str(table, format) + "\n"
+output_str += table_to_str(table, format, bench_failures) + "\n"
 unless other_names.empty?
   output_str << "Legend:\n"
   other_names.each do |name|
@@ -555,4 +599,12 @@ if args.graph
   out_graph_path = output_path + ".png"
   render_graph(out_tbl_path, out_graph_path)
   puts out_graph_path
+end
+
+if !bench_failures.empty?
+  puts "\nFailed benchmarks:"
+  bench_failures.each do |name, data|
+    puts "  #{name}: #{data.keys.join(", ")}"
+  end
+  exit(1)
 end
