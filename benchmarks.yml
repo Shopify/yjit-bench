@@ -135,3 +135,7 @@ throw:
   desc: microbenchmark for the throw instruction and stack unwinding.
   category: micro
   single_file: true
+ruby-xor:
+  desc: pure-Ruby string XOR microbenchmark, analogous to xorcist C extension.
+  category: micro
+  single_file: true
