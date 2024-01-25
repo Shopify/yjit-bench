@@ -53,6 +53,7 @@ def run_benchmark_command(command, env: {})
     result[:success] = system(env, command, err: writer)
     writer.close
     result[:err] = reader.read
+    puts result[:err] # allow checking --yjit-stats whether the benchmark fails or not
   end
 
   unless result[:success]
