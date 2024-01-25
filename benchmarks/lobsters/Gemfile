@@ -6,7 +6,7 @@ source "https://rubygems.org"
   actiontext activejob activemodel activerecord
   activestorage activesupport railties
 ].each do |rails_gem|
-  gem rails_gem, github: "rails/rails", ref: "d21d811ffece4d3959bcd37e58fec77590ff6f93"
+  gem rails_gem, "~> 7.1"
 end
 
 gem "sqlite3"
@@ -40,7 +40,7 @@ gem "rqrcode"
 gem "pdf-reader"
 gem "nokogiri", ">= 1.13.9"
 gem "htmlentities"
-gem "commonmarker", ">= 0.23.6"
+gem "commonmarker", ">= 0.23.6", "< 1.0" # The v1.0 Rust gem doesn't compile on Ruby master
 
 # perf - skip for benchmarking
 group :development do

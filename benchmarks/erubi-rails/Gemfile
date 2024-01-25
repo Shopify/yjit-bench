@@ -11,14 +11,14 @@ git_source(:github) { |repo| "https://github.com/#{repo}.git" }
   actiontext activejob activemodel activerecord
   activestorage activesupport railties
 ].each do |rails_gem|
-  gem rails_gem, '~> 6.1.4', '>= 6.1.4.1'
+  gem rails_gem, '~> 7.1'
 end
 
 gem 'sprockets-rails', '3.4.0'
 
 # Use sqlite3 as the database for Active Record
 gem 'sqlite3', '~> 1.4', platform: :ruby
-gem 'activerecord-jdbcsqlite3-adapter', '~> 61', platform: :jruby
+gem 'activerecord-jdbcsqlite3-adapter', '~> 70', platform: :jruby
 # Use Puma as the app server
 # gem 'puma', '~> 5.6'
 # Transpile app-like JavaScript. Read more: https://github.com/rails/webpacker
