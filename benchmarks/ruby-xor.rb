@@ -31,7 +31,7 @@ def ruby_xor!(a, b)
 end
 
 a = 'this is a long string with no useful contents yada yada yada yada'
-b = 'this is also a long string with no useful congents yada yada daaaaaa'
+b = 'this is also a long string with no useful contents yada yada daaaaaa'
 
 run_benchmark(20) do
     for i in 0...100_000
