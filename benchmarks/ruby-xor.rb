@@ -24,7 +24,7 @@ def ruby_xor!(a, b)
         ba = a.getbyte(i)
         bb = b.getbyte(i)
         a.setbyte(i, ba ^ bb)
-        i += 1
+        i = i.succ
     end
 
     a
