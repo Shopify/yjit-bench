@@ -31,34 +31,18 @@ def os
   )
 end
 
-# Checked system - error if the command fails
-def check_call(command, env: {})
-  puts(command)
-
-  status = system(env, command)
-
-  unless status
-    puts "Command #{command.inspect} failed in directory #{Dir.pwd}"
-    raise RuntimeError.new
-  end
-end
-
-# Call system, capture stderr, return that with result.
-def run_benchmark_command(command, env: {})
+# Checked system - error or return info if the command fails
+def check_call(command, env: {}, raise_error: true)
   puts(command)
 
   result = {}
 
-  IO.pipe do |reader, writer|
-    result[:success] = system(env, command, err: writer)
-    writer.close
-    result[:err] = reader.read
-    puts result[:err] # allow checking --yjit-stats whether the benchmark fails or not
-  end
+  result[:success] = system(env, command)
+  result[:status] = $?
 
   unless result[:success]
-    puts "Command #{command.inspect} failed in directory #{Dir.pwd}"
-    puts result[:err]
+    puts "Command #{command.inspect} failed with exit code #{result[:status].exitstatus} in directory #{Dir.pwd}"
+    raise RuntimeError.new if raise_error
   end
 
   result
@@ -298,14 +282,14 @@ def run_benchmarks(ruby:, ruby_description:, categories:, name_filters:, out_pat
     end
 
     # Do the benchmarking
-    result = run_benchmark_command(cmd.shelljoin, env: env)
+    result = check_call(cmd.shelljoin, env: env, raise_error: false)
 
     if result[:success]
       bench_data[bench_name] = JSON.parse(File.read result_json_path).tap do
         File.unlink(result_json_path)
       end
     else
-      bench_failures[bench_name] = result[:err]
+      bench_failures[bench_name] = result[:status].exitstatus
     end
 
   end
@@ -462,14 +446,6 @@ args.executables.each do |name, executable|
   )
   # Make it easier to query later.
   bench_failures[name] = failures unless failures.empty?
-end
-
-if !bench_failures.empty?
-  bench_failures.each do |name, data|
-    data.each do |bench, result|
-      STDERR.puts "\nError output for #{bench} (#{name}):\n#{result}\n"
-    end
-  end
 end
 
 bench_end_time = Time.now.to_f
