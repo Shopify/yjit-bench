@@ -38,3 +38,10 @@ run_benchmark(20) do
     ruby_xor!(a.dup, b)
   end
 end
+
+# Do a correctness check, outside of the hot path
+out = ruby_xor!(a.dup, b)
+
+if out != "\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000L\u001F\u0000N\u0006\u0000\u001F\e\u001C\u000EN\u0014T\u0005\u0000\u001A\u000F\u0000\u0019\u0006T\u001DS\v\tU\u0019S\u0006\t\e\u0018E\r\e\u001DT\u001C\u000F\u0010\u0012\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u001D\u0000\u0005\u0000"
+  raise "incorrect output"
+end
