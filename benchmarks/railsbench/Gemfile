@@ -46,10 +46,6 @@ gem 'jbuilder', '~> 2.7'
 gem 'psych', '~> 3.3.2'
 gem 'mutex_m'
 
-group :development do
-  gem 'listen', '~> 3.2'
-end
-
 if RUBY_VERSION >= "3.1"
   # net-smtp, net-imap and net-pop were removed from default gems in Ruby 3.1
   gem "net-smtp", "~> 0.2.1", require: false
