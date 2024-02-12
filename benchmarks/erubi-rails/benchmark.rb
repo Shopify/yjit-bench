@@ -20,4 +20,4 @@ end
 
 # This benchmark will keep writing the production log on every request. It adds up.
 # Let's not fill the disk.
-File.unlink(File.join(__dir__, "log/production.log")) rescue nil
+File.unlink(File.join(__dir__, "log/#{ENV['RAILS_ENV']}.log")) rescue nil
