@@ -17,10 +17,12 @@ def run_benchmark(num_itrs_hint)
 
   # Start perf after warmup
   if ENV['PERF']
-    pid = Process.spawn(
-      'perf', *ENV['PERF'].split(' '), '-p', Process.pid.to_s,
-      '-o', File.expand_path('../perf.data', __dir__), # ignore Dir.chdir
-    )
+    cmd = ['perf', *ENV['PERF'].split(' '), '-p', Process.pid.to_s]
+    if cmd[1] == 'record'
+      # Put perf.data in the same place, ignoring Dir.chdir
+      cmd.push('-o', File.expand_path('../perf.data', __dir__))
+    end
+    pid = Process.spawn(*cmd)
   end
 
   # Run benchmark
