@@ -6,3 +6,5 @@ logs*
 
 __pycache__
 /benchmarks/discourse
+
+.DS_Store
