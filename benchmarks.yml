@@ -43,9 +43,6 @@ ruby-lsp:
 sequel:
   desc: sequel repeatedly queries entries in a SQLite table with highly-random names.
   category: headline
-protoboeuf:
-  desc: protoboeuf (pure-Ruby protobuf) message decoding
-  category: headline
 
 #
 # Other Benchmarks
@@ -86,6 +83,8 @@ matmul:
   desc: matrix multiplication benchmark
 blurhash:
   desc: blurhash (blurred preview image) calculation
+protoboeuf:
+  desc: protoboeuf (pure-Ruby protobuf) message decoding
 
 #
 # MicroBenchmarks
