@@ -4,7 +4,7 @@ require_relative '../../harness/loader'
 require_relative 'benchmark_pb'
 
 Dir.chdir __dir__
-fake_msg_bins = Marshal.load(File.binread('encoded_msg_bins.dump'))
+fake_msg_bins = Marshal.load(File.binread('encoded_msgs.bin'))
 
 run_benchmark(20) do
   fake_msg_bins.each { |bin| ProtoBoeuf::ParkingLot.decode bin }
