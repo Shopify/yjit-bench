@@ -16,6 +16,7 @@ jobs:
           - ruby: ruby
           - ruby: head
           - ruby: truffleruby-head
+    if: ${{ github.event_name != 'schedule' || github.repository == 'Shopify/yjit-bench' }}
     steps:
       - uses: actions/checkout@v3
       - name: Set up Ruby
