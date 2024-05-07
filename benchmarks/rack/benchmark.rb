@@ -15,7 +15,6 @@ stack = Rack::Builder.new do
   use Rack::Deflater
   use Rack::Sendfile
   use Rack::ContentLength
-  use Rack::Static
   map "/ok" do
     app = lambda do |env|
       [
