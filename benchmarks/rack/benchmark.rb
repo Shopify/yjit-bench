@@ -29,7 +29,7 @@ stack = Rack::Builder.new do
     end
     run app
   end
-end
+end.to_app
 
 env = Rack::MockRequest::env_for("http://localhost/ok")
 env["HTTP_IF_NONE_MATCH"] = "miss-etag"
