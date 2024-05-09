@@ -31,7 +31,6 @@ def run_benchmark(_num_itrs_hint)
 
     # NOTE: we may want to avoid this as it could trigger GC?
     time_ms = (1000 * time).to_i
-    puts "itr \##{num_itrs}: #{time_ms}ms"
 
     # NOTE: we may want to preallocate an array and avoid append
     # We internally save the time in seconds to avoid loss of precision

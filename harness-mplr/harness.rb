@@ -20,8 +20,6 @@ def run_benchmark(_num_itrs_hint)
     num_itrs += 1
 
     time_ms = (1000 * time).to_i
-    puts "itr \##{num_itrs}: #{time_ms}ms"
-
     times << time
     total_time += time
   end until num_itrs >= MAX_BENCH_ITRS || total_time >= MAX_BENCH_SECONDS
