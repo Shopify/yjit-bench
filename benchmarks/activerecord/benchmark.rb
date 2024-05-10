@@ -57,8 +57,6 @@ Post.transaction do
   end
 end
 
-Post.connection.enable_query_cache! # Avoid spending time in SQLite.
-
 def run
   posts = Post.includes(:comments).order(id: :asc).limit(100)
   posts.each do |post|
