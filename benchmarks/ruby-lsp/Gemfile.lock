@@ -2,12 +2,16 @@ GEM
   remote: https://rubygems.org/
   specs:
     language_server-protocol (3.17.0.3)
-    prism (0.19.0)
-    ruby-lsp (0.13.4)
+    logger (1.6.0)
+    prism (0.30.0)
+    rbs (3.5.1)
+      logger
+    ruby-lsp (0.17.4)
       language_server-protocol (~> 3.17.0)
-      prism (>= 0.19.0, < 0.20)
+      prism (>= 0.29.0, < 0.31)
+      rbs (>= 3, < 4)
       sorbet-runtime (>= 0.5.10782)
-    sorbet-runtime (0.5.11212)
+    sorbet-runtime (0.5.11465)
 
 PLATFORMS
   arm64-darwin-22
