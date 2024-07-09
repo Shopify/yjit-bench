@@ -85,6 +85,8 @@ blurhash:
   desc: blurhash (blurred preview image) calculation
 protoboeuf:
   desc: protoboeuf (pure-Ruby protobuf) message decoding
+protoboeuf-encode:
+  desc: protoboeuf (pure-Ruby protobuf) message encoding
 
 #
 # MicroBenchmarks
