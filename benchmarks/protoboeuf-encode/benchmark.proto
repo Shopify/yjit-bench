@@ -1,0 +1,124 @@
+syntax = "proto3";
+
+package upstream;
+
+//
+// This aims to be a larger, more representative benchmark
+// The messages intentionally use nesting and have many fields of
+// multiple different types.
+//
+
+message Position
+{
+  uint32 x = 1;
+  uint32 y = 2;
+  uint32 z = 3;
+}
+
+message TrunkItem
+{
+  enum ITEM_TYPE {
+    LAPTOP = 0;
+    DUFFEL_BAG = 1;
+    GOLF_CLUBS = 2;
+    BASEBALL_BAT = 3;
+    SUITCASE = 4;
+    BRICKS = 5;
+    CROWBAR = 6;
+    CASH = 7;
+    POKEMON_CARDS = 8;
+  }
+
+  enum COUNTRY {
+    NOT_US_OF_A = 0; // Zero
+    US_OF_A = 1; // Number 1
+    CANADA = 2;
+  }
+
+  string id = 1;
+  string owner_id = 2;
+  COUNTRY made_in = 3;
+  uint64 width = 4;
+  uint64 height = 5;
+  uint64 depth = 6;
+  uint64 weight = 7;
+  bool is_usbc = 8;
+  Position pos = 9;
+  bool is_umbrella = 10;
+  double monetary_value = 11;
+  ITEM_TYPE item_type = 12;
+}
+
+message Vehicle
+{
+  enum VEHICLE_TYPE {
+    CAR = 0;
+    SPORTS_CAR = 1;
+    SUV = 2;
+    PICKUP_TRUCK = 3;
+    MINIVAN = 4;
+    MOTORCYCLE = 5;
+  }
+
+  uint64 id = 1;
+  string make = 2;
+  string model = 3;
+  uint64 owner_id = 4;
+  uint32 year = 5;
+  VEHICLE_TYPE type = 6;
+
+  bool is_electric = 7;
+  uint32 num_doors = 8;
+  uint32 num_wheels = 9;
+  uint32 num_windows = 10;
+  uint32 wheel_size = 11;
+
+  uint64 dry_weight = 12;
+  uint64 trunk_volume = 13;
+  double monetary_value = 14;
+
+  // List of items in the trunk
+  repeated TrunkItem trunk_items = 15;
+
+  bool is_manual = 16;
+}
+
+message ParkingSpace
+{
+  Position pos = 1;
+  bool has_electric_charger = 2;
+  bool handicapped = 3;
+  optional Vehicle vehicle = 4;
+}
+
+message ParkingFloor
+{
+  uint64 id = 1;
+
+  uint32 num_cameras = 4;
+  uint32 num_fire_exits = 5;
+  uint32 num_sprinklers = 6;
+  double area_sqft = 7;
+
+  // inches because 'Murica
+  // Also we don't want too many doubles because that
+  // wouldn't be representative of most real-world use cases
+  uint32 ceiling_height_inches = 8;
+
+  // List of vehicles
+  repeated ParkingSpace parking_spaces = 9;
+}
+
+message ParkingLot
+{
+  string name = 1;
+  string district = 2;
+  string phone_number = 3;
+  uint64 id = 4;
+  uint32 num_floors = 5;
+  uint32 num_entrances = 6;
+  uint32 num_attendants = 7;
+
+  // List of floors
+  repeated ParkingFloor floors = 8;
+}
