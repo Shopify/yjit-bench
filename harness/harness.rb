@@ -18,18 +18,10 @@ system('mkdir', '-p', File.dirname(OUT_CSV_PATH))
 
 puts RUBY_DESCRIPTION
 
-if defined?(Process.clock_gettime) && defined?(Process::CLOCK_MONOTONIC)
-  def realtime
-    r0 = Process.clock_gettime(Process::CLOCK_MONOTONIC)
-    yield
-    Process.clock_gettime(Process::CLOCK_MONOTONIC) - r0
-  end
-else
-  require "benchmark"
-
-  def realtime(&block)
-    Benchmark.realtime(&block)
-  end
+def realtime
+  r0 = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+  yield
+  Process.clock_gettime(Process::CLOCK_MONOTONIC) - r0
 end
 
 # Takes a block as input
