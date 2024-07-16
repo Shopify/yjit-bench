@@ -102,7 +102,12 @@ def return_results(warmup_iterations, bench_iterations)
     yjit_bench_results["yjit_stats"] = RubyVM::YJIT.runtime_stats
   end
 
+  write_json_file(yjit_bench_results)
+end
+
+def write_json_file(yjit_bench_results)
   require "json"
+
   out_path = YB_OUTPUT_FILE
   system('mkdir', '-p', File.dirname(out_path))
 
@@ -110,4 +115,6 @@ def return_results(warmup_iterations, bench_iterations)
   puts "Writing file #{out_path}" unless ENV["RESULT_JSON_PATH"]
 
   File.write(out_path, JSON.pretty_generate(yjit_bench_results))
+rescue LoadError
+  warn "Failed to write JSON file: #{$!.message}"
 end
