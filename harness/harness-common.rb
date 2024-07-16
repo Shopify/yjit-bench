@@ -71,6 +71,9 @@ def get_maxrss
   raise unless result.zero?
   maxrss_kb = buffer[offset, Fiddle::SIZEOF_LONG].unpack1('q')
   1024 * maxrss_kb
+rescue LoadError
+  warn "Failed to get max RSS: #{$!.message}"
+  nil
 end
 
 # Do expand_path at require-time, not when returning results, before the benchmark is likely to chdir
@@ -87,17 +90,24 @@ def return_results(warmup_iterations, bench_iterations)
 
   # Collect our own peak mem usage as soon as reasonable after finishing the last iteration.
   rss = get_rss
-  maxrss = get_maxrss
-  puts "RSS: %.1fMiB" % (rss / 1024.0 / 1024.0)
-  puts "MAXRSS: %.1fMiB" % (maxrss / 1024.0 / 1024.0)
   yjit_bench_results["rss"] = rss
-  yjit_bench_results["maxrss"] = maxrss
+  puts "RSS: %.1fMiB" % (rss / 1024.0 / 1024.0)
+
+  if maxrss = get_maxrss
+    puts "MAXRSS: %.1fMiB" % (maxrss / 1024.0 / 1024.0)
+    yjit_bench_results["maxrss"] = maxrss
+  end
 
   if defined?(RubyVM::YJIT) && RubyVM::YJIT.stats_enabled?
     yjit_bench_results["yjit_stats"] = RubyVM::YJIT.runtime_stats
   end
 
+  write_json_file(yjit_bench_results)
+end
+
+def write_json_file(yjit_bench_results)
   require "json"
+
   out_path = YB_OUTPUT_FILE
   system('mkdir', '-p', File.dirname(out_path))
 
@@ -105,4 +115,6 @@ def return_results(warmup_iterations, bench_iterations)
   puts "Writing file #{out_path}" unless ENV["RESULT_JSON_PATH"]
 
   File.write(out_path, JSON.pretty_generate(yjit_bench_results))
+rescue LoadError
+  warn "Failed to write JSON file: #{$!.message}"
 end
