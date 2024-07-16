@@ -1,4 +1,3 @@
-require 'benchmark'
 require_relative "./harness-common"
 
 # Warmup iterations
@@ -19,14 +18,28 @@ system('mkdir', '-p', File.dirname(OUT_CSV_PATH))
 
 puts RUBY_DESCRIPTION
 
+if defined?(Process.clock_gettime) && defined?(Process::CLOCK_MONOTONIC)
+  def realtime
+    r0 = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+    yield
+    Process.clock_gettime(Process::CLOCK_MONOTONIC) - r0
+  end
+else
+  require "benchmark"
+
+  def realtime(&block)
+    Benchmark.realtime(&block)
+  end
+end
+
 # Takes a block as input
-def run_benchmark(_num_itrs_hint)
+def run_benchmark(_num_itrs_hint, &block)
   times = []
   total_time = 0
   num_itrs = 0
 
   begin
-    time = Benchmark.realtime { yield }
+    time = realtime(&block)
     num_itrs += 1
 
     # NOTE: we may want to avoid this as it could trigger GC?
