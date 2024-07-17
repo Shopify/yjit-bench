@@ -332,8 +332,9 @@ OptionParser.new do |opts|
         name = name.shellsplit.first
       end
       version, *options = version.shellsplit
-      unless executable = ["/opt/rubies/#{version}/bin/ruby", "#{ENV["HOME"]}/.rubies/#{version}/bin/ruby"].find { |path| File.executable?(path) }
-        abort "Cannot find '#{version}' in /opt/rubies or ~/.rubies"
+      rubies_dir = ENV["RUBIES_DIR"] || "#{ENV["HOME"]}/.rubies"
+      unless executable = ["/opt/rubies/#{version}/bin/ruby", "#{rubies_dir}/#{version}/bin/ruby"].find { |path| File.executable?(path) }
+        abort "Cannot find '#{version}' in /opt/rubies or #{rubies_dir}"
       end
       args.executables[name] = [executable, *options]
     end
