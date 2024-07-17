@@ -1,22 +1,67 @@
-# frozen_string_literal: true
+# encoding: ascii-8bit
+# frozen_string_literal: false
 
 module ProtoBoeuf
   class Position
     def self.decode(buff)
-      buff = buff.b
-      allocate.decode_from(buff, 0, buff.bytesize)
+      allocate.decode_from(buff.b, 0, buff.bytesize)
     end
 
     def self.encode(obj)
-      buff = obj._encode "".b
-      buff.force_encoding(Encoding::ASCII_8BIT)
+      obj._encode("").force_encoding(Encoding::ASCII_8BIT)
     end
     # required field readers
-    attr_accessor :x, :y, :z
+
+    attr_reader :x
+
+    attr_reader :y
+
+    attr_reader :z
+
+    def x=(v)
+      unless 0 <= v && v <= 4_294_967_295
+        raise RangeError,
+              "Value (#{v}) for field x is out of bounds (0..4294967295)"
+      end
+
+      @x = v
+    end
+
+    def y=(v)
+      unless 0 <= v && v <= 4_294_967_295
+        raise RangeError,
+              "Value (#{v}) for field y is out of bounds (0..4294967295)"
+      end
+
+      @y = v
+    end
+
+    def z=(v)
+      unless 0 <= v && v <= 4_294_967_295
+        raise RangeError,
+              "Value (#{v}) for field z is out of bounds (0..4294967295)"
+      end
+
+      @z = v
+    end
 
     def initialize(x: 0, y: 0, z: 0)
+      unless 0 <= x && x <= 4_294_967_295
+        raise RangeError,
+              "Value (#{x}) for field x is out of bounds (0..4294967295)"
+      end
       @x = x
+
+      unless 0 <= y && y <= 4_294_967_295
+        raise RangeError,
+              "Value (#{y}) for field y is out of bounds (0..4294967295)"
+      end
       @y = y
+
+      unless 0 <= z && z <= 4_294_967_295
+        raise RangeError,
+              "Value (#{z}) for field z is out of bounds (0..4294967295)"
+      end
       @z = z
     end
 
@@ -243,6 +288,7 @@ module ProtoBoeuf
 
       buff
     end
+
     def to_h
       result = {}
       result["x".to_sym] = @x
@@ -253,13 +299,11 @@ module ProtoBoeuf
   end
   class TrunkItem
     def self.decode(buff)
-      buff = buff.b
-      allocate.decode_from(buff, 0, buff.bytesize)
+      allocate.decode_from(buff.b, 0, buff.bytesize)
     end
 
     def self.encode(obj)
-      buff = obj._encode "".b
-      buff.force_encoding(Encoding::ASCII_8BIT)
+      obj._encode("").force_encoding(Encoding::ASCII_8BIT)
     end
     module ITEM_TYPE
       LAPTOP = 0
@@ -271,6 +315,7 @@ module ProtoBoeuf
       CROWBAR = 6
       CASH = 7
       POKEMON_CARDS = 8
+
       def self.lookup(val)
         if val == 0
           :LAPTOP
@@ -292,6 +337,7 @@ module ProtoBoeuf
           :POKEMON_CARDS
         end
       end
+
       def self.resolve(val)
         if val == :LAPTOP
           0
@@ -319,6 +365,7 @@ module ProtoBoeuf
       NOT_US_OF_A = 0
       US_OF_A = 1
       CANADA = 2
+
       def self.lookup(val)
         if val == 0
           :NOT_US_OF_A
@@ -328,6 +375,7 @@ module ProtoBoeuf
           :CANADA
         end
       end
+
       def self.resolve(val)
         if val == :NOT_US_OF_A
           0
@@ -339,16 +387,26 @@ module ProtoBoeuf
       end
     end
     # required field readers
-    attr_accessor :id,
-                  :owner_id,
-                  :width,
-                  :height,
-                  :depth,
-                  :weight,
-                  :is_usbc,
-                  :pos,
-                  :is_umbrella,
-                  :monetary_value
+
+    attr_reader :id
+
+    attr_reader :owner_id
+
+    attr_reader :width
+
+    attr_reader :height
+
+    attr_reader :depth
+
+    attr_reader :weight
+
+    attr_reader :is_usbc
+
+    attr_reader :pos
+
+    attr_reader :is_umbrella
+
+    attr_reader :monetary_value
 
     # enum readers
     def made_in
@@ -357,6 +415,67 @@ module ProtoBoeuf
     def item_type
       ITEM_TYPE.lookup(@item_type) || @item_type
     end
+
+    def id=(v)
+      @id = v
+    end
+
+    def owner_id=(v)
+      @owner_id = v
+    end
+
+    def width=(v)
+      unless 0 <= v && v <= 18_446_744_073_709_551_615
+        raise RangeError,
+              "Value (#{v}) for field width is out of bounds (0..18446744073709551615)"
+      end
+
+      @width = v
+    end
+
+    def height=(v)
+      unless 0 <= v && v <= 18_446_744_073_709_551_615
+        raise RangeError,
+              "Value (#{v}) for field height is out of bounds (0..18446744073709551615)"
+      end
+
+      @height = v
+    end
+
+    def depth=(v)
+      unless 0 <= v && v <= 18_446_744_073_709_551_615
+        raise RangeError,
+              "Value (#{v}) for field depth is out of bounds (0..18446744073709551615)"
+      end
+
+      @depth = v
+    end
+
+    def weight=(v)
+      unless 0 <= v && v <= 18_446_744_073_709_551_615
+        raise RangeError,
+              "Value (#{v}) for field weight is out of bounds (0..18446744073709551615)"
+      end
+
+      @weight = v
+    end
+
+    def is_usbc=(v)
+      @is_usbc = v
+    end
+
+    def pos=(v)
+      @pos = v
+    end
+
+    def is_umbrella=(v)
+      @is_umbrella = v
+    end
+
+    def monetary_value=(v)
+      @monetary_value = v
+    end
+
     # enum writers
     def made_in=(v)
       @made_in = COUNTRY.resolve(v) || v
@@ -366,8 +485,8 @@ module ProtoBoeuf
     end
 
     def initialize(
-      id: "",
-      owner_id: "",
+      id: "".freeze,
+      owner_id: "".freeze,
       made_in: 0,
       width: 0,
       height: 0,
@@ -380,22 +499,48 @@ module ProtoBoeuf
       item_type: 0
     )
       @id = id
+
       @owner_id = owner_id
+
       @made_in = COUNTRY.resolve(made_in) || made_in
+      unless 0 <= width && width <= 18_446_744_073_709_551_615
+        raise RangeError,
+              "Value (#{width}) for field width is out of bounds (0..18446744073709551615)"
+      end
       @width = width
+
+      unless 0 <= height && height <= 18_446_744_073_709_551_615
+        raise RangeError,
+              "Value (#{height}) for field height is out of bounds (0..18446744073709551615)"
+      end
       @height = height
+
+      unless 0 <= depth && depth <= 18_446_744_073_709_551_615
+        raise RangeError,
+              "Value (#{depth}) for field depth is out of bounds (0..18446744073709551615)"
+      end
       @depth = depth
+
+      unless 0 <= weight && weight <= 18_446_744_073_709_551_615
+        raise RangeError,
+              "Value (#{weight}) for field weight is out of bounds (0..18446744073709551615)"
+      end
       @weight = weight
+
       @is_usbc = is_usbc
+
       @pos = pos
+
       @is_umbrella = is_umbrella
+
       @monetary_value = monetary_value
+
       @item_type = ITEM_TYPE.resolve(item_type) || item_type
     end
 
     def decode_from(buff, index, len)
-      @id = ""
-      @owner_id = ""
+      @id = "".freeze
+      @owner_id = "".freeze
       @made_in = 0
       @width = 0
       @height = 0
@@ -1090,17 +1235,31 @@ module ProtoBoeuf
 
       val = @pos
       if val
-        encoded = val._encode("".b)
         buff << 0x4a
-        len = encoded.bytesize
-        while len != 0
-          byte = len & 0x7F
-          len >>= 7
-          byte |= 0x80 if len > 0
-          buff << byte
+
+        # Save the buffer size before appending the submessage
+        current_len = buff.bytesize
+
+        # Write dummy bytes to store encoded length
+        buff << "1234567890".freeze
+        val._encode(buff)
+
+        # Calculate the submessage's size
+        submessage_size = buff.bytesize - current_len - 10
+
+        encoded_int_len = 0
+
+        # Overwrite the dummy bytes with the encoded length
+        while submessage_size != 0
+          byte = submessage_size & 0x7F
+          submessage_size >>= 7
+          byte |= 0x80 if submessage_size > 0
+          buff.setbyte(current_len, byte)
+          current_len += 1
+          encoded_int_len += 1
         end
 
-        buff << encoded
+        buff.bytesplice(current_len, 10 - encoded_int_len, "".freeze)
       end
 
       val = @is_umbrella
@@ -1135,6 +1294,7 @@ module ProtoBoeuf
 
       buff
     end
+
     def to_h
       result = {}
       result["id".to_sym] = @id
@@ -1154,13 +1314,11 @@ module ProtoBoeuf
   end
   class Vehicle
     def self.decode(buff)
-      buff = buff.b
-      allocate.decode_from(buff, 0, buff.bytesize)
+      allocate.decode_from(buff.b, 0, buff.bytesize)
     end
 
     def self.encode(obj)
-      buff = obj._encode "".b
-      buff.force_encoding(Encoding::ASCII_8BIT)
+      obj._encode("").force_encoding(Encoding::ASCII_8BIT)
     end
     module VEHICLE_TYPE
       CAR = 0
@@ -1169,6 +1327,7 @@ module ProtoBoeuf
       PICKUP_TRUCK = 3
       MINIVAN = 4
       MOTORCYCLE = 5
+
       def self.lookup(val)
         if val == 0
           :CAR
@@ -1184,6 +1343,7 @@ module ProtoBoeuf
           :MOTORCYCLE
         end
       end
+
       def self.resolve(val)
         if val == :CAR
           0
@@ -1201,26 +1361,147 @@ module ProtoBoeuf
       end
     end
     # required field readers
-    attr_accessor :id,
-                  :make,
-                  :model,
-                  :owner_id,
-                  :year,
-                  :is_electric,
-                  :num_doors,
-                  :num_wheels,
-                  :num_windows,
-                  :wheel_size,
-                  :dry_weight,
-                  :trunk_volume,
-                  :monetary_value,
-                  :trunk_items,
-                  :is_manual
+
+    attr_reader :id
+
+    attr_reader :make
+
+    attr_reader :model
+
+    attr_reader :owner_id
+
+    attr_reader :year
+
+    attr_reader :is_electric
+
+    attr_reader :num_doors
+
+    attr_reader :num_wheels
+
+    attr_reader :num_windows
+
+    attr_reader :wheel_size
+
+    attr_reader :dry_weight
+
+    attr_reader :trunk_volume
+
+    attr_reader :monetary_value
+
+    attr_reader :trunk_items
+
+    attr_reader :is_manual
 
     # enum readers
     def type
       VEHICLE_TYPE.lookup(@type) || @type
     end
+
+    def id=(v)
+      unless 0 <= v && v <= 18_446_744_073_709_551_615
+        raise RangeError,
+              "Value (#{v}) for field id is out of bounds (0..18446744073709551615)"
+      end
+
+      @id = v
+    end
+
+    def make=(v)
+      @make = v
+    end
+
+    def model=(v)
+      @model = v
+    end
+
+    def owner_id=(v)
+      unless 0 <= v && v <= 18_446_744_073_709_551_615
+        raise RangeError,
+              "Value (#{v}) for field owner_id is out of bounds (0..18446744073709551615)"
+      end
+
+      @owner_id = v
+    end
+
+    def year=(v)
+      unless 0 <= v && v <= 4_294_967_295
+        raise RangeError,
+              "Value (#{v}) for field year is out of bounds (0..4294967295)"
+      end
+
+      @year = v
+    end
+
+    def is_electric=(v)
+      @is_electric = v
+    end
+
+    def num_doors=(v)
+      unless 0 <= v && v <= 4_294_967_295
+        raise RangeError,
+              "Value (#{v}) for field num_doors is out of bounds (0..4294967295)"
+      end
+
+      @num_doors = v
+    end
+
+    def num_wheels=(v)
+      unless 0 <= v && v <= 4_294_967_295
+        raise RangeError,
+              "Value (#{v}) for field num_wheels is out of bounds (0..4294967295)"
+      end
+
+      @num_wheels = v
+    end
+
+    def num_windows=(v)
+      unless 0 <= v && v <= 4_294_967_295
+        raise RangeError,
+              "Value (#{v}) for field num_windows is out of bounds (0..4294967295)"
+      end
+
+      @num_windows = v
+    end
+
+    def wheel_size=(v)
+      unless 0 <= v && v <= 4_294_967_295
+        raise RangeError,
+              "Value (#{v}) for field wheel_size is out of bounds (0..4294967295)"
+      end
+
+      @wheel_size = v
+    end
+
+    def dry_weight=(v)
+      unless 0 <= v && v <= 18_446_744_073_709_551_615
+        raise RangeError,
+              "Value (#{v}) for field dry_weight is out of bounds (0..18446744073709551615)"
+      end
+
+      @dry_weight = v
+    end
+
+    def trunk_volume=(v)
+      unless 0 <= v && v <= 18_446_744_073_709_551_615
+        raise RangeError,
+              "Value (#{v}) for field trunk_volume is out of bounds (0..18446744073709551615)"
+      end
+
+      @trunk_volume = v
+    end
+
+    def monetary_value=(v)
+      @monetary_value = v
+    end
+
+    def trunk_items=(v)
+      @trunk_items = v
+    end
+
+    def is_manual=(v)
+      @is_manual = v
+    end
+
     # enum writers
     def type=(v)
       @type = VEHICLE_TYPE.resolve(v) || v
@@ -1228,8 +1509,8 @@ module ProtoBoeuf
 
     def initialize(
       id: 0,
-      make: "",
-      model: "",
+      make: "".freeze,
+      model: "".freeze,
       owner_id: 0,
       year: 0,
       type: 0,
@@ -1244,28 +1525,79 @@ module ProtoBoeuf
       trunk_items: [],
       is_manual: false
     )
+      unless 0 <= id && id <= 18_446_744_073_709_551_615
+        raise RangeError,
+              "Value (#{id}) for field id is out of bounds (0..18446744073709551615)"
+      end
       @id = id
+
       @make = make
+
       @model = model
+
+      unless 0 <= owner_id && owner_id <= 18_446_744_073_709_551_615
+        raise RangeError,
+              "Value (#{owner_id}) for field owner_id is out of bounds (0..18446744073709551615)"
+      end
       @owner_id = owner_id
+
+      unless 0 <= year && year <= 4_294_967_295
+        raise RangeError,
+              "Value (#{year}) for field year is out of bounds (0..4294967295)"
+      end
       @year = year
+
       @type = VEHICLE_TYPE.resolve(type) || type
+
       @is_electric = is_electric
+
+      unless 0 <= num_doors && num_doors <= 4_294_967_295
+        raise RangeError,
+              "Value (#{num_doors}) for field num_doors is out of bounds (0..4294967295)"
+      end
       @num_doors = num_doors
+
+      unless 0 <= num_wheels && num_wheels <= 4_294_967_295
+        raise RangeError,
+              "Value (#{num_wheels}) for field num_wheels is out of bounds (0..4294967295)"
+      end
       @num_wheels = num_wheels
+
+      unless 0 <= num_windows && num_windows <= 4_294_967_295
+        raise RangeError,
+              "Value (#{num_windows}) for field num_windows is out of bounds (0..4294967295)"
+      end
       @num_windows = num_windows
+
+      unless 0 <= wheel_size && wheel_size <= 4_294_967_295
+        raise RangeError,
+              "Value (#{wheel_size}) for field wheel_size is out of bounds (0..4294967295)"
+      end
       @wheel_size = wheel_size
+
+      unless 0 <= dry_weight && dry_weight <= 18_446_744_073_709_551_615
+        raise RangeError,
+              "Value (#{dry_weight}) for field dry_weight is out of bounds (0..18446744073709551615)"
+      end
       @dry_weight = dry_weight
+
+      unless 0 <= trunk_volume && trunk_volume <= 18_446_744_073_709_551_615
+        raise RangeError,
+              "Value (#{trunk_volume}) for field trunk_volume is out of bounds (0..18446744073709551615)"
+      end
       @trunk_volume = trunk_volume
+
       @monetary_value = monetary_value
+
       @trunk_items = trunk_items
+
       @is_manual = is_manual
     end
 
     def decode_from(buff, index, len)
       @id = 0
-      @make = ""
-      @model = ""
+      @make = "".freeze
+      @model = "".freeze
       @owner_id = 0
       @year = 0
       @type = 0
@@ -2267,17 +2599,31 @@ module ProtoBoeuf
         list.each do |item|
           val = item
           if val
-            encoded = val._encode("".b)
             buff << 0x7a
-            len = encoded.bytesize
-            while len != 0
-              byte = len & 0x7F
-              len >>= 7
-              byte |= 0x80 if len > 0
-              buff << byte
+
+            # Save the buffer size before appending the submessage
+            current_len = buff.bytesize
+
+            # Write dummy bytes to store encoded length
+            buff << "1234567890".freeze
+            val._encode(buff)
+
+            # Calculate the submessage's size
+            submessage_size = buff.bytesize - current_len - 10
+
+            encoded_int_len = 0
+
+            # Overwrite the dummy bytes with the encoded length
+            while submessage_size != 0
+              byte = submessage_size & 0x7F
+              submessage_size >>= 7
+              byte |= 0x80 if submessage_size > 0
+              buff.setbyte(current_len, byte)
+              current_len += 1
+              encoded_int_len += 1
             end
 
-            buff << encoded
+            buff.bytesplice(current_len, 10 - encoded_int_len, "".freeze)
           end
         end
       end
@@ -2295,6 +2641,7 @@ module ProtoBoeuf
 
       buff
     end
+
     def to_h
       result = {}
       result["id".to_sym] = @id
@@ -2318,24 +2665,38 @@ module ProtoBoeuf
   end
   class ParkingSpace
     def self.decode(buff)
-      buff = buff.b
-      allocate.decode_from(buff, 0, buff.bytesize)
+      allocate.decode_from(buff.b, 0, buff.bytesize)
     end
 
     def self.encode(obj)
-      buff = obj._encode "".b
-      buff.force_encoding(Encoding::ASCII_8BIT)
+      obj._encode("").force_encoding(Encoding::ASCII_8BIT)
     end
-    NONE = Object.new
-    private_constant :NONE
-
     # required field readers
-    attr_accessor :pos, :has_electric_charger, :handicapped
+
+    attr_reader :pos
+
+    attr_reader :has_electric_charger
+
+    attr_reader :handicapped
 
     # optional field readers
+
     attr_reader :vehicle
 
+    def pos=(v)
+      @pos = v
+    end
+
+    def has_electric_charger=(v)
+      @has_electric_charger = v
+    end
+
+    def handicapped=(v)
+      @handicapped = v
+    end
+
     # BEGIN writers for optional fields
+
     def vehicle=(v)
       @_bitmask |= 0x0000000000000001
       @vehicle = v
@@ -2346,13 +2707,17 @@ module ProtoBoeuf
       pos: nil,
       has_electric_charger: false,
       handicapped: false,
-      vehicle: NONE
+      vehicle: nil
     )
       @_bitmask = 0
+
       @pos = pos
+
       @has_electric_charger = has_electric_charger
+
       @handicapped = handicapped
-      if vehicle == NONE
+
+      if vehicle == nil
         @vehicle = nil
       else
         @_bitmask |= 0x0000000000000001
@@ -2526,17 +2891,31 @@ module ProtoBoeuf
     def _encode(buff)
       val = @pos
       if val
-        encoded = val._encode("".b)
         buff << 0x0a
-        len = encoded.bytesize
-        while len != 0
-          byte = len & 0x7F
-          len >>= 7
-          byte |= 0x80 if len > 0
-          buff << byte
+
+        # Save the buffer size before appending the submessage
+        current_len = buff.bytesize
+
+        # Write dummy bytes to store encoded length
+        buff << "1234567890".freeze
+        val._encode(buff)
+
+        # Calculate the submessage's size
+        submessage_size = buff.bytesize - current_len - 10
+
+        encoded_int_len = 0
+
+        # Overwrite the dummy bytes with the encoded length
+        while submessage_size != 0
+          byte = submessage_size & 0x7F
+          submessage_size >>= 7
+          byte |= 0x80 if submessage_size > 0
+          buff.setbyte(current_len, byte)
+          current_len += 1
+          encoded_int_len += 1
         end
 
-        buff << encoded
+        buff.bytesplice(current_len, 10 - encoded_int_len, "".freeze)
       end
 
       val = @has_electric_charger
@@ -2563,21 +2942,36 @@ module ProtoBoeuf
 
       val = @vehicle
       if val
-        encoded = val._encode("".b)
         buff << 0x22
-        len = encoded.bytesize
-        while len != 0
-          byte = len & 0x7F
-          len >>= 7
-          byte |= 0x80 if len > 0
-          buff << byte
+
+        # Save the buffer size before appending the submessage
+        current_len = buff.bytesize
+
+        # Write dummy bytes to store encoded length
+        buff << "1234567890".freeze
+        val._encode(buff)
+
+        # Calculate the submessage's size
+        submessage_size = buff.bytesize - current_len - 10
+
+        encoded_int_len = 0
+
+        # Overwrite the dummy bytes with the encoded length
+        while submessage_size != 0
+          byte = submessage_size & 0x7F
+          submessage_size >>= 7
+          byte |= 0x80 if submessage_size > 0
+          buff.setbyte(current_len, byte)
+          current_len += 1
+          encoded_int_len += 1
         end
 
-        buff << encoded
+        buff.bytesplice(current_len, 10 - encoded_int_len, "".freeze)
       end
 
       buff
     end
+
     def to_h
       result = {}
       result["pos".to_sym] = @pos.to_h
@@ -2589,22 +2983,80 @@ module ProtoBoeuf
   end
   class ParkingFloor
     def self.decode(buff)
-      buff = buff.b
-      allocate.decode_from(buff, 0, buff.bytesize)
+      allocate.decode_from(buff.b, 0, buff.bytesize)
     end
 
     def self.encode(obj)
-      buff = obj._encode "".b
-      buff.force_encoding(Encoding::ASCII_8BIT)
+      obj._encode("").force_encoding(Encoding::ASCII_8BIT)
     end
     # required field readers
-    attr_accessor :id,
-                  :num_cameras,
-                  :num_fire_exits,
-                  :num_sprinklers,
-                  :area_sqft,
-                  :ceiling_height_inches,
-                  :parking_spaces
+
+    attr_reader :id
+
+    attr_reader :num_cameras
+
+    attr_reader :num_fire_exits
+
+    attr_reader :num_sprinklers
+
+    attr_reader :area_sqft
+
+    attr_reader :ceiling_height_inches
+
+    attr_reader :parking_spaces
+
+    def id=(v)
+      unless 0 <= v && v <= 18_446_744_073_709_551_615
+        raise RangeError,
+              "Value (#{v}) for field id is out of bounds (0..18446744073709551615)"
+      end
+
+      @id = v
+    end
+
+    def num_cameras=(v)
+      unless 0 <= v && v <= 4_294_967_295
+        raise RangeError,
+              "Value (#{v}) for field num_cameras is out of bounds (0..4294967295)"
+      end
+
+      @num_cameras = v
+    end
+
+    def num_fire_exits=(v)
+      unless 0 <= v && v <= 4_294_967_295
+        raise RangeError,
+              "Value (#{v}) for field num_fire_exits is out of bounds (0..4294967295)"
+      end
+
+      @num_fire_exits = v
+    end
+
+    def num_sprinklers=(v)
+      unless 0 <= v && v <= 4_294_967_295
+        raise RangeError,
+              "Value (#{v}) for field num_sprinklers is out of bounds (0..4294967295)"
+      end
+
+      @num_sprinklers = v
+    end
+
+    def area_sqft=(v)
+      @area_sqft = v
+    end
+
+    def ceiling_height_inches=(v)
+      unless 0 <= v && v <= 4_294_967_295
+        raise RangeError,
+              "Value (#{v}) for field ceiling_height_inches is out of bounds (0..4294967295)"
+      end
+
+      @ceiling_height_inches = v
+    end
+
+    def parking_spaces=(v)
+      @parking_spaces = v
+    end
 
     def initialize(
       id: 0,
@@ -2615,12 +3067,39 @@ module ProtoBoeuf
       ceiling_height_inches: 0,
       parking_spaces: []
     )
+      unless 0 <= id && id <= 18_446_744_073_709_551_615
+        raise RangeError,
+              "Value (#{id}) for field id is out of bounds (0..18446744073709551615)"
+      end
       @id = id
+
+      unless 0 <= num_cameras && num_cameras <= 4_294_967_295
+        raise RangeError,
+              "Value (#{num_cameras}) for field num_cameras is out of bounds (0..4294967295)"
+      end
       @num_cameras = num_cameras
+
+      unless 0 <= num_fire_exits && num_fire_exits <= 4_294_967_295
+        raise RangeError,
+              "Value (#{num_fire_exits}) for field num_fire_exits is out of bounds (0..4294967295)"
+      end
       @num_fire_exits = num_fire_exits
+
+      unless 0 <= num_sprinklers && num_sprinklers <= 4_294_967_295
+        raise RangeError,
+              "Value (#{num_sprinklers}) for field num_sprinklers is out of bounds (0..4294967295)"
+      end
       @num_sprinklers = num_sprinklers
+
       @area_sqft = area_sqft
+
+      unless 0 <= ceiling_height_inches &&
+               ceiling_height_inches <= 4_294_967_295
+        raise RangeError,
+              "Value (#{ceiling_height_inches}) for field ceiling_height_inches is out of bounds (0..4294967295)"
+      end
       @ceiling_height_inches = ceiling_height_inches
+
       @parking_spaces = parking_spaces
     end
 
@@ -3086,23 +3565,38 @@ module ProtoBoeuf
         list.each do |item|
           val = item
           if val
-            encoded = val._encode("".b)
             buff << 0x4a
-            len = encoded.bytesize
-            while len != 0
-              byte = len & 0x7F
-              len >>= 7
-              byte |= 0x80 if len > 0
-              buff << byte
+
+            # Save the buffer size before appending the submessage
+            current_len = buff.bytesize
+
+            # Write dummy bytes to store encoded length
+            buff << "1234567890".freeze
+            val._encode(buff)
+
+            # Calculate the submessage's size
+            submessage_size = buff.bytesize - current_len - 10
+
+            encoded_int_len = 0
+
+            # Overwrite the dummy bytes with the encoded length
+            while submessage_size != 0
+              byte = submessage_size & 0x7F
+              submessage_size >>= 7
+              byte |= 0x80 if submessage_size > 0
+              buff.setbyte(current_len, byte)
+              current_len += 1
+              encoded_int_len += 1
             end
 
-            buff << encoded
+            buff.bytesplice(current_len, 10 - encoded_int_len, "".freeze)
           end
         end
       end
 
       buff
     end
+
     def to_h
       result = {}
       result["id".to_sym] = @id
@@ -3117,28 +3611,86 @@ module ProtoBoeuf
   end
   class ParkingLot
     def self.decode(buff)
-      buff = buff.b
-      allocate.decode_from(buff, 0, buff.bytesize)
+      allocate.decode_from(buff.b, 0, buff.bytesize)
     end
 
     def self.encode(obj)
-      buff = obj._encode "".b
-      buff.force_encoding(Encoding::ASCII_8BIT)
+      obj._encode("").force_encoding(Encoding::ASCII_8BIT)
     end
     # required field readers
-    attr_accessor :name,
-                  :district,
-                  :phone_number,
-                  :id,
-                  :num_floors,
-                  :num_entrances,
-                  :num_attendants,
-                  :floors
+
+    attr_reader :name
+
+    attr_reader :district
+
+    attr_reader :phone_number
+
+    attr_reader :id
+
+    attr_reader :num_floors
+
+    attr_reader :num_entrances
+
+    attr_reader :num_attendants
+
+    attr_reader :floors
+
+    def name=(v)
+      @name = v
+    end
+
+    def district=(v)
+      @district = v
+    end
+
+    def phone_number=(v)
+      @phone_number = v
+    end
+
+    def id=(v)
+      unless 0 <= v && v <= 18_446_744_073_709_551_615
+        raise RangeError,
+              "Value (#{v}) for field id is out of bounds (0..18446744073709551615)"
+      end
+
+      @id = v
+    end
+
+    def num_floors=(v)
+      unless 0 <= v && v <= 4_294_967_295
+        raise RangeError,
+              "Value (#{v}) for field num_floors is out of bounds (0..4294967295)"
+      end
+
+      @num_floors = v
+    end
+
+    def num_entrances=(v)
+      unless 0 <= v && v <= 4_294_967_295
+        raise RangeError,
+              "Value (#{v}) for field num_entrances is out of bounds (0..4294967295)"
+      end
+
+      @num_entrances = v
+    end
+
+    def num_attendants=(v)
+      unless 0 <= v && v <= 4_294_967_295
+        raise RangeError,
+              "Value (#{v}) for field num_attendants is out of bounds (0..4294967295)"
+      end
+
+      @num_attendants = v
+    end
+
+    def floors=(v)
+      @floors = v
+    end
 
     def initialize(
-      name: "",
-      district: "",
-      phone_number: "",
+      name: "".freeze,
+      district: "".freeze,
+      phone_number: "".freeze,
       id: 0,
       num_floors: 0,
       num_entrances: 0,
@@ -3146,19 +3698,42 @@ module ProtoBoeuf
       floors: []
     )
       @name = name
+
       @district = district
+
       @phone_number = phone_number
+
+      unless 0 <= id && id <= 18_446_744_073_709_551_615
+        raise RangeError,
+              "Value (#{id}) for field id is out of bounds (0..18446744073709551615)"
+      end
       @id = id
+
+      unless 0 <= num_floors && num_floors <= 4_294_967_295
+        raise RangeError,
+              "Value (#{num_floors}) for field num_floors is out of bounds (0..4294967295)"
+      end
       @num_floors = num_floors
+
+      unless 0 <= num_entrances && num_entrances <= 4_294_967_295
+        raise RangeError,
+              "Value (#{num_entrances}) for field num_entrances is out of bounds (0..4294967295)"
+      end
       @num_entrances = num_entrances
+
+      unless 0 <= num_attendants && num_attendants <= 4_294_967_295
+        raise RangeError,
+              "Value (#{num_attendants}) for field num_attendants is out of bounds (0..4294967295)"
+      end
       @num_attendants = num_attendants
+
       @floors = floors
     end
 
     def decode_from(buff, index, len)
-      @name = ""
-      @district = ""
-      @phone_number = ""
+      @name = "".freeze
+      @district = "".freeze
+      @phone_number = "".freeze
       @id = 0
       @num_floors = 0
       @num_entrances = 0
@@ -3753,23 +4328,38 @@ module ProtoBoeuf
         list.each do |item|
           val = item
           if val
-            encoded = val._encode("".b)
             buff << 0x42
-            len = encoded.bytesize
-            while len != 0
-              byte = len & 0x7F
-              len >>= 7
-              byte |= 0x80 if len > 0
-              buff << byte
+
+            # Save the buffer size before appending the submessage
+            current_len = buff.bytesize
+
+            # Write dummy bytes to store encoded length
+            buff << "1234567890".freeze
+            val._encode(buff)
+
+            # Calculate the submessage's size
+            submessage_size = buff.bytesize - current_len - 10
+
+            encoded_int_len = 0
+
+            # Overwrite the dummy bytes with the encoded length
+            while submessage_size != 0
+              byte = submessage_size & 0x7F
+              submessage_size >>= 7
+              byte |= 0x80 if submessage_size > 0
+              buff.setbyte(current_len, byte)
+              current_len += 1
+              encoded_int_len += 1
             end
 
-            buff << encoded
+            buff.bytesplice(current_len, 10 - encoded_int_len, "".freeze)
           end
         end
       end
 
       buff
     end
+
     def to_h
       result = {}
       result["name".to_sym] = @name
