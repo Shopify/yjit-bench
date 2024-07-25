@@ -119,6 +119,10 @@ respond_to:
   desc: respond_to tests the performance of the respond_to? method.
   category: micro
   single_file: true
+object-new:
+  desc: instantiate a new object in a loop to test allocation performance
+  category: micro
+  single_file: true
 setivar:
   desc: setivar tests the performance of setting instance variable values.
   category: micro
