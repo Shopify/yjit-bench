@@ -1055,7 +1055,7 @@ module ProtoBoeuf
           index += 1
         end
         if tag == 0x59
-          @monetary_value = buff.unpack1("D", offset: index)
+          @monetary_value = buff.unpack1("E", offset: index)
           index += 8
 
           return self if index >= len
@@ -1277,7 +1277,7 @@ module ProtoBoeuf
       if val != 0
         buff << 0x59
 
-        buff << [val].pack("D")
+        [val].pack("E", buffer: buff)
       end
 
       val = @item_type
@@ -2329,7 +2329,7 @@ module ProtoBoeuf
           index += 1
         end
         if tag == 0x71
-          @monetary_value = buff.unpack1("D", offset: index)
+          @monetary_value = buff.unpack1("E", offset: index)
           index += 8
 
           return self if index >= len
@@ -2591,7 +2591,7 @@ module ProtoBoeuf
       if val != 0
         buff << 0x71
 
-        buff << [val].pack("D")
+        [val].pack("E", buffer: buff)
       end
 
       list = @trunk_items
@@ -3345,7 +3345,7 @@ module ProtoBoeuf
           index += 1
         end
         if tag == 0x39
-          @area_sqft = buff.unpack1("D", offset: index)
+          @area_sqft = buff.unpack1("E", offset: index)
           index += 8
 
           return self if index >= len
@@ -3545,7 +3545,7 @@ module ProtoBoeuf
       if val != 0
         buff << 0x39
 
-        buff << [val].pack("D")
+        [val].pack("E", buffer: buff)
       end
 
       val = @ceiling_height_inches
