@@ -1,7 +1,16 @@
-require_relative "../harness/harness-common"
+# frozen_string_literal: true
+#
+# This is a relatively minimal harness meant for use with Linux perf(1).
+# Example usage:
+#
+#    $ PERF='record -e cycles' ruby -Iharness-perf benchmarks/fib.rb
+#
+# When recording with perf(1), make sure the benchmark runs long enough; you
+# can tweak the MIN_BENCH_ITRS environment variable to lengthen the run. A race
+# condition is possible where the benchmark finishes before the perf(1)
+# subprocess has a chance to attach, in which case perf outputs no profile.
 
-# This harness is meant for use with perf stat
-# All it does is run the benchmark a number of times
+require_relative "../harness/harness-common"
 
 # Takes a block as input
 def run_benchmark(num_itrs_hint)
@@ -23,6 +32,9 @@ def run_benchmark(num_itrs_hint)
       cmd.push('-o', File.expand_path('../perf.data', __dir__))
     end
     pid = Process.spawn(*cmd)
+    # _Race_: we, the parent process might finish before perf attaches.
+    # Ideally, we would wait for attachment before running benchmark
+    # iterations, but implementing that seems complicated.
   end
 
   # Run benchmark
