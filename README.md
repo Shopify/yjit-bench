@@ -151,10 +151,13 @@ This file will then be passed to the underlying Ruby interpreter with
 You can find several test harnesses in this repository:
 
 * harness - the normal default harness, with duration controlled by warmup iterations and time/count limits
-* harness-perf - a simplified harness that runs for exactly the hinted number of iterations
 * harness-bips - a harness that measures iterations/second until stable
 * harness-continuous - a harness that adjusts the batch sizes of iterations to run in stable iteration size batches
+* harness-once - a simplified harness that simply runs once
+* harness-perf - a simplified harness that runs for exactly the hinted number of iterations
+* harness-stackprof - a harness to profile the benchmark with stackprof
 * harness-stats - count method calls and loop iterations
+* harness-vernier - a harness to profile the benchmark with vernier
 * harness-warmup - a harness which runs as long as needed to find warmed up (peak) performance
 
 To use it, run a benchmark script directly, specifying a harness directory with `-I`:
