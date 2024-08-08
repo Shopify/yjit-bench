@@ -76,7 +76,7 @@ end
 
 run # heat any caches
 
-run_benchmark(300) do
+run_benchmark(20) do
   10.times do
     run
   end
