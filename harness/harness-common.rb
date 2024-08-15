@@ -98,8 +98,17 @@ def return_results(warmup_iterations, bench_iterations)
     yjit_bench_results["maxrss"] = maxrss
   end
 
-  if defined?(RubyVM::YJIT) && RubyVM::YJIT.stats_enabled?
-    yjit_bench_results["yjit_stats"] = RubyVM::YJIT.runtime_stats
+  if defined?(RubyVM::YJIT) && RubyVM::YJIT.enabled?
+    yjit_stats = RubyVM::YJIT.runtime_stats
+    formatted_stats = proc { |key| "%10s" % yjit_stats[key].to_s.reverse.scan(/\d{1,3}/).join(',').reverse }
+    puts "inline_code_size:   #{formatted_stats[:inline_code_size]}"
+    puts "outlined_code_size: #{formatted_stats[:outlined_code_size]}"
+    puts "code_region_size:   #{formatted_stats[:code_region_size]}"
+    puts "yjit_alloc_size:    #{formatted_stats[:yjit_alloc_size]}"
+
+    if RubyVM::YJIT.stats_enabled?
+      yjit_bench_results["yjit_stats"] = yjit_stats
+    end
   end
 
   write_json_file(yjit_bench_results)
