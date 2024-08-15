@@ -253,7 +253,9 @@ def run_benchmarks(ruby:, ruby_description:, categories:, name_filters:, out_pat
       # Pin the process to one given core to improve caching and reduce variance on CRuby
       # Other Rubies need to use multiple cores, e.g., for JIT threads
       if ruby_description.start_with?('ruby ') && !no_pinning
-        cmd += ["taskset", "-c", "#{Etc.nprocessors - 1}"]
+        # The last few cores of Intel CPU may be slow E-Cores, so avoid using the last one.
+        cpu = [(Etc.nprocessors / 2) - 1, 0].max
+        cmd += ["taskset", "-c", "#{cpu}"]
       end
     end
 
