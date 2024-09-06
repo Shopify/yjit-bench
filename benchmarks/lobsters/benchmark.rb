@@ -47,6 +47,7 @@ run_benchmark(10) do
       puts response_array.inspect
       raise "HTTP status is #{response_array.first} instead of 200 for req #{idx}/#{generator.routes.size}, #{path.inspect}. Is the benchmark app properly set up? See README.md."
     end
+    response_array.last.close # Response might be a Rack::BodyProxy and MUST be closed.
   end
 end
 
