@@ -20,6 +20,7 @@ def run_bench(app, visiting_routes)
       p response_array
       raise "HTTP response is #{response_array.first} instead of 200. Is the benchmark app properly set up? See README.md."
     end
+    response_array.last.close # Response might be a Rack::BodyProxy and MUST be closed.
   end
 end
 
