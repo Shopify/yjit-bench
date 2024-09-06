@@ -14,7 +14,7 @@ visiting_routes = Array.new(visit_count) { possible_routes.sample(random: rng) }
 def run_bench(app, visiting_routes)
   visiting_routes.each do |path|
     # The app mutates `env`, so we need to create one every time.
-    env = Rack::MockRequest::env_for("http://localhost#{path}")
+    env = Rack::MockRequest::env_for("https://localhost#{path}")
     response_array = app.call(env)
     unless response_array.first == 200
       p response_array
