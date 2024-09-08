@@ -32,8 +32,8 @@ def os
 end
 
 # Checked system - error or return info if the command fails
-def check_call(command, env: {}, raise_error: true)
-  puts(command)
+def check_call(command, env: {}, raise_error: true, quiet: false)
+  puts("+ #{command}") unless quiet
 
   result = {}
 
@@ -57,13 +57,21 @@ def have_yjit?(ruby)
   ruby_version.downcase.include?("yjit")
 end
 
+# Disable Turbo Boost while running benchmarks. Maximize the CPU frequency.
 def set_bench_config(turbo:)
+  # sudo requires the flag '-S' in order to take input from stdin
   if File.exist?('/sys/devices/system/cpu/intel_pstate') # Intel
-    # sudo requires the flag '-S' in order to take input from stdin
-    check_call("sudo -S sh -c 'echo 1 > /sys/devices/system/cpu/intel_pstate/no_turbo'") unless turbo || intel_no_turbo?
+    unless intel_no_turbo? || turbo
+      check_call("sudo -S sh -c 'echo 1 > /sys/devices/system/cpu/intel_pstate/no_turbo'")
+      at_exit { check_call("sudo -S sh -c 'echo 0 > /sys/devices/system/cpu/intel_pstate/no_turbo'", quiet: true) }
+    end
+    # Disabling Turbo Boost reduces the CPU frequency, so this should be run after that.
     check_call("sudo -S sh -c 'echo 100 > /sys/devices/system/cpu/intel_pstate/min_perf_pct'") unless intel_perf_100pct?
   elsif File.exist?('/sys/devices/system/cpu/cpufreq/boost') # AMD
-    check_call("sudo -S sh -c 'echo 0 > /sys/devices/system/cpu/cpufreq/boost'") unless turbo || amd_no_boost?
+    unless amd_no_boost? || turbo
+      check_call("sudo -S sh -c 'echo 0 > /sys/devices/system/cpu/cpufreq/boost'")
+      at_exit { check_call("sudo -S sh -c 'echo 1 > /sys/devices/system/cpu/cpufreq/boost'", quiet: true) }
+    end
     check_call("sudo -S cpupower frequency-set -g performance") unless performance_governor?
   end
 end
