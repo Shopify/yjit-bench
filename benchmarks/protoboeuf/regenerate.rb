@@ -9,6 +9,6 @@ proto_file = File.expand_path("benchmark.proto", __dir__)
 out_file = File.expand_path("benchmark_pb.rb", __dir__)
 
 unit = ProtoBoeuf.parse_file(proto_file)
-unit.package = "proto_boeuf"
+unit.file.each { |f| f.package = "proto_boeuf" }
 gen = ProtoBoeuf::CodeGen.new(unit, generate_types: false)
 File.write(out_file, gen.to_ruby)
