@@ -65,10 +65,11 @@ MIN_BENCH_TIME = Integer(ENV.fetch('MIN_BENCH_TIME', 10))
 # but allow that to be overridden by MIN_BENCH_ITRS env var.
 # Also use MIN_BENCH_TIME to loop until the benchmark has run for a sufficient duration.
 def run_enough_to_profile(n, &block)
+  # Allow MIN_BENCH_ITRS to override the argument.
+  n = ENV.fetch('MIN_BENCH_ITRS', n).to_i
+
   start = get_time
   loop do
-    # Allow MIN_BENCH_ITRS to override the argument.
-    n = ENV.fetch('MIN_BENCH_ITRS', n).to_i
     n.times(&block)
 
     break if (get_time - start) >= MIN_BENCH_TIME
