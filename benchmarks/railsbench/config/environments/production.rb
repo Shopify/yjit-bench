@@ -94,4 +94,7 @@ Rails.application.configure do
   config.active_record.sqlite3_production_warning = false
   config.logger = nil
   config.secret_key_base = 'in general secret should not be in the git repo but this is a benchmark'
+  # If we want to benchmark with YJIT then it has already been enabled by command line arguments.
+  # If we are benchmarking CRuby without YJIT don't enable it even if this build has it.
+  config.yjit = false
 end
