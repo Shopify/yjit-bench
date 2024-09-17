@@ -16,6 +16,13 @@ RSS_CSV_PATH = ENV['RSS_CSV_PATH'] ? File.expand_path(ENV['RSS_CSV_PATH']) : nil
 
 system('mkdir', '-p', File.dirname(OUT_CSV_PATH))
 
+# We could include other values in this result if more become relevant
+# but for now all we want to know is if YJIT was enabled at runtime.
+def yjit_enabled?
+  RubyVM::YJIT.enabled? if defined?(RubyVM::YJIT)
+end
+ORIGINAL_YJIT_ENABLED = yjit_enabled?
+
 puts RUBY_DESCRIPTION
 
 def realtime
@@ -51,5 +58,9 @@ def run_benchmark(_num_itrs_hint, &block)
   if non_warmups.size > 1
     non_warmups_ms = ((non_warmups.sum / non_warmups.size) * 1000.0).to_i
     puts "Average of last #{non_warmups.size}, non-warmup iters: #{non_warmups_ms}ms"
+  end
+
+  if yjit_enabled? != ORIGINAL_YJIT_ENABLED
+    raise "Benchmark altered YJIT configuration! (changed from #{ORIGINAL_YJIT_ENABLED.inspect} to #{yjit_enabled?.inspect})"
   end
 end
