@@ -36,15 +36,33 @@ def run_benchmark(_num_itrs_hint, &block)
   times = []
   total_time = 0
   num_itrs = 0
+  header = "itr:   time"
 
+  # If $YJIT_BENCH_STATS is given, print the diff of these stats at each iteration.
+  if ENV["YJIT_BENCH_STATS"]
+    yjit_stats = ENV["YJIT_BENCH_STATS"].split(",").map { |key| [key.to_sym, nil] }.to_h
+    yjit_stats.each_key { |key| header << " #{key}" }
+  end
+
+  puts header
   begin
+    yjit_stats&.each_key { |key| yjit_stats[key] = RubyVM::YJIT.runtime_stats(key) }
+
     time = realtime(&block)
     num_itrs += 1
 
     # NOTE: we may want to avoid this as it could trigger GC?
     time_ms = (1000 * time).to_i
-    puts "itr \##{num_itrs}: #{time_ms}ms"
+    itr_str = "%4s %6s" % ["##{num_itrs}:", "#{time_ms}ms"]
 
+    yjit_stats&.each do |key, old_value|
+      new_value = RubyVM::YJIT.runtime_stats(key)
+      diff = (new_value - old_value).to_s.reverse.scan(/\d{1,3}/).join(",").reverse
+      itr_str << " %#{key.size}s" % diff
+      yjit_stats[key] = new_value
+    end
+
+    puts itr_str
     # NOTE: we may want to preallocate an array and avoid append
     # We internally save the time in seconds to avoid loss of precision
     times << time

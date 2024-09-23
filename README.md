@@ -210,6 +210,15 @@ PERF=record ruby --yjit-perf=map -Iharness-perf benchmarks/railsbench/benchmark.
 
 This is the only harness that uses `run_benchmark`'s argument, `num_itrs_hint`.
 
+### Printing YJIT stats
+
+The `--yjit-stats` option of `./run_benchmarks.rb` allows you to print the diff YJIT stats
+at each iteration with the default harness.
+
+```
+./run_benchmarks.rb --yjit-stats=code_region_size,yjit_alloc_size
+```
+
 ## Measuring memory usage
 
 `--rss` option of `run_benchmarks.rb` allows you to measure RSS after benchmark iterations.
