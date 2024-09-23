@@ -7,6 +7,7 @@ use_gemfile
 
 # This benchmark RuboCop's performance when auto correcting violations in a file
 
+require "stringio" # TODO: Remove this once https://github.com/rubocop/rubocop/pull/13234 is released
 require "rubocop"
 
 # Create a custom runner class to easily pass the content via a stdin option. This is exactly how the Ruby LSP
