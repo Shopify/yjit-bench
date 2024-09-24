@@ -91,10 +91,7 @@ def return_results(warmup_iterations, bench_iterations)
   # Collect our own peak mem usage as soon as reasonable after finishing the last iteration.
   rss = get_rss
   yjit_bench_results["rss"] = rss
-  puts "RSS: %.1fMiB" % (rss / 1024.0 / 1024.0)
-
   if maxrss = get_maxrss
-    puts "MAXRSS: %.1fMiB" % (maxrss / 1024.0 / 1024.0)
     yjit_bench_results["maxrss"] = maxrss
   end
 
@@ -103,13 +100,27 @@ def return_results(warmup_iterations, bench_iterations)
     yjit_bench_results["yjit_stats"] = yjit_stats
 
     formatted_stats = proc { |key| "%10s" % yjit_stats[key].to_s.reverse.scan(/\d{1,3}/).join(",").reverse }
-    puts "inline_code_size:   #{formatted_stats[:inline_code_size]}"
-    puts "outlined_code_size: #{formatted_stats[:outlined_code_size]}"
-    puts "code_region_size:   #{formatted_stats[:code_region_size]}"
-    puts "yjit_alloc_size:    #{formatted_stats[:yjit_alloc_size]}"
-    if yjit_stats.key?(:compile_time_ns)
-      puts "yjit_compile_time:  %.2fms" % (yjit_stats[:compile_time_ns] / 1_000_000.0).round(2)
+    yjit_stats_keys = [
+      *ENV.fetch("YJIT_BENCH_STATS", "").split(",").map(&:to_sym),
+      :inline_code_size,
+      :outlined_code_size,
+      :code_region_size,
+      :yjit_alloc_size,
+      :compile_time_ns,
+    ].uniq
+    yjit_stats_pads = yjit_stats_keys.map(&:size).max + 1
+    yjit_stats_keys.each do |key|
+      if key == :compile_time_ns
+        puts "#{"yjit_compile_time:".ljust(yjit_stats_pads)} %8.2fms" % (yjit_stats[:compile_time_ns] / 1_000_000.0).round(2)
+      else
+        puts "#{"#{key}:".ljust(yjit_stats_pads)} #{formatted_stats[key]}"
+      end
     end
+  end
+
+  puts "RSS: %.1fMiB" % (rss / 1024.0 / 1024.0)
+  if maxrss
+    puts "MAXRSS: %.1fMiB" % (maxrss / 1024.0 / 1024.0)
   end
 
   write_json_file(yjit_bench_results)
