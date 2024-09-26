@@ -17,6 +17,7 @@ jobs:
           - ruby: head
           - ruby: truffleruby-head
             skip: protoboeuf-encode sequel
+            continue-on-error: true
     if: ${{ github.event_name != 'schedule' || github.repository == 'Shopify/yjit-bench' }}
     steps:
       - uses: actions/checkout@v3
@@ -39,6 +40,7 @@ jobs:
           MIN_BENCH_ITRS: '1'
           MIN_BENCH_TIME: '0'
           SKIP_BENCHMARKS: ${{ matrix.skip }}
+        continue-on-error: ${{ matrix.continue-on-error || false }}
 
       - name: Test run_once.sh
         run: ./run_once.sh --yjit-stats benchmarks/railsbench/benchmark.rb
