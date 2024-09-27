@@ -72,7 +72,7 @@ rack:
 ruby-json:
   desc: an optimized version of the json_pure gem's pure Ruby JSON parser.
 rubykon:
-  desc: Ruby solver for Go (the boardgame.) Runs 1,000 iterations forward from an initial starting board.
+  desc: Ruby solver for Go (the boardgame.) Runs many iterations forward from an initial starting board.
 tinygql:
   desc: TinyGQL gem parsing a large file in pure Ruby
 nqueens:
