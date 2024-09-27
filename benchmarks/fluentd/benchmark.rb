@@ -18,7 +18,7 @@ errors = [
   "No local datasource found",
 ]
 ltsv = 1000.times.map { |i| "time:#{time + i}	module:main.py	level:DEBUG	message:#{errors.sample}\n" }.join
-ltsv *= 1000
+ltsv *= 250
 
 # Prepare an LTSV parser
 parser = Fluent::Plugin::LabeledTSVParser.new

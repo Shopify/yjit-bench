@@ -5,10 +5,10 @@ use_gemfile
 
 require "graphql"
 
-file = File.read "negotiate.gql"
+data = File.read "negotiate.gql"
 
 run_benchmark(10) do
-  100.times do |i|
-    GraphQL.parse file
+  10.times do |i|
+    GraphQL.parse data
   end
 end

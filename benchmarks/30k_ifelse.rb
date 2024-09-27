@@ -240012,7 +240012,7 @@ end
 
 require_relative '../harness/loader'
 
-INTERNAL_ITRS = Integer(ENV.fetch("INTERNAL_ITRS", 600))
+INTERNAL_ITRS = Integer(ENV.fetch("INTERNAL_ITRS", 200))
 
 run_benchmark(30) do
   INTERNAL_ITRS.times do

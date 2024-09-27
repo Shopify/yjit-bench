@@ -34,7 +34,7 @@ a = 'this is a long string with no useful contents yada yada yada yada'
 b = 'this is also a long string with no useful contents yada yada daaaaaa'
 
 run_benchmark(20) do
-  for i in 0...100_000
+  for i in 0...20_000
     ruby_xor!(a.dup, b)
   end
 end

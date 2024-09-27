@@ -213,18 +213,9 @@ hard20 = [
 
 mr, mc = sd_genmat
 
-n = 4
-if ARGV.length > 0
-  n = ARGV[0].to_i
-end
-
 run_benchmark(20) do
-  i = 0
-  while i < n
-    hard20.each do |line|
-      sd_solve(mr, mc, line)
-      # puts ""
-    end
-    i += 1
+  hard20.each do |line|
+    sd_solve(mr, mc, line)
+    # puts ""
   end
 end
