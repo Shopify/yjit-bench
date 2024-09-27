@@ -32,7 +32,7 @@ def matmul(a, b)
   c
 end
 
-n = 300
+n = 200
 if ARGV.length > 0
   n = ARGV[0].to_i
 end

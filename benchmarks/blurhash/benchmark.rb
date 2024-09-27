@@ -79,7 +79,6 @@ module Blurhash
       factors.set(yComponent, xComponent, 2, b * scale)
     end
 
-
     def self.encode_int(value, length, destination)
       divisor = 83 ** (length - 1)
 
