@@ -503,7 +503,7 @@ class Story < ApplicationRecord
       s = s.to_s[0, chars].gsub(/ [^ ]*\z/, "")
     end
 
-    HtmlEncoder.encode(s.to_s)
+    HtmlEncoder.decode(s.to_s)
   end
 
   def domain_search_url
