@@ -295,7 +295,8 @@ def run_benchmarks(ruby:, ruby_description:, categories:, name_filters:, out_pat
     result = check_call(cmd.shelljoin, env: env, raise_error: false)
 
     if result[:success]
-      bench_data[bench_name] = JSON.parse(File.read result_json_path).tap do
+      bench_data[bench_name] = JSON.parse(File.read(result_json_path)).tap do |json|
+        json["command_line"] = cmd.shelljoin
         File.unlink(result_json_path)
       end
     else
@@ -590,6 +591,7 @@ puts(output_str)
 # Print CSV and PNG file names
 puts
 puts "Output:"
+puts out_json_path
 puts out_tbl_path
 if args.graph
   require_relative 'misc/graph'
