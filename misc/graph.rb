@@ -1,6 +1,7 @@
 #!/usr/bin/env ruby
 
-require 'csv'
+require_relative 'stats'
+require 'json'
 begin
   require 'gruff'
 rescue LoadError
@@ -9,11 +10,12 @@ rescue LoadError
   require 'gruff'
 end
 
-def render_graph(csv_path, png_path, title_font_size: 16.0, legend_font_size: 12.0, marker_font_size: 10.0)
-  ruby_descriptions_csv, table_csv = File.read(csv_path).split("\n\n", 2)
-  ruby_descriptions = CSV.parse(ruby_descriptions_csv).to_h
-  table = CSV.parse(table_csv)
-  bench_names = table.drop(1).map(&:first)
+def render_graph(json_path, png_path, title_font_size: 16.0, legend_font_size: 12.0, marker_font_size: 10.0)
+  json = JSON.load_file(json_path)
+  ruby_descriptions = json.fetch("metadata")
+  data = json.fetch("raw_data")
+  baseline = ruby_descriptions.first.first
+  bench_names = data.first.last.keys
 
   # ruby_descriptions, bench_names, table
   g = Gruff::Bar.new(1600)
@@ -32,14 +34,13 @@ def render_graph(csv_path, png_path, title_font_size: 16.0, legend_font_size: 12
   g.legend_font_size = legend_font_size
   g.marker_font_size = marker_font_size
 
-  rubies = ruby_descriptions.map { |ruby, description| "#{ruby}: #{description}" }
-  g.data rubies.first, [1.0] * bench_names.size
-  rubies.drop(1).each_with_index do |ruby, index|
-    speedup = table.drop(1).map do |row|
-      num_rests = rubies.size - 1
-      row.last(num_rests)[index]
-    end
-    g.data ruby, speedup.map(&:to_f)
+  ruby_descriptions.each do |ruby, description|
+    speedups = bench_names.map { |bench|
+      baseline_times = data.fetch(baseline).fetch(bench).fetch("bench")
+      times = data.fetch(ruby).fetch(bench).fetch("bench")
+      Stats.new(baseline_times).mean / Stats.new(times).mean
+    }
+    g.data "#{ruby}: #{description}", speedups
   end
   g.write(png_path)
 end
@@ -63,12 +64,12 @@ if $0 == __FILE__
   end
   parser.parse!
 
-  csv_path = ARGV.first
-  abort parser.help if csv_path.nil?
+  json_path = ARGV.first
+  abort parser.help if json_path.nil?
 
-  png_path = csv_path.sub(/\.csv\z/, '.png')
-  render_graph(csv_path, png_path, **args)
+  png_path = json_path.sub(/\.json\z/, '.png')
+  render_graph(json_path, png_path, **args)
 
-  open = %w[open xdg-open].find { |open| system("which #{open} > /dev/null") }
+  open = %w[open xdg-open].find { |open| system("which #{open} >/dev/null 2>/dev/null") }
   system(open, png_path) if open
 end
