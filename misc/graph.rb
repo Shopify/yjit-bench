@@ -51,7 +51,7 @@ if $0 == __FILE__
 
   args = {}
   parser = OptionParser.new do |opts|
-    opts.banner = "Usage: #{$0} [options] CSV_PATH"
+    opts.banner = "Usage: #{$0} [options] JSON_PATH"
     opts.on('--title SIZE', 'title font size') do |v|
       args[:title_font_size] = v.to_f
     end
