@@ -592,7 +592,6 @@ puts(output_str)
 puts
 puts "Output:"
 puts out_json_path
-puts out_tbl_path
 if args.graph
   require_relative 'misc/graph'
   out_graph_path = output_path + ".png"
