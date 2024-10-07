@@ -67,11 +67,6 @@ if $0 == __FILE__
   json_path = ARGV.first
   abort parser.help if json_path.nil?
 
-  # For compatibility as this script used to take the .csv as input
-  if json_path.end_with? '.csv'
-    png_path = json_path.sub(/\.csv\z/, '.json')
-  end
-
   png_path = json_path.sub(/\.json\z/, '.png')
   render_graph(json_path, png_path, **args)
 
