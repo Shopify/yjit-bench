@@ -588,14 +588,14 @@ File.open(out_txt_path, "w") { |f| f.write output_str }
 # Print the table to the console, with numbers truncated
 puts(output_str)
 
-# Print CSV and PNG file names
+# Print JSON and PNG file names
 puts
 puts "Output:"
 puts out_json_path
 if args.graph
   require_relative 'misc/graph'
   out_graph_path = output_path + ".png"
-  render_graph(out_tbl_path, out_graph_path)
+  render_graph(out_json_path, out_graph_path)
   puts out_graph_path
 end
 
