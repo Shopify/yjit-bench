@@ -281,8 +281,9 @@ def run_benchmarks(ruby:, ruby_description:, categories:, name_filters:, out_pat
     # like `bundle install` in a child process will not use the Ruby being benchmarked.
     # It overrides PATH to guarantee the commands of the benchmarked Ruby will be used.
     env = {}
-    if `#{ruby.first} -e 'print RbConfig.ruby'` != RbConfig.ruby
-      env["PATH"] = "#{File.dirname(ruby.first)}:#{ENV["PATH"]}"
+    ruby_path = `#{ruby.shelljoin} -e 'print RbConfig.ruby'`
+    if ruby_path != RbConfig.ruby
+      env["PATH"] = "#{File.dirname(ruby_path)}:#{ENV["PATH"]}"
 
       # chruby sets GEM_HOME and GEM_PATH in your shell. We have to unset it in the child
       # process to avoid installing gems to the version that is running run_benchmarks.rb.
