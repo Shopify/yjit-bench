@@ -51,6 +51,10 @@ def get_rss
   end
 end
 
+def is_macos
+  RbConfig::CONFIG['host_os'].match(/darwin/) != nil
+end
+
 def get_maxrss
   require 'fiddle'
   require 'rbconfig/sizeof'
@@ -70,7 +74,14 @@ def get_maxrss
   result = getrusage.call(rusage_self, buffer)
   raise unless result.zero?
   maxrss_kb = buffer[offset, Fiddle::SIZEOF_LONG].unpack1('q')
-  1024 * maxrss_kb
+
+  # On macos, this value is already in bytes
+  # (and the manpage is wrong)
+  if is_macos
+    maxrss_kb
+  else
+    1024 * maxrss_kb
+  end
 rescue LoadError
   warn "Failed to get max RSS: #{$!.message}"
   nil
