@@ -52,7 +52,7 @@ def get_rss
 end
 
 def is_macos
-  RbConfig::CONFIG['host_os'].match(/darwin/) != nil
+  RUBY_PLATFORM.match?(/darwin/)
 end
 
 def get_maxrss
