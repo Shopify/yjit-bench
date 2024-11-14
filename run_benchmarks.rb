@@ -281,7 +281,7 @@ def run_benchmarks(ruby:, ruby_description:, categories:, name_filters:, out_pat
     # like `bundle install` in a child process will not use the Ruby being benchmarked.
     # It overrides PATH to guarantee the commands of the benchmarked Ruby will be used.
     env = {}
-    ruby_path = `#{ruby.shelljoin} -e 'print RbConfig.ruby'`
+    ruby_path = `#{ruby.shelljoin} -e 'print RbConfig.ruby' 2> #{File::NULL}`
     if ruby_path != RbConfig.ruby
       env["PATH"] = "#{File.dirname(ruby_path)}:#{ENV["PATH"]}"
 
