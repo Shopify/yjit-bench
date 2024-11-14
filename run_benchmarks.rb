@@ -498,11 +498,11 @@ all_names.each do |name|
 end
 other_names.each do |name|
   table[0] += ["#{name} 1st itr"]
-  format   += ["%.2f"]
+  format   += ["%.3f"]
 end
 other_names.each do |name|
   table[0] += ["#{base_name}/#{name}"]
-  format   += ["%.2f"]
+  format   += ["%.3f"]
 end
 
 # Format the results table
