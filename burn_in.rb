@@ -55,7 +55,11 @@ def free_file_path(parent_dir, name_prefix)
 end
 
 def run_benchmark(bench_name, logs_path, run_time, ruby_version)
+  # Determine the path to the benchmark script
   script_path = File.join('benchmarks', bench_name, 'benchmark.rb')
+  if not File.exist?(script_path)
+    script_path = File.join('benchmarks', bench_name + '.rb')
+  end
 
   # Assemble random environment variable options to test
   test_env_vars = {}
@@ -74,10 +78,14 @@ def run_benchmark(bench_name, logs_path, run_time, ruby_version)
   test_options = [
     "--yjit-call-threshold=#{[1, 2, 10, 30].sample()}",
     "--yjit-cold-threshold=#{[1, 2, 5, 10, 500, 50_000].sample()}",
-    "--yjit-exec-mem-size=#{[1, 2, 3, 4, 5, 10, 64, 128].sample()}",
+    [
+      "--yjit-mem-size=#{[1, 2, 3, 4, 5, 10, 64, 128].sample()}",
+      "--yjit-exec-mem-size=#{[1, 2, 3, 4, 5, 10, 64, 128].sample()}",
+    ].sample(),
     ['--yjit-code-gc', nil].sample(),
     ['--yjit-perf', nil].sample(),
     ['--yjit-stats', nil].sample(),
+    ['--yjit-log=/dev/null', nil].sample(),
   ].compact
 
   # Assemble the command string
