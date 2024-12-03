@@ -20,6 +20,7 @@ args = OpenStruct.new({
   num_procs: Etc.nprocessors,
   num_long_runs: 4,
   categories: ['headline', 'other'],
+  no_yjit: false,
 })
 
 # Parse the command-line options
@@ -43,6 +44,10 @@ OptionParser.new do |opts|
   opts.on("--category=headline,other,micro", "when given, only benchmarks with specified categories will run") do |v|
     args.categories = v.split(",")
   end
+
+  opts.on("--no_yjit", "when given, test with the CRuby interpreter, without enabling YJIT") do
+    args.no_yjit = true
+  end
 end.parse!
 
 def free_file_path(parent_dir, name_prefix)
@@ -54,7 +59,7 @@ def free_file_path(parent_dir, name_prefix)
   end
 end
 
-def run_benchmark(bench_name, logs_path, run_time, ruby_version)
+def run_benchmark(bench_name, no_yjit, logs_path, run_time, ruby_version)
   # Determine the path to the benchmark script
   script_path = File.join('benchmarks', bench_name, 'benchmark.rb')
   if not File.exist?(script_path)
@@ -75,18 +80,22 @@ def run_benchmark(bench_name, logs_path, run_time, ruby_version)
   env.merge!(test_env_vars)
 
   # Assemble random command-line options to test
-  test_options = [
-    "--yjit-call-threshold=#{[1, 2, 10, 30].sample()}",
-    "--yjit-cold-threshold=#{[1, 2, 5, 10, 500, 50_000].sample()}",
-    [
-      "--yjit-mem-size=#{[1, 2, 3, 4, 5, 10, 64, 128].sample()}",
-      "--yjit-exec-mem-size=#{[1, 2, 3, 4, 5, 10, 64, 128].sample()}",
-    ].sample(),
-    ['--yjit-code-gc', nil].sample(),
-    ['--yjit-perf', nil].sample(),
-    ['--yjit-stats', nil].sample(),
-    ['--yjit-log=/dev/null', nil].sample(),
-  ].compact
+  if no_yjit
+    test_options = []
+  else
+    test_options = [
+      "--yjit-call-threshold=#{[1, 2, 10, 30].sample()}",
+      "--yjit-cold-threshold=#{[1, 2, 5, 10, 500, 50_000].sample()}",
+      [
+        "--yjit-mem-size=#{[1, 2, 3, 4, 5, 10, 64, 128].sample()}",
+        "--yjit-exec-mem-size=#{[1, 2, 3, 4, 5, 10, 64, 128].sample()}",
+      ].sample(),
+      ['--yjit-code-gc', nil].sample(),
+      ['--yjit-perf', nil].sample(),
+      ['--yjit-stats', nil].sample(),
+      ['--yjit-log=/dev/null', nil].sample(),
+    ].compact
+  end
 
   # Assemble the command string
   cmd = [
@@ -137,12 +146,12 @@ def run_benchmark(bench_name, logs_path, run_time, ruby_version)
   return false
 end
 
-def test_loop(bench_names, logs_path, run_time, ruby_version)
+def test_loop(bench_names, no_yjit, logs_path, run_time, ruby_version)
   error_found = false
 
   while true
     bench_name = bench_names.sample()
-    error = run_benchmark(bench_name, logs_path, run_time, ruby_version)
+    error = run_benchmark(bench_name, no_yjit, logs_path, run_time, ruby_version)
     error_found ||= error
 
     if error_found
@@ -194,7 +203,7 @@ puts "num processes: #{args.num_procs}"
 args.num_procs.times do |i|
   pid = Process.fork do
     run_time = (i < args.num_long_runs)? (3600 * 2):10
-    test_loop(bench_names, args.logs_path, run_time, ruby_version)
+    test_loop(bench_names, args.no_yjit, args.logs_path, run_time, ruby_version)
   end
 end
 
