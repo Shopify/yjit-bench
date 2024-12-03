@@ -147,3 +147,7 @@ ruby-xor:
   desc: pure-Ruby string XOR microbenchmark, analogous to xorcist C extension.
   category: micro
   single_file: true
+loops-times:
+  desc: nested loop Integer#times and array access microbenchmark
+  category: micro
+  single_file: true
