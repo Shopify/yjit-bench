@@ -1,3 +1,5 @@
+require 'rbconfig'
+
 # Ensure the ruby in PATH is the ruby running this, so we can safely shell out to other commands
 ruby_in_path = `ruby -e 'print RbConfig.ruby'`
 unless ruby_in_path == RbConfig.ruby
