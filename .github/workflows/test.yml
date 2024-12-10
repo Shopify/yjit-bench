@@ -41,7 +41,9 @@ jobs:
           SKIP_BENCHMARKS: ${{ matrix.skip }}
 
       - name: Test run_benchmarks.rb --graph
-        run: ./run_benchmarks.rb --graph fib
+        run: |
+          sudo apt-get install -y --no-install-recommends libmagickwand-dev
+          ./run_benchmarks.rb --graph fib
         if: matrix.ruby == 'ruby'
         env:
           WARMUP_ITRS: '1'
