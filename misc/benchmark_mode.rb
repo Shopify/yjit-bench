@@ -72,7 +72,8 @@ module BenchmarkMode
 
     # Get thread id's of all running processes.
     def all_tasks
-      (CpuSet.read(:tasks) || `ps -eo tid=`).lines.map(&:strip).map(&:to_i)
+      # In cgroup v2 the task list doesn't necessarily include all thread id's.
+      (CpuSet.tasks + "\n" + `ps -eo tid=`).lines.map(&:strip).map(&:to_i).uniq
     end
 
     # Get list of all cpu numbers.
@@ -80,7 +81,7 @@ module BenchmarkMode
       return @all_cpus if defined?(@all_cpus)
 
       # Read from root cpuset so our view is not limited by any current cpuset.
-      @all_cpus = Helpers.list_to_ints(CpuSet.read(:cpus))
+      @all_cpus = Helpers.list_to_ints(CpuSet.cpus)
 
       # If that didn't work just guess at it.
       @all_cpus ||= (0 ... Etc.nprocessors).to_a
@@ -196,6 +197,15 @@ module BenchmarkMode
   class CpuSet
     include Sudo
 
+    # If cgroup v2 is mounted (systemd unified hierarchy) but not managing
+    # cpusets we can mount them and use them in the old fashion.
+    # If cgroup v2 is managing cpusets we can integrate with the already mounted fs.
+    # If cpusets aren't being managed by v2 you can enable it with:
+    # echo +cpuset | sudo tee /sys/fs/cgroup/cgroup.subtree_control
+    # (provided you don't have a cpusets mount somewhere else).
+
+    CGROUP_V2_ROOT = "/sys/fs/cgroup"
+
     # Man cpuset(7) says "/dev/cpuset" but mounting there may fail when /dev is a devtmpfs.
     DEFAULT_ROOT = "/cpusets"
 
@@ -213,22 +223,62 @@ module BenchmarkMode
         end
       end
 
+      if read("cgroup.subtree_control", CGROUP_V2_ROOT)&.split(' ')&.include?('cpuset')
+        @cgroup_v2 = true
+        return @root = CGROUP_V2_ROOT
+      end
+
       @root = DEFAULT_ROOT.then do |dir|
         Sudo.sudo("mkdir", "-p", dir) unless File.exist?(dir)
 
         Sudo.sudo("mount", "-t", "cpuset", "none", dir)
 
-        # If the fs isn't mounted, return nil.
-        dir if File.exist?("#{dir}/tasks")
+        # If the fs failed to mount, return nil.
+        dir if File.exist?(self.file_path(:tasks, dir))
       end
     end
 
-    def self.read(key)
-      path = "#{find_root}/#{key}"
+    V2_PATHS = {
+      cpu_exclusive: "cpuset.cpus.exclusive",
+      cpus: "cpuset.cpus",
+      effective_cpus: "cpuset.cpus.effective",
+      effective_mems: "cpuset.mems.effective",
+      mems: "cpuset.mems",
+      sched_load_balance: nil, # not available in the v2 fs
+      tasks: "cgroup.procs",
+    }
 
-      return unless File.exist?(path)
+    def self.file_path(name, dir = nil)
+      dir ||= find_root
+      name = V2_PATHS.fetch(name) if cgroup_v2?
+
+      return unless name
+
+      File.join(dir, name.to_s)
+    end
+
+    def self.read(name, dir = nil)
+      path = file_path(name, dir)
+
+      return unless path && File.exist?(path)
 
       File.read(path)
+    end
+
+    def self.cgroup_v2?
+      @cgroup_v2
+    end
+
+    def self.cpus
+      read(:effective_cpus)&.strip
+    end
+
+    def self.mems
+      read(:effective_mems)&.strip
+    end
+
+    def self.tasks
+      read(:tasks)
     end
 
     def initialize(name, cpus: nil, tasks: [], **kwargs)
@@ -255,7 +305,7 @@ module BenchmarkMode
 
       # Both cpus and mems must be set in order to add tasks.
       # Default mems to the root value.
-      @settings[:mems] ||= File.read("#{self.class.find_root}/mems").strip
+      @settings[:mems] ||= self.class.mems
 
       # Settings must be written before tasks can be added.
       @settings.each_pair do |key, value|
@@ -267,9 +317,12 @@ module BenchmarkMode
     end
 
     def write_setting(key, value, verbose: true)
+      key_path = self.class.file_path(key, path)
+      return unless key_path
+
       # If an array is provided (for "tasks") write each item individually.
       Array(value).each do |item|
-        write("#{path}/#{key}", item, verbose:)
+        write(key_path, item, verbose:)
       end
     end
 
@@ -278,8 +331,8 @@ module BenchmarkMode
       return unless path && File.directory?(path)
 
       # Move tasks to parent cpuset as we cannot remove a set that still has tasks.
-      root_tasks = "#{self.class.find_root}/tasks"
-      File.read("#{path}/tasks").lines.each do |tid|
+      root_tasks = self.class.file_path(:tasks)
+      File.read(self.class.file_path(:tasks, path)).lines.each do |tid|
         write(root_tasks, tid, verbose: false)
       end
 
