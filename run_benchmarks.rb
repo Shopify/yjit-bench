@@ -59,7 +59,7 @@ def have_yjit?(ruby)
 end
 
 # Disable Turbo Boost while running benchmarks. Maximize the CPU frequency.
-def set_bench_config(turbo:)
+def set_bench_config(turbo:, benchmark_mode:)
   # sudo requires the flag '-S' in order to take input from stdin
   if File.exist?('/sys/devices/system/cpu/intel_pstate') # Intel
     unless intel_no_turbo? || turbo
@@ -76,7 +76,7 @@ def set_bench_config(turbo:)
     check_call("sudo -S cpupower frequency-set -g performance") unless performance_governor?
   end
 
-  if os == :linux && ENV["BENCHMARK_MODE"] != '0'
+  if os == :linux && benchmark_mode
     BenchmarkMode.engage!&.then do |cpu|
       ENV["YJIT_BENCH_CPU"] = cpu.to_s
     end
@@ -330,6 +330,7 @@ args = OpenStruct.new({
   name_filters: [],
   rss: false,
   graph: false,
+  benchmark_mode: true,
   no_pinning: false,
   turbo: false,
 })
@@ -423,6 +424,10 @@ OptionParser.new do |opts|
     args.graph = true
   end
 
+  opts.on("--no-benchmark-mode", "Disable cpusets, niceness, hyper-threading toggling") do
+    args.benchmark_mode = false
+  end
+
   opts.on("--no-pinning", "don't pin ruby to a specific CPU core") do
     args.no_pinning = true
   end
@@ -447,8 +452,8 @@ if args.executables.empty?
   end
 end
 
-# Disable CPU frequency scaling
-set_bench_config(turbo: args.turbo)
+# Disable CPU frequency scaling, enable cpusets, etc
+set_bench_config(turbo: args.turbo, benchmark_mode: args.benchmark_mode)
 
 # Check pstate status
 check_pstate(turbo: args.turbo)

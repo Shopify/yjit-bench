@@ -21,6 +21,7 @@ module BenchmarkMode
   class << self
     # Enable all available settings.
     def engage!(nice: nil)
+      # Set scheduler priority ("niceness") for this process (and any child processes).
       Nice.renice_process_group!(nice || -15, Process.getpgrp)
 
       return unless bench_cpus = find_bench_cpus
