@@ -114,7 +114,7 @@ def return_results(warmup_iterations, bench_iterations)
   if yjit_stats
     yjit_bench_results["yjit_stats"] = yjit_stats
 
-    formatted_stats = proc { |key| "%10s" % yjit_stats[key].to_s.reverse.scan(/\d{1,3}/).join(",").reverse }
+    formatted_stats = proc { |key| "%10s" % yjit_stats[key].to_s.split(".").tap { |a| a[0] = a[0].reverse.scan(/\d{1,3}/).join(",").reverse }.join(".") }
     yjit_stats_keys = [
       *ENV.fetch("YJIT_BENCH_STATS", "").split(",").map(&:to_sym),
       :inline_code_size,
