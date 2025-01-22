@@ -59,8 +59,8 @@ def run_benchmark(_num_itrs_hint, &block)
 
     yjit_stats&.each do |key, old_value|
       new_value = RubyVM::YJIT.runtime_stats(key)
-      diff = (new_value - old_value).to_s.reverse.scan(/\d{1,3}/).join(",").reverse
-      itr_str << " %#{key.size}s" % diff
+      diff = (new_value - old_value)
+      itr_str << " %#{key.size}s" % format_number(diff)
       yjit_stats[key] = new_value
     end
 
