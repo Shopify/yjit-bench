@@ -13,6 +13,18 @@ GC.auto_compact = !!ENV["RUBY_GC_AUTO_COMPACT"]
 # Seed the global random number generator for repeatability between runs
 Random.srand(1337)
 
+def format_number(num)
+  num.to_s.split(".").tap do |a|
+    # Insert comma separators but only in the whole number portion (a[0]).
+    # Look for "-?" at the end to preserve any leading minus sign that may be on the beginning.
+    a[0] = a[0].reverse.scan(/\d{1,3}-?/).join(",").reverse
+
+    # Add a space when positive so that if there is ever a negative
+    # the first digit will line up.
+    a[0].prepend(" ") unless a[0].start_with?("-")
+  end.join(".")
+end
+
 def run_cmd(*args)
   puts "Command: #{args.join(" ")}"
   system(*args)
@@ -114,7 +126,7 @@ def return_results(warmup_iterations, bench_iterations)
   if yjit_stats
     yjit_bench_results["yjit_stats"] = yjit_stats
 
-    formatted_stats = proc { |key| "%10s" % yjit_stats[key].to_s.split(".").tap { |a| a[0] = a[0].reverse.scan(/\d{1,3}/).join(",").reverse }.join(".") }
+    formatted_stats = proc { |key| "%10s" % format_number(yjit_stats[key]) }
     yjit_stats_keys = [
       *ENV.fetch("YJIT_BENCH_STATS", "").split(",").map(&:to_sym),
       :inline_code_size,
