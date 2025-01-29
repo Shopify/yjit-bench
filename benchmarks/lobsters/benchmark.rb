@@ -2,6 +2,7 @@ require_relative '../../harness/loader'
 
 ENV['RAILS_ENV'] ||= 'production'
 ENV['DISABLE_DATABASE_ENVIRONMENT_CHECK'] = '1' # Benchmarks don't really have 'production', so trash it at will.
+ENV["SECRET_KEY_BASE"] = "23394i82394i3204"
 
 Dir.chdir __dir__
 use_gemfile
@@ -17,6 +18,27 @@ b.step(-1) # import until finished
 b.finish # destroy the Backup object
 
 app = Rails.application
+
+class FakeCreds
+  def initialize(recur = false)
+    @recur = recur
+  end
+
+  def method_missing(name, ...)
+    if @recur
+      FakeCreds.new
+    else
+      nil
+    end
+  end
+end
+
+CREDENTIALS = FakeCreds.new(true)
+
+def app.credentials
+  CREDENTIALS
+end
+
 generator = RouteGenerator.new(app)
 generator.routes # Make sure routes have been pregenerated
 
@@ -44,7 +66,7 @@ run_benchmark(10) do
     path = env["PATH_INFO"] # app.call mutates the path
     response_array = generator.visit(env) # Track HTTP cookies as we go along
     unless response_array.first == 200
-      puts response_array.inspect
+      puts response_array.last
       raise "HTTP status is #{response_array.first} instead of 200 for req #{idx}/#{generator.routes.size}, #{path.inspect}. Is the benchmark app properly set up? See README.md."
     end
     response_array.last.close # Response might be a Rack::BodyProxy and MUST be closed.

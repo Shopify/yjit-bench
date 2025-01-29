@@ -1,3 +1,5 @@
+# typed: false
+
 require_relative "boot"
 
 require "rails"
@@ -5,10 +7,10 @@ require "rails"
 require "active_model/railtie"
 require "active_job/railtie"
 require "active_record/railtie"
-# require "active_storage/engine"
+require "active_storage/engine"
 require "action_controller/railtie"
 require "action_mailer/railtie"
-# require "action_mailbox/engine"
+require "action_mailbox/engine"
 # require "action_text/engine"
 require "action_view/railtie"
 # require "action_cable/engine"
@@ -21,39 +23,48 @@ Bundler.require(*Rails.groups)
 module Lobsters
   class Application < Rails::Application
     # Initialize configuration defaults for originally generated Rails version.
-    config.load_defaults 7.2
+    config.load_defaults 8.0
+
+    # CHANGE: let the benchmark harness enable YJIT
+    config.yjit = false
 
     # Please, add to the `ignore` list any other `lib` subdirectories that do
     # not contain `.rb` files, or that should not be reloaded or eager loaded.
     # Common ones are `templates`, `generators`, or `middleware`, for example.
-    config.autoload_lib(ignore: %w(assets tasks))
+    config.autoload_lib(ignore: %w[assets custom_cops tasks])
 
     # Configuration for the application, engines, and railties goes here.
     #
     # These settings can be overridden in specific environments using the files
     # in config/environments, which are processed later.
-    #
-    config.time_zone = "Central Time (US & Canada)"
-    # config.eager_load_paths << Rails.root.join("extras")
 
-    # The default locale is :en and all translations from config/locales/*.rb,yml are auto loaded.
-    # config.i18n.load_path += Dir[Rails.root.join('my', 'locales', '*.{rb,yml}').to_s]
-    # config.i18n.default_locale = :de
+    # Set Time.zone default to the specified zone and make Active Record auto-convert to this zone.
+    # Run "rake -D time" for a list of tasks for finding time zone names. Default is UTC.
+    config.time_zone = "Central Time (US & Canada)"
+
+    config.eager_load_namespaces << I18n
+
+    config.autoload_paths.push(
+      "#{root}/extras",
+      "#{root}/lib"
+    )
 
     # Raise an exception when using mass assignment with unpermitted attributes
     config.action_controller.action_on_unpermitted_parameters = :raise
 
-    # config.active_record.raise_in_transactional_callbacks = true
+    # log where queries came from
+    config.active_record.query_log_tags_enabled = true
+    config.active_record.cache_query_log_tags = true
 
     config.cache_store = :file_store, "#{config.root}/tmp/cache/"
+    config.active_support.cache_format_version = 7.0 # bump to 7.1 after 7.1 deploy fills caches
 
-    config.exceptions_app = self.routes
+    config.exceptions_app = routes
 
     config.skip_yarn = true
 
     config.after_initialize do
-      require "#{Rails.root}/lib/monkey.rb"
-      require "#{Rails.root}/lib/time_series.rb"
+      require Rails.root.join("lib/time_series.rb").to_s
     end
 
     config.generators do |g|
@@ -66,6 +77,9 @@ module Lobsters
 
     # rails stop putting js on everything
     config.action_view.form_with_generates_remote_forms = false
+
+    config.mission_control.jobs.base_controller_class = "JobsModController"
+    config.mission_control.jobs.http_basic_auth_enabled = false
   end
 end
 
@@ -104,8 +118,8 @@ class << Rails.application
 
   def root_url
     Rails.application.routes.url_helpers.root_url(
-      :host => Rails.application.domain,
-      :protocol => Rails.application.ssl? ? "https" : "http",
+      host: Rails.application.domain,
+      protocol: Rails.application.ssl? ? "https" : "http"
     )
   end
 
@@ -118,5 +132,10 @@ class << Rails.application
   # config.force_ssl be on)
   def ssl?
     true
+  end
+
+  # username of the admin account used to ban domains automatically (e.g., URL shorteners)
+  def banned_domains_admin
+    ENV["BANNED_DOMAINS_ADMIN"] || "pushcx"
   end
 end

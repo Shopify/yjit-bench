@@ -3,7 +3,7 @@
 class RouteGenerator
   # Take a variety of routes and randomise order, distribution and specific data items (comments, users.)
   ROUTE_GROUPS = [
-    { num: 15, method: :GET, routes: ["/u"] }, # Users tree, showing order of invitation - lots of view logic
+    { num: 15, method: :GET, routes: ["/users"] }, # Users tree, showing order of invitation - lots of view logic
     { num: 15, method: :GET, routes: ["/active", "/newest", "/recent", "/hottest"] }, # Views of the stories by attributes
     { num: 8, method: :GET, routes: ["/rss", "/privacy", "/about", "/settings"] }, # Less-common and less-interesting routes for variation
     { num: 8, method: :GET, routes: ["/top?length=1d", "/top?length=1w", "/top?length=1y"] }, # Top stories by time
@@ -11,7 +11,7 @@ class RouteGenerator
 
     # Turned off flag_warning check for /threads -- to hard to port to SQLite
     { num: 15, routes: ["/comments", "/upvoted/comments", "/threads", "/comments/:comment_id/reply"] },
-    { num: 8, routes: ["/threads/:username", "/u/:username"] },
+    { num: 8, routes: ["/~:username/threads", "/~:username"] },
 
     { num: 15, routes: ["/replies", "/replies/comments", "/replies/stories", "/replies/unread"] },  # replies#stories, replies#unread, replies#comments
 
@@ -63,7 +63,7 @@ class RouteGenerator
     # First GET /login and set the cookie from there. CSRF token from a single session should work throughout that session.
     login_get_env = Rack::MockRequest::env_for("https://localhost/login")
     login_get_resp = @app.call(login_get_env)
-    auth_token_line = login_get_resp[2].join.lines.detect { |line| line.include?("authenticity_token") && line.include?("value") }
+    auth_token_line = login_get_resp[2].to_ary.join.lines.detect { |line| line.include?("authenticity_token") && line.include?("value") }
     @auth_token = auth_token_line.scan(/value="([^"]+)"/)[0][0]
     @resp_cookie_header = login_get_resp[1]["Set-Cookie"] #+ "; tag_filters=NOCACHE" # turn off the file cache
 

@@ -1,10 +1,14 @@
-<ol>
+<%# locals: (similar:) -%>
+<ol class="similar">
   <% similar.each do |story| %>
     <li>
       <a href="<%= story.url %>" target="_blank"><%= story.title %></a>
+      <% if story.merged_story_id %>
+        (merged into <a href="<%= story.merged_into_story.url %>" target="_blank"><%= story.merged_into_story.title %></a>)
+      <% end %>
       <%= story.user_is_author? ? "authored by" : "via" %>
-      <a href="/u/<%= story.user.username %>" class="<%= story.html_class_for_user %>"><%= story.user.username %></a>
-      <%= time_ago_in_words_label(story.created_at) %>
+      <%= styled_user_link story.user, story %>
+      <%= how_long_ago_label(story.created_at) %>
       <span>
         |
         <%= story.show_score_to_user?(@user) ? "#{story.score} point".pluralize(story.score) : '~' %>

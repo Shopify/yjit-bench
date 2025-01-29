@@ -1,14 +1,16 @@
+# typed: false
+
 class Pushover
-  # these need to be overridden in config/initializers/production.rb
-  cattr_accessor :API_TOKEN
-  cattr_accessor :SUBSCRIPTION_CODE
+  # see README.md on setting up credentials
 
   def self.enabled?
-    self.API_TOKEN.present?
+    # CHANGE:
+    # Rails.application.credentials.pushover.api_token.present?
+    false
   end
 
   def self.push(user, params)
-    if !self.enabled?
+    if !enabled?
       return
     end
 
@@ -19,8 +21,8 @@ class Pushover
 
       s = Sponge.new
       s.fetch("https://api.pushover.net/1/messages.json", :post, {
-        :token => self.API_TOKEN,
-        :user => user,
+        token: Rails.application.credentials.pushover.api_token,
+        user: user
       }.merge(params))
     rescue => e
       Rails.logger.error "error sending to pushover: #{e.inspect}"
@@ -28,7 +30,7 @@ class Pushover
   end
 
   def self.subscription_url(params)
-    u = "https://pushover.net/subscribe/#{self.SUBSCRIPTION_CODE}"
+    u = "https://pushover.net/subscribe/#{Rails.application.credentials.pushover.subscription_code}"
     u << "?success=#{CGI.escape(params[:success])}"
     u << "&failure=#{CGI.escape(params[:failure])}"
     u

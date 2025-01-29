@@ -1,45 +1,71 @@
-require 'set'
+# typed: false
 
 class Comment < ApplicationRecord
   belongs_to :user
   belongs_to :story,
-             :inverse_of => :comments
+    inverse_of: :comments
+  # has_one :comment_stat, -> { where("date(created_at)",  }
   has_many :votes,
-           :dependent => :delete_all
+    dependent: :delete_all
   belongs_to :parent_comment,
-             :class_name => "Comment",
-             :inverse_of => false,
-             :optional => true
+    class_name: "Comment",
+    inverse_of: false,
+    optional: true
   has_one :moderation,
-          :class_name => "Moderation",
-          :inverse_of => :comment,
-          :dependent => :destroy
+    class_name: "Moderation",
+    inverse_of: :comment,
+    dependent: :destroy
   belongs_to :hat,
-             :optional => true
+    optional: true
   has_many :taggings, through: :story
+  has_many :links, inverse_of: :from_comment, dependent: :destroy
+  has_many :incoming_links,
+    class_name: "Link",
+    inverse_of: :to_comment,
+    dependent: :destroy
 
-  attr_accessor :current_vote, :previewing, :indent_level
+  attr_accessor :current_vote, :previewing, :vote_summary
+  attribute :depth, :integer
+  attribute :reply_count, :integer
 
-  before_validation :on => :create do
-    self.assign_short_id_and_score
-    self.assign_initial_confidence
-    self.assign_thread_id
+  before_validation on: :create do
+    assign_short_id_and_score
+    assign_initial_confidence
+    assign_thread_id
   end
-  after_create :record_initial_upvote, :mark_submitter, :deliver_reply_notifications,
-               :deliver_mention_notifications, :log_hat_use
+  after_create :record_initial_upvote, :mark_submitter, :deliver_notifications,
+    :log_hat_use
   after_destroy :unassign_votes
+  after_save :recreate_links
 
   scope :deleted, -> { where(is_deleted: true) }
   scope :not_deleted, -> { where(is_deleted: false) }
   scope :not_moderated, -> { where(is_moderated: false) }
   scope :active, -> { not_deleted.not_moderated }
-  scope :accessible_to_user, ->(user) { user && user.is_moderator? ? all : active }
+  scope :accessible_to_user, ->(user) { (user && user.is_moderator?) ? all : active }
+  scope :recent, -> { where(created_at: (6.months.ago..)) }
+  scope :above_average, -> {
+    joins(:story)
+      .joins("left outer join comment_stats on date(comments.created_at) = comment_stats.date")
+      .where("comments.score > coalesce(comment_stats.`average`, 3)")
+  }
+  scope :on_stories_not_authored_by, ->(user) {
+    joins(:story)
+      .merge(Story.where.not(user: user, user_is_author: true)) # TODO: authorship/beneficial idea
+  }
+  scope :for_presentation, -> {
+    includes(:user, :hat, moderation: :moderator, story: :user, votes: :user)
+  }
   scope :not_on_story_hidden_by, ->(user) {
     user ? where.not(
-      HiddenStory.select('TRUE')
-      .where(Arel.sql('hidden_stories.story_id = stories.id'))
+      HiddenStory.select("TRUE")
+      .where(Arel.sql("hidden_stories.story_id = stories.id"))
       .by(user).arel.exists
-    ) : where('true')
+    ) : where("true")
+  }
+  # workaround: if this select is in #parents, calling .count produces invalid SQL
+  scope :with_thread_attributes, -> {
+    select("comments.*, comments_recursive.depth as depth, comments_recursive.reply_count")
   }
 
   FLAGGABLE_DAYS = 7
@@ -54,100 +80,56 @@ class Comment < ApplicationRecord
   # after this many minutes old, a comment cannot be edited
   MAX_EDIT_MINS = (60 * 6)
 
-  SCORE_RANGE_TO_HIDE = (-2 .. 4).freeze
+  # story_threads builds a confidence_order_path in SQL this many characters long:
+  # the longest reply chain in prod data is 31 comments (so, depth 30) * 3b confidence_order
+  COP_LENGTH = 31 * 3
+  # Stop accepting replies this deep. Recursive CTE requires a fixed max (COP_LENGTH),
+  # but in practice all deep reply chains have gone off-topic and/or tuned into flamewars.
+  MAX_DEPTH = 18
 
-  validates :short_id, length: { maximum: 10 }
-  validates :user_id, presence: true
-  validates :story_id, presence: true
-  validates :markeddown_comment, length: { maximum: 16_777_215 }
-  validates :comment, presence: { with: true, message: "cannot be empty." }
+  SCORE_RANGE_TO_HIDE = (-2..4)
+
+  validates :short_id, length: {maximum: 10}, presence: true
+  validates :markeddown_comment, length: {maximum: 16_777_215}
+  validates :comment,
+    presence: {with: true, message: "cannot be empty."},
+    length: {maximum: 16_777_215}
+  validates :confidence, :confidence_order, :flags, :score, presence: true
+  validates :is_deleted, :is_moderated, :is_from_email, inclusion: {in: [true, false]}
 
   validate do
-    self.parent_comment && self.parent_comment.is_gone? &&
+    parent_comment&.is_gone? &&
       errors.add(:base, "Comment was deleted by the author or a mod while you were writing.")
 
-    (m = self.comment.to_s.strip.match(/\A(t)his([\.!])?$\z/i)) &&
-      errors.add(:base, (m[1] == "T" ? "N" : "n") + "ope" + m[2].to_s)
+    parent_comment && !parent_comment.depth_permits_reply? &&
+      ModNote.tattle_on_max_depth_limit(user, parent_comment) &&
+      errors.add(:base, "You have replied too greedily and too deep.")
 
-    self.comment.to_s.strip.match(/\Atl;?dr.?$\z/i) &&
+    (m = comment.to_s.strip.match(/\A(t)his([\.!])?$\z/i)) &&
+      errors.add(:base, ((m[1] == "T") ? "N" : "n") + "ope" + m[2].to_s)
+
+    comment.to_s.strip.match(/\Atl;?dr.?$\z/i) &&
       errors.add(:base, "Wow!  A blue car!")
 
-    self.comment.to_s.strip.match(/\A([[[:upper:]][[:punct:]]] )+[[[:upper:]][[:punct:]]]?$\z/) &&
+    comment.to_s.strip.match(/\Abump/i) &&
+      errors.add(:base, "Don't bump threads.")
+
+    comment.to_s.strip.match(/\A([[[:upper:]][[:punct:]]] )+[[[:upper:]][[:punct:]]]?$\z/) &&
       errors.add(:base, "D O N ' T")
 
-    self.comment.to_s.strip.match(/\A(me too|nice)([\.!])?\z/i) &&
+    comment.to_s.strip.match(/\A(me too|nice|\+1)([\.!])?\z/i) &&
       errors.add(:base, "Please just upvote the parent post instead.")
 
-    self.hat.present? && self.user.wearable_hats.exclude?(self.hat) &&
+    hat.present? && user.wearable_hats.exclude?(hat) &&
       errors.add(:hat, "not wearable by user")
 
     # .try so tests don't need to persist a story and user
-    self.story.try(:accepting_comments?) ||
-      errors.add(:base, "Story is no longer accepting comments.")
+    new_record? && (story.try(:accepting_comments?) ||
+      errors.add(:base, "Story is no longer accepting comments."))
   end
 
-  def self.arrange_for_user(user)
-    # This function is always used when presenting threads. The calling
-    # controllers advance the user's ReadRibbon, which may reduce the number
-    # of ReplyingComments, invalidating the User.unread_replies_count cache.
-    # The controller clearing that cache on every view of any thread would be
-    # wasteful because users read many more threads than they participate in,
-    # the controller making an extra loop over all comments would be wasteful,
-    # so this does a couple checks (without replicating all the predicates in
-    # replying_comments view, which would be brittle) and may clear the cache.
-    #
-    # This whole function should be done in the DB using a common-table
-    # expression. When that happens the cache clear probably needs to move up
-    # to the controller, which means extra clears, but that's probably a win
-    # because this function is the site's core functionality and it's
-    # expensive in both CPU + redundant RAM for the web workers.
-    clear_replies_cache = false
-
-    parents = self.order(
-      Arel.sql("comments.score < 0 ASC, comments.confidence DESC")
-    )
-      .group_by(&:parent_comment_id)
-
-    # top-down list of comments, regardless of indent level
-    ordered = []
-
-    ancestors = [nil] # nil sentinel so indent_level starts at 1 without add op.
-    subtree = parents[nil]
-
-    while subtree
-      if (node = subtree.shift)
-        children = parents[node.id]
-
-        clear_replies_cache = true if user && node.user_id == user.id
-
-        # for deleted comments, if they have no children, they can be removed
-        # from the tree.  otherwise they have to stay and a "[deleted]" stub
-        # will be shown
-        if node.is_gone? && # deleted or moderated
-           !children.present? && # don't have child comments
-           (!user || (!user.is_moderator? && node.user_id != user.id))
-          # admins and authors should be able to see their deleted comments
-          next
-        end
-
-        node.indent_level = ancestors.length
-        ordered << node
-
-        # no children to recurse
-        next unless children
-
-        # drill down a level
-        ancestors << subtree
-        subtree = children
-      else
-        # climb back out
-        subtree = ancestors.pop
-      end
-    end
-
-    Rails.cache.delete("user:#{user.id}:unread_replies") if clear_replies_cache
-
-    ordered
+  def self./(short_id)
+    find_by! short_id:
   end
 
   def self.regenerate_markdown
@@ -155,7 +137,7 @@ class Comment < ApplicationRecord
 
     Comment.all.find_each do |c|
       c.markeddown_comment = c.generated_markeddown_comment
-      c.save(:validate => false)
+      c.save!(validate: false)
     end
 
     Comment.record_timestamps = true
@@ -173,23 +155,23 @@ class Comment < ApplicationRecord
       :is_moderated,
       :score,
       :flags,
-      { :parent_comment => self.parent_comment && self.parent_comment.short_id },
-      { :comment => (self.is_gone? ? "<em>#{self.gone_text}</em>" : :markeddown_comment) },
-      { :comment_plain => (self.is_gone? ? self.gone_text : :comment) },
+      {parent_comment: parent_comment&.short_id},
+      {comment: (is_gone? ? "<em>#{gone_text}</em>" : :markeddown_comment)},
+      {comment_plain: (is_gone? ? gone_text : :comment)},
       :url,
-      :indent_level,
-      { :commenting_user => :user },
+      :depth,
+      {commenting_user: user.username}
     ]
 
     js = {}
     h.each do |k|
       if k.is_a?(Symbol)
-        js[k] = self.send(k)
+        js[k] = send(k)
       elsif k.is_a?(Hash)
-        if k.values.first.is_a?(Symbol)
-          js[k.keys.first] = self.send(k.values.first)
+        js[k.keys.first] = if k.values.first.is_a?(Symbol)
+          send(k.values.first)
         else
-          js[k.keys.first] = k.values.first
+          k.values.first
         end
       end
     end
@@ -198,7 +180,10 @@ class Comment < ApplicationRecord
   end
 
   def assign_initial_confidence
-    self.confidence = self.calculated_confidence
+    self.confidence = calculated_confidence
+    # 3 byte placeholder, immediately replaced by after_create callback calling
+    # update_score_and_recalculate! to fill in the autogenerated 'id' value
+    self.confidence_order = [0, 0, 0].pack("CCC")
   end
 
   def assign_short_id_and_score
@@ -207,33 +192,75 @@ class Comment < ApplicationRecord
   end
 
   def assign_thread_id
-    if self.parent_comment_id.present?
-      self.thread_id = self.parent_comment.thread_id
+    self.thread_id = if parent_comment.present?
+      parent_comment.thread_id
     else
-      self.thread_id = Keystore.incremented_value_for("thread_id")
+      Keystore.incremented_value_for("thread_id")
     end
   end
 
   # http://evanmiller.org/how-not-to-sort-by-average-rating.html
   # https://github.com/reddit/reddit/blob/master/r2/r2/lib/db/_sorts.pyx
   def calculated_confidence
-    n = (self.score + self.flags * 2).to_f
-    return 0 if n == 0.0
+    return 0 if is_deleted? || is_moderated?
+    # matching the reddit implementation by backing out these numbers from how we cache
+    ups = self.score + flags
+    downs = flags
+    n = BigDecimal(ups + downs) # the float version can accumulate enough error to go out of range
+    return 0 if n == 0
+    raise ArgumentError, "n should count number of upvotes + flags; that can't be a negative number" if n < 0
 
-    upvotes = self.score + self.flags
-    z = 1.281551565545 # 80% confidence
-    p = upvotes.to_f / n
+    z = BigDecimal("1.281551565545") # 80% confidence
+    p = BigDecimal(ups) / n
 
-    left = p + (1 / ((2.0 * n) * z * z))
-    right = z * Math.sqrt((p * ((1.0 - p) / n)) + (z * (z / (4.0 * n * n))))
+    left = p + (1 / (2 * n) * z * z)
+    right = z * Math.sqrt((p * ((1 - p) / n)) + (z * z / (4 * n * n)))
     under = 1.0 + ((1.0 / n) * z * z)
 
-    return (left - right) / under
+    confidence = (left - right) / under
+    # raise "Comment #{id} calculated_confidence #{confidence} out of range (0..1)" unless (0..1).cover? confidence
+    confidence.clamp(0..1) # a handful of comments generate tiny negative numbers
+  end
+
+  # rate-limit users in heated reply chains, called by controller so that authors can preview
+  # without seeing the message
+  def breaks_speed_limit?
+    return false unless parent_comment_id
+    return false if user.is_moderator?
+
+    parent_comment_ids = parent_comment.parents.ids.append(parent_comment.id)
+    flag_count = Vote.comments_flags(parent_comment_ids).count
+    commenter_flag_count = Vote.comments_flags(parent_comment_ids, user).count # double-count author
+    delay = (2 + flag_count + commenter_flag_count).minutes
+
+    recent = Comment.where("created_at >= ?", delay.ago)
+      .find_by(user: user, thread_id: parent_comment.thread_id)
+
+    return false if recent.blank?
+
+    wait = ActionController::Base.helpers
+      .distance_of_time_in_words(Time.zone.now, (recent.created_at + delay))
+    Rails.logger.info "breaks_speed_limit: #{user.username} replying to https://lobste.rs/c/#{parent_comment.short_id} parent_comment_ids (#{parent_comment_ids.join(" ")}) flags #{flag_count} commenter_flag_count #{commenter_flag_count} delay #{delay} delay.ago #{delay.ago} recent #{recent.id}"
+    errors.add(
+      :comment,
+      "Thread speed limit reached, next comment allowed in #{wait}. " +
+      (flag_count.zero? ? "" : "Is this thread getting heated? ") +
+      (commenter_flag_count.zero? ? "" : "You flagged here, you can leave it for mods.")
+    )
   end
 
   def comment=(com)
     self[:comment] = com.to_s.rstrip
-    self.markeddown_comment = self.generated_markeddown_comment
+    self.markeddown_comment = generated_markeddown_comment
+  end
+
+  # current_vote is the vote loaded for the currently-viewing user
+  def current_flagged?
+    current_vote.try(:[], :vote) == -1
+  end
+
+  def current_upvoted?
+    current_vote.try(:[], :vote) == 1
   end
 
   def delete_for_user(user, reason = nil)
@@ -241,11 +268,11 @@ class Comment < ApplicationRecord
 
     self.is_deleted = true
 
-    if user.is_moderator? && user.id != self.user_id
+    if user.is_moderator? && user.id != user_id
       self.is_moderated = true
 
       m = Moderation.new
-      m.comment_id = self.id
+      m.comment_id = id
       m.moderator_user_id = user.id
       m.action = "deleted comment"
 
@@ -253,56 +280,56 @@ class Comment < ApplicationRecord
         m.reason = reason
       end
 
-      m.save
+      m.save!
 
-      User.update_counters self.user_id, karma: (self.votes.count * -2)
+      User.update_counters user_id, karma: (votes.count * -2)
     end
 
-    self.save(:validate => false)
+    save!(validate: false)
     Comment.record_timestamps = true
 
-    self.story.update_comments_count!
+    story.update_cached_columns
     self.user.refresh_counts!
   end
 
-  def deliver_mention_notifications
-    self.plaintext_comment.scan(/\B\@([\w\-]+)/).flatten.uniq.each do |mention|
-      if (u = User.active.find_by(:username => mention))
-        if u.id == self.user.id
-          next
-        end
+  def deliver_notifications
+    notified = deliver_reply_notifications
+    deliver_mention_notifications(notified)
+  end
 
-        if u.email_mentions?
-          begin
-            EmailReply.mention(self, u).deliver_now
-          rescue => e
-            Rails.logger.error "error e-mailing #{u.email}: #{e}"
-          end
+  def deliver_mention_notifications(notified = [])
+    to_notify = plaintext_comment.scan(/\B[@~]([\w\-]+)/).flatten.uniq - notified - [user.username]
+    User.active.where(username: to_notify).find_each do |u|
+      if u.email_mentions?
+        begin
+          EmailReplyMailer.mention(self, u).deliver_now
+        rescue => e
+          Rails.logger.error "error e-mailing #{u.email}: #{e}"
         end
+      end
 
-        if u.pushover_mentions?
-          u.pushover!(
-            :title => "#{Rails.application.name} mention by " <<
-              "#{self.user.username} on #{self.story.title}",
-            :message => self.plaintext_comment,
-            :url => self.url,
-            :url_title => "Reply to #{self.user.username}",
-          )
-        end
+      if u.pushover_mentions?
+        u.pushover!(
+          title: "#{Rails.application.name} mention by " \
+            "#{user.username} on #{story.title}",
+          message: plaintext_comment,
+          url: url,
+          url_title: "Reply to #{user.username}"
+        )
       end
     end
   end
 
   def users_following_thread
     users_following_thread = Set.new
-    if self.user.id != self.story.user.id && self.story.user_is_following
-      users_following_thread << self.story.user
+    if user.id != story.user.id && story.user_is_following
+      users_following_thread << story.user
     end
 
-    if self.parent_comment_id &&
-       (u = self.parent_comment.try(:user)) &&
-       u.id != self.user.id &&
-       u.is_active?
+    if parent_comment_id &&
+        (u = parent_comment.try(:user)) &&
+        u.id != user.id &&
+        u.is_active?
       users_following_thread << u
     end
 
@@ -310,10 +337,13 @@ class Comment < ApplicationRecord
   end
 
   def deliver_reply_notifications
+    notified = []
+
     users_following_thread.each do |u|
       if u.email_replies?
         begin
-          EmailReply.reply(self, u).deliver_now
+          EmailReplyMailer.reply(self, u).deliver_now
+          notified << u.username
         rescue => e
           Rails.logger.error "error e-mailing #{u.email}: #{e}"
         end
@@ -321,18 +351,34 @@ class Comment < ApplicationRecord
 
       if u.pushover_replies?
         u.pushover!(
-          :title => "#{Rails.application.name} reply from " <<
-            "#{self.user.username} on #{self.story.title}",
-          :message => self.plaintext_comment,
-          :url => self.url,
-          :url_title => "Reply to #{self.user.username}",
+          title: "#{Rails.application.name} reply from " \
+            "#{user.username} on #{story.title}",
+          message: plaintext_comment,
+          url: url,
+          url_title: "Reply to #{user.username}"
         )
+        notified << u.username
       end
     end
+
+    notified
+  end
+
+  def depth_permits_reply?
+    # Top-level replies (eg parent_comment_id == null) have depth 0, then each reply is +1.
+    # Alternate definition: depth is the number of ancestor comments.
+
+    return false if new_record? # can't reply to unsaved comments
+
+    # Most commonly, depth is set by merged_comments. But we need to count parents when executing as
+    # a validation on reply.
+    self.depth ||= parents.count
+
+    depth < MAX_DEPTH
   end
 
   def generated_markeddown_comment
-    Markdowner.to_html(self.comment)
+    Markdowner.to_html(comment)
   end
 
   # TODO: race condition: if two votes arrive at the same time, the second one
@@ -340,22 +386,36 @@ class Comment < ApplicationRecord
   def update_score_and_recalculate!(score_delta, flag_delta)
     self.score += score_delta
     self.flags += flag_delta
+    new_confidence = calculated_confidence
+    # confidence_order allows sorting sibling comments by confidence in queries like story_threads.
+    # confidence_order must sort in ascending order so that it's in the right order when
+    # concatenated into confidence_order_path, which the database sorts lexiographically. It is 3
+    # bytes wide. The first two bytes map confidence to a big-endian unsigned integer, inverted so
+    # that high-confidence have low values. confidence is based on the number of upvotes and flags,
+    # so some values (like the one for 1 vote, 0 flags) are very common, causing sibling comments to
+    # tie. If we don't specify a tiebreaker, the database will return results in an arbitrary order,
+    # which means sibling comments will swap positions on page reloads (infrequently and
+    # intermittently, real fun to debug). So the third byte is the low byte of the comment id. Being
+    # assigned sequentially, mostly the tiebreaker sorts earlier comments sooner. We average ~200
+    # comments per weekday so seeing rollover between sibling comments is rare. Importantly, even
+    # when it is 'wrong', it gives a stable sort.
     Comment.connection.execute <<~SQL
       UPDATE comments SET
         score = (select coalesce(sum(vote), 0) from votes where comment_id = comments.id),
         flags = (select count(*) from votes where comment_id = comments.id and vote = -1),
-        confidence = #{self.calculated_confidence}
-      WHERE id = #{self.id.to_i}
+        confidence = #{new_confidence},
+        confidence_order = concat(lpad(char(65535 - floor(#{new_confidence} * 65535) using binary), 2, '\0'), char(id & 0xff using binary))
+      WHERE id = #{id.to_i}
     SQL
-    self.story.recalculate_hotness!
+    story.update_cached_columns
   end
 
   def gone_text
-    if self.is_moderated?
+    if is_moderated?
       "Comment removed by moderator " <<
-        self.moderation.try(:moderator).try(:username).to_s << ": " <<
-        (self.moderation.try(:reason) || "No reason given")
-    elsif self.user.is_banned?
+        moderation.try(:moderator).try(:username).to_s << ": " <<
+        (moderation.try(:reason) || "No reason given")
+    elsif user.is_banned?
       "Comment from banned user removed"
     else
       "Comment removed by author"
@@ -363,55 +423,41 @@ class Comment < ApplicationRecord
   end
 
   def has_been_edited?
-    self.updated_at && (self.updated_at - self.created_at > 1.minute)
-  end
-
-  def html_class_for_user
-    c = []
-    if !self.user.is_active?
-      c.push "inactive_user"
-    elsif self.user.is_new?
-      c.push "new_user"
-    elsif self.story && self.story.user_is_author? &&
-          self.story.user_id == self.user_id
-      c.push "user_is_author"
-    end
-
-    c.join("")
+    updated_at && (updated_at - created_at > 1.minute)
   end
 
   def is_deletable_by_user?(user)
-    if user && user.is_moderator?
-      return true
-    elsif user && user.id == self.user_id
-      return self.created_at >= DELETEABLE_DAYS.days.ago
+    if user&.is_moderator?
+      true
+    elsif user && user.id == user_id
+      created_at >= DELETEABLE_DAYS.days.ago
     else
-      return false
+      false
     end
   end
 
   def is_disownable_by_user?(user)
-    user && user.id == self.user_id && self.created_at && self.created_at < DELETEABLE_DAYS.days.ago
+    user && user.id == user_id && created_at && created_at < DELETEABLE_DAYS.days.ago
   end
 
   def is_flaggable?
-    if self.created_at && self.score > FLAGGABLE_MIN_SCORE
-      Time.current - self.created_at <= FLAGGABLE_DAYS.days
+    if created_at && self.score > FLAGGABLE_MIN_SCORE
+      Time.current - created_at <= FLAGGABLE_DAYS.days
     else
       false
     end
   end
 
   def is_editable_by_user?(user)
-    if user && user.id == self.user_id
-      if self.is_moderated?
-        return false
+    if user && user.id == user_id
+      if is_gone?
+        false
       else
-        return (Time.current.to_i - (self.updated_at ? self.updated_at.to_i :
-          self.created_at.to_i) < (60 * MAX_EDIT_MINS))
+        (Time.current.to_i - (updated_at ? updated_at.to_i :
+          created_at.to_i) < (60 * MAX_EDIT_MINS))
       end
     else
-      return false
+      false
     end
   end
 
@@ -420,41 +466,72 @@ class Comment < ApplicationRecord
   end
 
   def is_undeletable_by_user?(user)
-    if user && user.is_moderator?
-      return true
-    elsif user && user.id == self.user_id && !self.is_moderated?
-      return true
+    if user&.is_moderator?
+      true
+    elsif user && user.id == user_id && !is_moderated?
+      true
     else
-      return false
+      false
     end
   end
 
   def log_hat_use
-    return unless self.hat && self.hat.modlog_use
+    return unless hat&.modlog_use
 
     m = Moderation.new
-    m.created_at = self.created_at
-    m.comment_id = self.id
+    m.created_at = created_at
+    m.comment_id = id
     m.moderator_user_id = user.id
-    m.action = "used #{self.hat.hat} hat"
+    m.action = "used #{hat.hat} hat"
     m.save!
   end
 
   def mark_submitter
-    Keystore.increment_value_for("user:#{self.user_id}:comments_posted")
+    Keystore.increment_value_for("user:#{user_id}:comments_posted")
   end
 
   def mailing_list_message_id
     [
       "comment",
-      self.short_id,
-      self.is_from_email ? "email" : nil,
-      created_at.to_i,
+      short_id,
+      is_from_email ? "email" : nil,
+      created_at.to_i
     ].reject(&:!).join(".") << "@" << Rails.application.domain
   end
 
+  # all direct ancestors of this comment, oldest first
+  def parents
+    return Comment.none if parent_comment_id.nil?
+
+    # starts from parent_comment_id so it works on new records
+    @parents ||= Comment
+      .joins(<<~SQL
+        inner join (
+          with recursive parents as (
+            select
+              id target_id,
+              id,
+              parent_comment_id,
+              0 as depth,
+              (select count(*) from comments where parent_comment_id = id) as reply_count
+            from comments where id = #{parent_comment_id}
+            union all
+            select
+              parents.target_id,
+              c.id,
+              c.parent_comment_id,
+              depth - 1,
+              (select count(*) from comments where parent_comment_id = c.id)
+            from comments c join parents on parents.parent_comment_id = c.id
+          ) select id, depth, reply_count from parents
+        ) as comments_recursive on comments.id = comments_recursive.id
+      SQL
+            )
+      .order("id asc")
+  end
+
   def path
-    self.story.comments_path + "#c_#{self.short_id}"
+    story.comments_path + "#c_#{short_id}"
   end
 
   def plaintext_comment
@@ -463,17 +540,18 @@ class Comment < ApplicationRecord
   end
 
   def record_initial_upvote
-    Vote.vote_thusly_on_story_or_comment_for_user_because(
-      1, self.story_id, self.id, self.user_id, nil, false
-    )
+    # not calling vote_thusly to save round-trips of validations
+    Vote.create! story: story, comment: self, user: user, vote: 1
 
-    self.story.update_comments_count!
+    update_score_and_recalculate! 0, 0 # trigger db calculation
+
+    story.update_cached_columns
   end
 
   def score_for_user(u)
-    if self.show_score_to_user?(u)
+    if show_score_to_user?(u)
       score
-    elsif u && u.can_flag?(self)
+    elsif u&.can_flag?(self)
       "~"
     else
       "&nbsp;".html_safe
@@ -481,76 +559,171 @@ class Comment < ApplicationRecord
   end
 
   def short_id_url
-    Rails.application.root_url + "c/#{self.short_id}"
+    Rails.application.root_url + "c/#{short_id}"
   end
 
   def show_score_to_user?(u)
-    return true if u && u.is_moderator?
+    return true if u&.is_moderator?
 
     # hide score on new/near-zero comments to cut down on threads about voting
     # also hide if user has flagged the story/comment to make retaliatory flagging less fun
     (
-      (self.created_at && self.created_at < 36.hours.ago) ||
+      (created_at && created_at < 36.hours.ago) ||
       !SCORE_RANGE_TO_HIDE.include?(self.score)
-    ) && (!current_vote || current_vote[:vote] >= 0)
+    ) && !current_flagged?
   end
 
   def to_param
-    self.short_id
+    short_id
+  end
+
+  # this is less evil than it looks because commonmark produces consistent html:
+  # <a href="http://example.com/" rel="ugc">example</a>
+  def parsed_links
+    markeddown_comment
+      .scan(/<a href="([^"]+)"[^>]*>([^<]+)<\/a>/)
+      .map { |url, title|
+        Link.new({
+          from_comment_id: id,
+          url: url,
+          title: (url == title) ? nil : title
+        })
+      }.compact
+  end
+
+  def recreate_links
+    Link.recreate_from_comment!(self) if saved_change_to_attribute? :comment
   end
 
   def unassign_votes
-    self.story.update_comments_count!
+    story.update_cached_columns
   end
 
   def url
-    self.story.comments_url + "#c_#{self.short_id}"
+    story.comments_url + "#c_#{short_id}"
   end
 
-  def vote_summary_for_user(u)
-    r_counts = {}
-    r_users = {}
-    # don't includes(:user) here and assume the caller did this already
-    self.votes.each do |v|
-      r_counts[v.reason.to_s] ||= 0
-      r_counts[v.reason.to_s] += v.vote
+  def vote_summary_for_user
+    (vote_summary || []).map { |v| "#{v.count} #{v.reason_text.downcase}" }.join(", ")
+  end
 
-      r_users[v.reason.to_s] ||= []
-      r_users[v.reason.to_s].push v.user.username
-    end
-
-    r_counts.keys.map {|k|
-      next if k == ""
-
-      o = "#{r_counts[k]} #{Vote::ALL_COMMENT_REASONS[k]}"
-      if u && u.is_moderator? && self.user_id != u.id
-        o << " (#{r_users[k].join(', ')})"
-      end
-      o
-    }.compact.join(", ")
+  def vote_summary_for_moderator
+    (vote_summary || []).map { |v| "#{v.count} #{v.reason_text.downcase} (#{v.usernames})" }.join(", ")
   end
 
   def undelete_for_user(user)
     Comment.record_timestamps = false
 
     self.is_deleted = false
+    update_score_and_recalculate!(0, 0) # restore score for sorting
 
     if user.is_moderator?
       self.is_moderated = false
 
-      if user.id != self.user_id
+      if user.id != user_id
         m = Moderation.new
-        m.comment_id = self.id
+        m.comment_id = id
         m.moderator_user_id = user.id
         m.action = "undeleted comment"
-        m.save
+        m.save!
       end
     end
 
-    self.save(:validate => false)
+    save!(validate: false)
     Comment.record_timestamps = true
 
-    self.story.update_comments_count!
+    story.update_cached_columns
     self.user.refresh_counts!
+  end
+
+  def self.recent_threads(user)
+    return Comment.none unless user.try(:id)
+
+    thread_ids = Comment
+      .where(user: user)
+      .distinct(:thread_id)
+      .order(thread_id: :desc)
+      .limit(20)
+      .pluck(:thread_id)
+    return Comment.none if thread_ids.empty?
+
+    Comment
+      .joins(<<~SQL
+        inner join (
+          with recursive discussion as (
+          select
+            c.id,
+            0 as depth,
+            (select count(*) from comments where parent_comment_id = c.id) as reply_count,
+            cast(confidence_order as char(#{Comment::COP_LENGTH})) as confidence_order_path
+            from comments c
+            where
+              thread_id in (#{thread_ids.join(", ")}) and
+              parent_comment_id is null
+          union all
+          select
+            c.id,
+            discussion.depth + 1,
+            (select count(*) from comments where parent_comment_id = c.id),
+            cast(concat(
+              discussion.confidence_order_path, 3 * (depth + 1),
+              c.confidence_order
+            ) as char(#{Comment::COP_LENGTH}))
+          from comments c join discussion on c.parent_comment_id = discussion.id
+          )
+          select * from discussion as comments
+        ) as comments_recursive on comments.id = comments_recursive.id
+      SQL
+            )
+      .order("comments.thread_id desc, comments_recursive.confidence_order_path")
+      .select('
+        comments.*,
+        comments_recursive.depth as depth,
+        comments_recursive.reply_count as reply_count
+      ')
+  end
+
+  # select in thread order with preloading for _comment.html.erb
+  # eventually confidence_order_path can go away: https://modern-sql.com/caniuse/search_(recursion)
+  def self.story_threads(story)
+    return Comment.none unless story.id # unsaved Stories have no comments
+
+    # If the story_ids predicate is in the outer select the query planner doesn't push it down into
+    # the recursive CTE, so that subquery would build the tree for the entire comments table.
+    Comment
+      .joins(<<~SQL
+        inner join (
+          with recursive discussion as (
+          select
+            c.id,
+            0 as depth,
+            (select count(*) from comments where parent_comment_id = c.id) as reply_count,
+            cast(confidence_order as char(#{Comment::COP_LENGTH})) as confidence_order_path
+            from comments c
+            join stories on stories.id = c.story_id
+            where
+              (stories.id = #{story.id} or stories.merged_story_id = #{story.id}) and
+              parent_comment_id is null
+          union all
+          select
+            c.id,
+            discussion.depth + 1,
+            (select count(*) from comments where parent_comment_id = c.id),
+            cast(concat(
+              discussion.confidence_order_path, 3 * (depth + 1),
+              c.confidence_order
+            ) as char(#{Comment::COP_LENGTH}))
+          from comments c join discussion on c.parent_comment_id = discussion.id
+          )
+          select * from discussion as comments
+        ) as comments_recursive on comments.id = comments_recursive.id
+      SQL
+            )
+      .order("comments_recursive.confidence_order_path")
+      .select('
+        comments.*,
+        comments_recursive.depth as depth,
+        comments_recursive.reply_count as reply_count
+      ')
   end
 end
