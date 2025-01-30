@@ -1,4 +1,4 @@
-<%= render partial: 'users/flag_warning' if @showing_user == @user && @show_flag_warning %>
+<%= possible_flag_warning(@showing_user, @user) %>
 
 <% content_for :subnav do %>
   <% if @user && @showing_user.is_active? && @showing_user != @user %>
@@ -37,11 +37,10 @@
 
   <label class="required">Joined:</label>
   <span class="d">
-    <%= time_ago_in_words_label(@showing_user.created_at) %>
+    <%= how_long_ago_label(@showing_user.created_at) %>
     <% if @showing_user.invited_by_user %>
-      by <a href="/u#<%= @showing_user.username %>">invitation</a> from
-      <%= link_to @showing_user.invited_by_user.try(:username),
-        @showing_user.invited_by_user %>
+      by <%= link_to 'invitation', users_tree_path(anchor: @showing_user.username) %> from
+      <%= link_to @showing_user.invited_by_user.try(:username), @showing_user.invited_by_user %>
     <% end %>
   </span>
   <br>
@@ -49,7 +48,7 @@
   <% if @showing_user.is_banned? %>
     <label class="required">Banned:</label>
     <span class="d">
-      <%= time_ago_in_words_label(@showing_user.banned_at) %>
+      <%= how_long_ago_label(@showing_user.banned_at) %>
       <% if @showing_user.banned_by_user %>
         by <%= link_to @showing_user.banned_by_user.try(:username),
           @showing_user.banned_by_user %>:
@@ -62,7 +61,7 @@
   <% if @showing_user.deleted_at? %>
     <label class="required">Left:</label>
     <span class="d">
-      <%= time_ago_in_words_label(@showing_user.deleted_at) %>
+      <%= how_long_ago_label(@showing_user.deleted_at) %>
     </span>
     <br>
   <% end %>
@@ -70,21 +69,19 @@
   <% if !@showing_user.is_admin? %>
     <label class="required">Karma:</label>
     <span class="d">
-      <%= @showing_user.karma %>, averaging <%=
-        number_with_precision(@showing_user.average_karma, :precision => 2) %>
-        per story/comment
+      <%= @showing_user.karma %>
     </span>
     <br>
   <% end %>
 
   <label class="required">Stories Submitted:</label>
   <span class="d">
-    <%= stories_submitted_content(@showing_user) %>
+    <%= stories_submitted_content(@user, @showing_user) %>
   </span>
   <br>
 
   <label class="required">Comments Posted:</label>
-  <span class="d"><%= comments_posted_content(@showing_user) %></span>
+  <span class="d"><%= comments_posted_content(@user, @showing_user) %></span>
   <br>
 
   <% if @showing_user.hats.any? %>
@@ -93,12 +90,24 @@
     <% @showing_user.hats.each do |hat| %>
       <%= hat.to_html_label %>
       <% if hat.doffed_at? %>
-        doffed <%= time_ago_in_words_label(hat.doffed_at) %>
+        doffed <%= how_long_ago_label(hat.doffed_at) %>
+      <% else %>
+        <% if @user && ((hat.user == @user) || @user.is_moderator?) %>
+          <%= link_to 'Doff', doff_hat_path(hat) %>
+        <% end %>
       <% end %>
       <br>
     <% end %>
     </div>
     <div style="clear: both;"></div>
+  <% end %>
+
+  <% if @user&.is_admin? || @user&.show_email? %>
+    <label class="required">E-Mail:</label>
+    <span class="d">
+      <%= @showing_user.email %>
+    </span>
+    <br>
   <% end %>
 
   <% if @showing_user.homepage.present? %>
@@ -127,12 +136,13 @@
     <br>
   <% end %>
 
-  <% if @showing_user.twitter_username.present? %>
-    <label class="required">Twitter:</label>
+  <% if @showing_user.mastodon_username.present? && @showing_user.mastodon_instance.present? %>
+    <label class="required">Mastodon:</label>
 
     <span class="d">
-      <a href="https://twitter.com/<%= h(@showing_user.twitter_username) %>"
-        rel="me ugc">@<%= h(@showing_user.twitter_username) %></a>
+      <a href="https://<%= h(@showing_user.mastodon_instance)%>/@<%= h(@showing_user.mastodon_username)%>"
+        rel="me ugc">@<%= h(@showing_user.mastodon_username)%>@<%= h(@showing_user.mastodon_instance)%>
+        </a>
     </span>
     <br>
   <% end %>
@@ -158,13 +168,27 @@
     </div>
   <% end %>
 
+  <% if Rails.env.development? || @user == @showing_user || @user&.is_moderator? %>
+    <div class="user-stats flash-notice">
+      <p>
+        Comments posted in the last 6 months: <%= @showing_user.comments.recent.count %><br>
+        &nbsp;&nbsp;...posted on stories you didn't author: <%= @showing_user.comments.recent.on_stories_not_authored_by(@showing_user).count %><br>
+        &nbsp;&nbsp;&nbsp;&nbsp;...received above average score: <%= @showing_user.comments.recent.on_stories_not_authored_by(@showing_user).above_average.count %>
+      </p>
+
+      <p>(This section is only visible to you and moderators.
+      Mods use it when evaluating whether 
+      users are participating in the community or exploiting the site for <a href="/about#self-promo">self-promo</a>. It's a red flag when someone never posts well-received comments outside of their own links.)
+    </div>
+  <% end %>
+
   <% if @user && @user.is_moderator? && !@showing_user.is_moderator? %>
     <h2>Moderator Information</h2>
 
     <label class="required">Flagged (1m):</label>
     <span class="d">
       <% if (stats = FlaggedCommenters.new('1m').check_list_for(@showing_user)) %>
-        <a href="/mod/commenters/1m#<%= @showing_user.username %>">#<%= stats[:rank] %></a> at <%= '%.2f' % stats[:sigma] %> &sigma;
+        <a href="/mod/commenters/1m#<%= @showing_user.username %>">#<%= stats[:rank] %></a> at <%= '%.2f' % (stats[:sigma] || 0) %> &sigma;
       <% else %>
         No
       <% end %>
@@ -195,34 +219,26 @@
       <div class="boxline"><p></p><%= f.submit "ModNote" %></div>
     <% end %>
 
-    <label class="required">Last 10 Moderations:</label>
-    <%= render partial: 'moderations/table', locals: {
-      moderations: Moderation.for(@showing_user).order('id desc').limit(10),
-    } %>
+    <label class="required">Latest modlog for this user:</label>
+    <%= render partial: 'moderations/table', locals: { moderations: Moderation.for_user(@showing_user) } %>
 
 
     <% if @user.is_admin? %>
       <h3>Admin Information</h3>
-
-      <label class="required">E-Mail:</label>
-      <span class="d">
-        <%= @showing_user.email %>
-      </span>
-      <br>
 
       <label class="required">Recent Votes:</label>
       <table class="data zebra clear tall">
         <% @showing_user.votes_for_others.limit(15).each do |v| %><tr>
           <td><%= v.vote == 1 ? '+' : v.reason %></td>
           <% if v.comment_id %>
-            <td><a href="/u/<%= v.comment.user.try(:username) %>"><%= v.comment.user.try(:username) %></a></td>
+            <td><a href="/~<%= v.comment.user.try(:username) %>"><%= v.comment.user.try(:username) %></a></td>
             <td>
               <%= v.story.title %>
               <a href="<%= v.comment.short_id_url %>">comment</a>:<br>
               <%= v.comment.comment.split[0..10].join(' ') %>
             </td>
           <% elsif v.story_id && !v.comment_id %>
-            <td><a href="/u/<%= v.story.user.try(:username) %>"><%= v.story.user.try(:username) %></a></td>
+            <td><a href="/~<%= v.story.user.try(:username) %>"><%= v.story.user.try(:username) %></a></td>
             <td><a href="<%= v.story.short_id_url %>"><%= v.story.title %></a></td>
           <% end %>
           </p>
@@ -235,7 +251,7 @@
             <% if @showing_user.is_banned? %>
               <div class="boxline">
                 <%= f.label :reason, "Reason:", :class => "required" %>
-                <%= f.text_field :reason, :size => 40 %>
+                <%= f.text_field :reason, :size => 80 %>
               </div>
               <%= f.submit "Unban" %>
             <% end %>
@@ -254,7 +270,7 @@
         <%= form_with url: user_ban_path, method: :post do |f| %>
           <div class="boxline">
             <%= f.label :reason, "Reason:", :class => "required" %>
-            <%= f.text_field :reason, :size => 40 %>
+            <%= f.text_field :reason, :size => 80 %>
           </div>
           <p>
             <% if !@showing_user.is_banned? %>
@@ -266,6 +282,8 @@
           </p>
         <% end %>
       <% end %>
+
+      <%= link_to 'Reparent', new_mod_reparent_path({}, id: @showing_user) %>
     <% end %>
   <% end %>
 </div>

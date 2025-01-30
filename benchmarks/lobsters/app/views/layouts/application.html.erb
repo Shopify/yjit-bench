@@ -6,13 +6,18 @@
 <head>
   <meta http-equiv="content-type" content="text/html; charset=utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
-  <link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon.png" />
-  <link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon.png" />
-  <link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-144.png" />
-  <link rel="apple-touch-icon" sizes="144x144" href="/apple-touch-icon-144.png" />
+  <link rel="icon" sizes="144x144" type="image/png" href="/touch-icon-144.png">
+  <link rel="apple-touch-icon" sizes="57x57" href="/touch-icon.png" />
+  <link rel="apple-touch-icon" sizes="114x114" href="/touch-icon.png" />
+  <link rel="apple-touch-icon" sizes="72x72" href="/touch-icon-144.png" />
+  <link rel="apple-touch-icon" sizes="144x144" href="/touch-icon-144.png" />
+  <link rel="search" type="application/opensearchdescription+xml" href="/opensearch.xml" title="Lobsters">
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="referrer" content="always" />
   <meta name="theme-color" content="#AC130D" />
+  <meta name="story-flags" content="<%=  Vote::STORY_REASONS.to_json %>">
+  <meta name="comment-flags" content="<%=  Vote::COMMENT_REASONS.to_json %>">
+
   <% if @meta_tags %>
     <% @meta_tags.each do |k,v| %>
       <meta name="<%= k %>" content="<%= v %>" />
@@ -25,10 +30,18 @@
   <% end %>
   <title><%= @title.present? ? "#{@title} | " : "" %><%=
     Rails.application.name %></title>
-  <%= stylesheet_link_tag "application", :media => "all" %>
+
+  <%# Includes all stylesheet files in app/assets/stylesheets %>
+  <%= stylesheet_link_tag :app %>
+  
+  <%= stylesheet_link_tag "tom-select", "data-turbo-track": "reload" %>
+  <%= stylesheet_link_tag "TomSelect_remove_button", "data-turbo-track": "reload" %>
+  
+
   <% if @user %>
-    <%= javascript_include_tag "application" %>
+    <%= javascript_importmap_tags %>
   <% end %>
+
   <%= csrf_meta_tags %>
   <% if @rss_link %>
     <link rel="alternate" type="application/rss+xml"
@@ -39,10 +52,12 @@
       title="<%= @comments_rss_link[:title] %>"
       href="<%= @comments_rss_link[:href] %>" />
   <% end %>
+  <meta name="robots" content="noai, noimageai">
 </head>
 <body data-username='<%= @user.try(:username) %>'>
   <header id="nav">
     <a id="logo" style="<%= @traffic_style %>" href="/" title="<%= Rails.application.name %> (Current traffic: <%= @traffic_intensity.to_i %>%)"></a>
+    <%= @traffic_novelty %>
 
     <div class="navholder">
       <nav class="links">
@@ -117,11 +132,25 @@
     <% end %>
     <%= link_to 'Tags', tags_path %>
     <% if @user && @user.is_moderator? && (hrc = HatRequest.count) > 0 %>
-      <%= link_to "#{hrc} Hat Requests", hats_requests_path, class: 'mod' %>
+      <%= link_to "#{hrc} Hat Requests", hat_requests_path, class: 'mod' %>
     <% end %>
     <%= link_to 'Filter', filters_path %>
     <%= link_to 'Moderation Log', moderations_path %>
+
   </footer>
+
+  <% if Maxmind.uk?(request.remote_ip) || Rails.env.development? %>
+    <br>
+    <div id="uk-osa" class="flash-error">
+      <p>
+      <b>You appear to be in the UK.</b>
+      Lobsters urgently needs your help.
+      The risks of the UK Online Safety Act will require that Lobsters geoblock the UK on <b>March 16, 2025</b>.
+      Please visit <a href="https://lobste.rs/s/ukosa1">this story</a> and help us avoid this.
+      (<a href='https://db-ip.com'>IP Geolocation by DB-IP</a> <a href="https://db-ip.com/db/lite.php">Lite</a>)
+      </p>
+    </div>
+  <% end %>
   <span id="iab-pcm-sdk"></span><span id="iab-autofill-sdk"></span>
 </body>
 </html>

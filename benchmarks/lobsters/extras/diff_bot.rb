@@ -1,22 +1,23 @@
-class DiffBot
-  cattr_accessor :DIFFBOT_API_KEY
+# typed: false
 
-  # this needs to be overridden in config/initializers/production.rb
-  @@DIFFBOT_API_KEY = nil
+class DiffBot
+  # see README.md on setting up credentials
 
   DIFFBOT_API_URL = "http://www.diffbot.com/api/article".freeze
 
   def self.get_story_text(story)
-    if !@@DIFFBOT_API_KEY
+    if !Rails.application.credentials.diffbot.api_key
       return
     end
 
+    return "" if story.url.nil?
+
     # XXX: diffbot tries to read pdfs as text, so disable for now
-    if story.url.to_s.match(/\.pdf$/i)
+    if /\.pdf$/i.match?(story.url.to_s)
       return nil
     end
 
-    db_url = "#{DIFFBOT_API_URL}?token=#{@@DIFFBOT_API_KEY}&url=#{CGI.escape(story.url)}"
+    db_url = "#{DIFFBOT_API_URL}?token=#{Rails.application.credentials.diffbot.api_key}&url=#{CGI.escape(story.url)}"
 
     begin
       s = Sponge.new
@@ -29,23 +30,22 @@ class DiffBot
         # turn newlines into double newlines, so they become paragraphs
         j["text"] = j["text"].to_s.gsub("\n", "\n\n")
 
-        while j["text"].match("\n\n\n")
+        while j["text"].include?("\n\n\n")
           j["text"].gsub!("\n\n\n", "\n\n")
         end
 
         return j["text"]
       end
-
     rescue => e
-      Rails.logger.error "error fetching #{db_url}: #{e.message}"
+      Rails.logger.error "error fetching #{db_url} #{e.backtrace.first} #{e.message}"
     end
 
     begin
       s = Sponge.new
       s.timeout = 45
-      s.fetch(story.archive_url)
+      s.fetch(story.archiveorg_url)
     rescue => e
-      Rails.logger.error "error caching #{db_url}: #{e.message}"
+      Rails.logger.error "error caching #{db_url}: #{e.backtrace.first} #{e.message}"
     end
 
     nil

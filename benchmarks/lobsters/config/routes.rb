@@ -1,7 +1,9 @@
+# typed: false
+
 Rails.application.routes.draw do
-  root :to => "home#index",
-    :protocol => (Rails.application.config.force_ssl ? "https://" : "http://"),
-    :as => "root"
+  root to: "home#index",
+    # protocol: (Rails.application.config.force_ssl ? "https://" : "http://"),
+    as: "root"
 
   get "/404" => "about#four_oh_four", :via => :all
 
@@ -14,8 +16,6 @@ Rails.application.routes.draw do
   get "/active/page/:page" => "home#active"
   get "/newest" => "home#newest"
   get "/newest/page/:page" => "home#newest"
-  get "/newest/:user" => "home#newest_by_user"
-  get "/newest/:user/page/:page" => "home#newest_by_user"
   get "/recent" => "home#recent"
   get "/recent/page/:page" => "home#recent"
   get "/hidden" => "home#hidden"
@@ -27,8 +27,8 @@ Rails.application.routes.draw do
   get "/upvoted/stories/page/:page" => "home#upvoted"
   get "/upvoted/comments" => "comments#upvoted"
   get "/upvoted/comments/page/:page" => "comments#upvoted"
-  get "/upvoted", to: redirect('/upvoted/stories')
-  get "/upvoted/page/:page", to: redirect('/upvoted/stories/page/%{page}')
+  get "/upvoted", to: redirect("/upvoted/stories")
+  get "/upvoted/page/:page", to: redirect("/upvoted/stories/page/%{page}")
 
   get "/top" => "home#top"
   get "/top/rss" => "home#top", :format => "rss"
@@ -36,8 +36,7 @@ Rails.application.routes.draw do
   get "/top/:length" => "home#top"
   get "/top/:length/page/:page" => "home#top"
 
-  get "/threads" => "comments#threads"
-  get "/threads/:user" => "comments#threads", :as => "user_threads"
+  get "/threads" => "comments#user_threads"
 
   get "/replies" => "replies#all"
   get "/replies/page/:page" => "replies#all"
@@ -65,23 +64,44 @@ Rails.application.routes.draw do
   match "/login/set_new_password" => "login#set_new_password",
     :as => "set_new_password", :via => [:get, :post]
 
-  get "/t/:tag" => "home#single_tag", :as => "tag", :constraints => { tag: /[^,\.]+/ }
+  get "/t/:tag" => "home#single_tag", :as => "tag", :constraints => {tag: /[^,\.]+/}
   get "/t/:tag" => "home#multi_tag", :as => "multi_tag"
   get "/t/:tag/page/:page" => "home#tagged"
 
-  constraints :id => /([^\/]+?)(?=\.json|\.rss|$|\/)/ do
-    get "/domain/:id(.:format)", to: redirect('/domains/%{id}')
-    get "/domain/:id/page/:page", to: redirect('/domains/%{id}/page/%{page}')
+  constraints id: /([^\/]+?)(?=\.json|\.rss|$|\/)/ do
+    get "/domain/:id(.:format)", to: redirect("/domains/%{id}")
+    get "/domain/:id/page/:page", to: redirect("/domains/%{id}/page/%{page}")
     get "/domains/:id(.:format)" => "home#for_domain", :as => "domain"
     get "/domains/:id/page/:page" => "home#for_domain"
-    resources :domains, only: [:edit, :update]
+    get "/domains/:id/origins" => "origins#for_domain", :as => "domain_origins"
+
+    resources :domains, only: [:create, :edit, :update]
+    patch "/domains_ban/:id" => "domains_ban#update", :as => "ban_domain"
+    post "/domains_ban/:id" => "domains_ban#create_and_ban", :as => "create_and_ban_domain"
+
+    # below `resources` so that /edit isn't taken as an identifier
+    get "/domains/:id/:author", to: redirect("/origins/%{id}/%{author}")
+    get "/domain/:domain/:identifier(.:format)", to: redirect("/domains/%{domain}/%{identifier}")
+    get "/domain/:domain/:identifier/page/:page", to: redirect("/domains/%{domain}/%{idetifier}/page/%{page}")
+  end
+
+  constraints identifier: /(.+)(?=\.json|\.rss|$|\/)/ do
+    # resources :origin, only: [:show, :edit, :update]
+    get "/origins/:identifier/edit(.:format)" => "origins#edit", :as => "edit_origin"
+    patch "/origins/:identifier" => "origins#update", :as => "update_origin"
+    get "/origins/:identifier(.:format)" => "home#for_origin", :as => "origin"
+    # leaving out pagination because identifiers (eg 'github.com/alice') can include slashes
+    # get "/origins/:identifier/page/:page" => "home#for_domain"
   end
 
   get "/search" => "search#index"
   get "/search/:q" => "search#index"
 
+  get "/stories/url/all" => "story_urls#all"
+  get "/stories/url/latest" => "story_urls#latest"
+
   resources :stories, except: [:index] do
-    get '/stories/:short_id', to: redirect('/s/%{short_id}')
+    get "/stories/:short_id", to: redirect("/s/%{short_id}")
     post "upvote"
     post "flag"
     post "unvote"
@@ -91,10 +111,14 @@ Rails.application.routes.draw do
     post "unhide"
     post "save"
     post "unsave"
-    get "suggest"
-    post "suggest", :action => "submit_suggestions"
+    post "disown"
+    resources :suggestions, only: [:new, :create]
+
+    # Mapping old routes to new routes. can be safely removed after the next deployment
+    get "suggest", to: redirect("/stories/suggestions/new", status: 302)
+    post "suggest", to: redirect("/stories/suggestions", status: 307)
   end
-  post "/stories/fetch_url_attributes", :format => "json"
+  post "/stories/fetch_url_attributes", format: "json"
   post "/stories/preview" => "stories#preview"
   post "/stories/check_url_dupe" => "stories#check_url_dupe"
 
@@ -125,27 +149,39 @@ Rails.application.routes.draw do
 
   get "/inbox" => "inbox#index"
 
-  get "/c/:id" => "comments#redirect_from_short_id"
   get "/c/:id.json" => "comments#show_short_id", :format => "json"
+  get "/c/:id" => "comments#redirect_from_short_id"
 
   # deprecated
   get "/s/:story_id/:title/comments/:id" => "comments#redirect_from_short_id"
 
   get "/s/:id/(:title)" => "stories#show"
 
-  get "/u" => "users#tree"
-  get "/u/:username" => "users#show", :as => "user"
-  get "/u/:username/standing" => "users#standing", :as => "user_standing"
+  get "/users" => "users#tree", :as => "users_tree"
+  get "/~:username" => "users#show", :as => "user"
+  get "/~:username/standing" => "users#standing", :as => "user_standing"
+  get "/~:user/stories(/page/:page)" => "home#newest_by_user", :as => "newest_by_user"
+  get "/~:user/threads" => "comments#user_threads", :as => "user_threads"
+
+  post "/~:username/ban" => "users#ban", :as => "user_ban"
+  post "/~:username/unban" => "users#unban", :as => "user_unban"
+  post "/~:username/disable_invitation" => "users#disable_invitation",
+    :as => "user_disable_invite"
+  post "/~:username/enable_invitation" => "users#enable_invitation",
+    :as => "user_enable_invite"
+
+  # 2023-07 redirect /u to /~username and /users (for tree)
+  get "/u", to: redirect("/users", status: 301)
+  get "/u/:username", to: redirect("/~%{username}", status: 301)
+  # we don't do /@alice but easy mistake with comments autolinking @alice
+  get "/@:username", to: redirect("/~%{username}", status: 301)
+  get "/u/:username/standing", to: redirect("~%{username}/standing", status: 301)
+  get "/newest/:user", to: redirect("~%{user}/stories", status: 301)
+  get "/newest/:user(/page/:page)", to: redirect("~%{user}/stories/page/%{page}", status: 301)
+  get "/threads/:user", to: redirect("~%{user}/threads", status: 301)
 
   get "/avatars/:username_size.png" => "avatars#show"
   post "/avatars/expire" => "avatars#expire"
-
-  post "/users/:username/ban" => "users#ban", :as => "user_ban"
-  post "/users/:username/unban" => "users#unban", :as => "user_unban"
-  post "/users/:username/disable_invitation" => "users#disable_invitation",
-        :as => "user_disable_invite"
-  post "/users/:username/enable_invitation" => "users#enable_invitation",
-        :as => "user_enable_invite"
 
   get "/settings" => "settings#index"
   post "/settings" => "settings#update"
@@ -159,15 +195,15 @@ Rails.application.routes.draw do
     :as => "twofa_verify"
   post "/settings/2fa_update" => "settings#twofa_update",
     :as => "twofa_update"
-
   post "/settings/pushover_auth" => "settings#pushover_auth"
   get "/settings/pushover_callback" => "settings#pushover_callback"
+  get "/settings/mastodon_authentication" => "settings#mastodon_authentication"
+  get "/settings/mastodon_auth" => "settings#mastodon_auth"
+  get "/settings/mastodon_callback" => "settings#mastodon_callback"
+  post "/settings/mastodon_disconnect" => "settings#mastodon_disconnect"
   get "/settings/github_auth" => "settings#github_auth"
   get "/settings/github_callback" => "settings#github_callback"
   post "/settings/github_disconnect" => "settings#github_disconnect"
-  get "/settings/twitter_auth" => "settings#twitter_auth"
-  get "/settings/twitter_callback" => "settings#twitter_callback"
-  post "/settings/twitter_disconnect" => "settings#twitter_disconnect"
 
   resources :keybase_proofs, only: [:new, :create, :destroy]
   get "/.well-known/keybase-proof-config" => "keybase_proofs#kbconfig", :as => "keybase_config"
@@ -200,27 +236,41 @@ Rails.application.routes.draw do
   post "/invitations/delete_request" => "invitations#delete_request",
     :as => "delete_invitation_request"
 
-  get "/hats" => "hats#index"
-  get "/hats/build_request" => "hats#build_request",
-    :as => "request_hat"
-  post "/hats/create_request" => "hats#create_request",
-    :as => "create_hat_request"
-  get "/hats/requests" => "hats#requests_index"
-  post "/hats/approve_request/:id" => "hats#approve_request",
-    :as => "approve_hat_request"
-  post "/hats/reject_request/:id" => "hats#reject_request",
-    :as => "reject_hat_request"
+  resources :hat_requests, except: [:edit] do
+    member do
+      post :approve
+      post :reject
+    end
+  end
+  resources :hats, except: [:new, :update, :destroy] do
+    member do
+      get :doff
+      post :doff_by_user
+      post :update_in_place
+      post :update_by_recreating
+    end
+  end
 
   get "/moderations" => "moderations#index"
   get "/moderations/page/:page" => "moderations#index"
   get "/moderators" => "users#tree", :moderators => true
 
   get "/mod" => "mod#index"
-  get "/mod/flagged_stories/:period"  => "mod#flagged_stories",  :as => "mod_flagged_stories"
+  get "/mod/flagged_stories/:period" => "mod#flagged_stories", :as => "mod_flagged_stories"
   get "/mod/flagged_comments/:period" => "mod#flagged_comments", :as => "mod_flagged_comments"
   get "/mod/commenters/:period" => "mod#commenters", :as => "mod_commenters"
   get "/mod/notes(/:period)" => "mod_notes#index", :as => "mod_notes"
   post "/mod/notes" => "mod_notes#create"
+
+  namespace :mod do
+    resources :reparents, only: [:new, :create]
+    resources :stories, only: [:edit, :update] do
+      patch "undelete"
+      patch "destroy"
+    end
+  end
+
+  mount MissionControl::Jobs::Engine, at: "/jobs"
 
   get "/privacy" => "about#privacy"
   get "/about" => "about#about"
@@ -228,5 +278,5 @@ Rails.application.routes.draw do
 
   get "/stats" => "stats#index"
 
-  post '/csp-violation-report' => 'csp#violation_report'
+  post "/csp-violation-report" => "csp#violation_report"
 end

@@ -1,0 +1,53 @@
+<div class="box wide">
+  <% if @hat_requests.length == 0 %>
+    No hat requests.
+  <% else %>
+    <% @hat_requests.each_with_index do |hr,x| %>
+      <% if x > 0 %>
+        <hr>
+      <% end %>
+
+      <%= form_with model: hr, method: :post do |f| %>
+        <p>
+        <div class="boxline">
+          <%= f.label :user_id, "User:", :class => "required" %>
+          <%= styled_user_link hr.user %>
+          <%= how_long_ago(hr.created_at) %>
+        </div>
+
+        <div class="boxline">
+          <%= f.label :hat, "Hat:", :class => "required" %>
+          <%= f.text_field "hat", :size => 25 %>
+        </div>
+
+        <div class="boxline">
+          <%= f.label :link, "Link:", :class => "required" %>
+          <%= f.text_field "link", :size => 75 %>
+          <% if hr.link.to_s.match(/^http/) %>
+            <br>
+            <%= f.label :link, "Link:", :class => "required" %>
+            <a href="<%= hr.link %>" rel="ugc"><%= hr.link %></a>
+          <% end %>
+        </div>
+
+        <div class="boxline">
+          <%= f.label :link, "Comment:", :class => "required" %>
+          <div class="d">
+            <%= raw Markdowner.to_html(hr.comment || '') %>
+          </div>
+        </div>
+      <% end %>
+
+      <%= form_with model: hr, method: :post do |f| %>
+        <div class="boxline">
+          <%= f.label :link, "Reason:", :class => "required" %>
+          <%= f.text_area :reason, :rows => 4 %>
+        </div>
+        <p>
+            <%= f.submit "Approve Hat Request", formaction: approve_hat_request_path(hr) %>
+            <%= f.submit "Reject Hat Request", class: "deletion", formaction: reject_hat_request_path(hr)  %>
+        </p>
+      <% end %>
+    <% end %>
+  <% end %>
+</div>
