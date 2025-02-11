@@ -6,7 +6,7 @@ source "https://rubygems.org"
   actiontext activejob activemodel activerecord
   activestorage activesupport railties
 ].each do |rails_gem|
-  gem rails_gem, "~> 7.2"
+  gem rails_gem, "~> 8.0"
 end
 
 gem "sqlite3"

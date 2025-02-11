@@ -88,7 +88,6 @@ Rails.application.configure do
   # config.host_authorization = { exclude: ->(request) { request.path == "/up" } }
 
   # yjit-bench configurations
-  config.active_record.sqlite3_production_warning = false
   config.logger = nil
   config.secret_key_base = 'in general secret should not be in the git repo but this is a benchmark'
   # If we want to benchmark with YJIT then it has already been enabled by command line arguments.
