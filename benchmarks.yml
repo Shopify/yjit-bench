@@ -71,6 +71,8 @@ rack:
   desc: test the performance of the Rack framework with barely any routing.
 ruby-json:
   desc: an optimized version of the json_pure gem's pure Ruby JSON parser.
+rubyboy:
+  desc: Rubyboy is a functional headless GameBoy emulator, run on a specific game cartridge for a specific number of frames.
 rubykon:
   desc: Ruby solver for Go (the boardgame.) Runs many iterations forward from an initial starting board.
 tinygql:
