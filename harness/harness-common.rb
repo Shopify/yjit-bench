@@ -70,6 +70,8 @@ def is_macos
 end
 
 def get_maxrss
+  gem "fiddle", ">= 1.1.8" # For ruby 3.5.0-dev compatibility
+
   require 'fiddle'
   require 'rbconfig/sizeof'
 
