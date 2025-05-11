@@ -1,3 +1,5 @@
 source "https://rubygems.org"
 
+gem "cgi" # Workaround cgi extraction in Ruby 3.5.0-dev
+
 gem "rack"
