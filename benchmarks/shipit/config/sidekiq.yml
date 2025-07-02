@@ -1,0 +1,6 @@
+:concurrency: 1
+:queues:
+  - default
+  - deploys
+  - hooks
+  - low

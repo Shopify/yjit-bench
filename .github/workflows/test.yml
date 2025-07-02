@@ -16,7 +16,7 @@ jobs:
           - ruby: ruby
           - ruby: head
           - ruby: truffleruby
-            skip: protoboeuf-encode
+            skip: protoboeuf-encode shipit
     if: ${{ github.event_name != 'schedule' || github.repository == 'Shopify/yjit-bench' }}
     steps:
       - uses: actions/checkout@v3
