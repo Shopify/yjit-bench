@@ -7,7 +7,6 @@ class RouteGenerator
     { num: 15, method: :GET, routes: ["/:stack_id"] }, # Stacks#show
     { num: 10, method: :GET, routes: [
       "/:stack_id/tasks?since=33", # Paginated deploys
-      "/:stack_id/statistics",
     ]},
     { num: 2, method: :GET, routes: [ "/:stack_id/settings" ]},
 
