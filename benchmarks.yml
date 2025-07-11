@@ -116,6 +116,10 @@ getivar:
   desc: getivar tests the performance of getting instance variable values.
   category: micro
   single_file: true
+attr_accessor:
+  desc: attr_accessor tests the performance of getting instance variable values via an attr_accessor imemo.
+  category: micro
+  single_file: true
 keyword_args:
   desc: keyword_args tests the performance of method calls with keyword arguments.
   category: micro
