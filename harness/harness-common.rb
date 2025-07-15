@@ -70,7 +70,9 @@ def is_macos
 end
 
 def get_maxrss
-  gem "fiddle", ">= 1.1.8" # For ruby 3.5.0-dev compatibility
+  unless $LOAD_PATH.resolve_feature_path("fiddle")
+    gem "fiddle", ">= 1.1.8" # For ruby 3.5.0-dev compatibility
+  end
 
   require 'fiddle'
   require 'rbconfig/sizeof'
