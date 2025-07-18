@@ -57,6 +57,11 @@ def have_yjit?(ruby)
   ruby_version.downcase.include?("yjit")
 end
 
+def have_zjit?(ruby)
+  ruby_version = check_output("#{ruby} -v --zjit", err: File::NULL).strip
+  ruby_version.downcase.include?("zjit")
+end
+
 # Disable Turbo Boost while running benchmarks. Maximize the CPU frequency.
 def set_bench_config(turbo:)
   # sudo requires the flag '-S' in order to take input from stdin
@@ -316,6 +321,7 @@ args = OpenStruct.new({
   out_override: nil,
   harness: "harness",
   yjit_opts: "",
+  zjit_opts: "",
   categories: [],
   name_filters: [],
   rss: false,
@@ -432,6 +438,9 @@ if args.executables.empty?
   if have_yjit?(RbConfig.ruby)
     args.executables["interp"] = [RbConfig.ruby]
     args.executables["yjit"] = [RbConfig.ruby, "--yjit", *args.yjit_opts.shellsplit]
+  elsif have_zjit?(RbConfig.ruby)
+    args.executables["interp"] = [RbConfig.ruby]
+    args.executables["zjit"] = [RbConfig.ruby, "--zjit", *args.zjit_opts.shellsplit]
   else
     args.executables["ruby"] = [RbConfig.ruby]
   end
