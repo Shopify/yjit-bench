@@ -3,20 +3,16 @@ GEM
   specs:
     cmdparse (3.0.7)
     geom2d (0.4.1)
-    hexapdf (1.3.0)
+    hexapdf (0.16.0)
       cmdparse (~> 3.0, >= 3.0.3)
-      geom2d (~> 0.4, >= 0.4.1)
-      openssl (>= 2.2.1)
-      strscan (>= 3.1.2)
-    openssl (3.3.0)
-    strscan (3.1.5)
+      geom2d (~> 0.3)
 
 PLATFORMS
   ruby
   x86_64-linux
 
 DEPENDENCIES
-  hexapdf
+  hexapdf (~> 0.16.0)
 
 BUNDLED WITH
    2.8.0.dev
