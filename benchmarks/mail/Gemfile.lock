@@ -1,23 +1,22 @@
 GEM
   remote: https://rubygems.org/
   specs:
-    io-wait (0.1.0)
     mail (2.7.1)
       mini_mime (>= 0.1.1)
-    mini_mime (1.1.2)
-    net-protocol (0.1.2)
-      io-wait
+    mini_mime (1.1.5)
+    net-protocol (0.2.2)
       timeout
     net-smtp (0.2.1)
       net-protocol
-    timeout (0.2.0)
+    timeout (0.4.3)
 
 PLATFORMS
   ruby
+  x86_64-linux
 
 DEPENDENCIES
   mail (= 2.7.1)
   net-smtp (= 0.2.1)
 
 BUNDLED WITH
-   2.4.19
+   2.8.0.dev

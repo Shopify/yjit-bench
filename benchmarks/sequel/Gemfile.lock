@@ -1,17 +1,15 @@
 GEM
   remote: https://rubygems.org/
   specs:
-    bigdecimal (3.1.6)
-    mini_portile2 (2.8.1)
-    sequel (5.68.0)
-    sqlite3 (1.5.4)
+    bigdecimal (3.2.2)
+    mini_portile2 (2.8.9)
+    sequel (5.94.0)
+      bigdecimal
+    sqlite3 (1.7.3)
       mini_portile2 (~> 2.8.0)
 
 PLATFORMS
-  arm64-darwin-22
-  arm64-darwin-23
-  arm64-darwin-24
-  x86_64-darwin-20
+  ruby
   x86_64-linux
 
 DEPENDENCIES
@@ -21,4 +19,4 @@ DEPENDENCIES
   sqlite3 (~> 1.4)
 
 BUNDLED WITH
-   2.4.19
+   2.8.0.dev
