@@ -1,16 +1,16 @@
 GEM
   remote: https://rubygems.org/
   specs:
-    benchmark-ips (2.8.3)
-    victor (0.3.2)
+    benchmark-ips (2.8.4)
+    victor (0.3.4)
 
 PLATFORMS
-  java
   ruby
+  x86_64-linux
 
 DEPENDENCIES
   benchmark-ips (~> 2.8.3)
   victor (~> 0.3.2)
 
 BUNDLED WITH
-   2.4.19
+   2.8.0.dev

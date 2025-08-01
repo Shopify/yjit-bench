@@ -1,8 +1,8 @@
 GIT
   remote: https://github.com/sacckey/rubyboy
-  revision: e6c7d1d64ed7c6edb0ec6bae25ae3e7ec4cc9319
+  revision: a60a944720ec11e3aebd819e352aa779b1008e48
   specs:
-    rubyboy (1.5.0)
+    rubyboy (1.5.1)
       ffi (~> 1.16, >= 1.16.3)
 
 GEM
@@ -11,20 +11,11 @@ GEM
     ffi (1.17.2)
 
 PLATFORMS
-  aarch64-linux-gnu
-  aarch64-linux-musl
-  arm-linux-gnu
-  arm-linux-musl
-  arm64-darwin
   ruby
-  x86-linux-gnu
-  x86-linux-musl
-  x86_64-darwin
-  x86_64-linux-gnu
-  x86_64-linux-musl
+  x86_64-linux
 
 DEPENDENCIES
   rubyboy!
 
 BUNDLED WITH
-   2.4.19
+   2.8.0.dev

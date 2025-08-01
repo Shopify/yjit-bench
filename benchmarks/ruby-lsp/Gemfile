@@ -2,4 +2,5 @@
 
 source "https://rubygems.org"
 
-gem "ruby-lsp", ">= 0.13.4"
+# ruby-lsp 0.26.1: uninitialized constant RubyIndexer::IndexablePath (NameError)
+gem "ruby-lsp", "~> 0.17.4"
