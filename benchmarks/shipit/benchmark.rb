@@ -1,14 +1,14 @@
-require 'securerandom'
+require_relative '../../harness/loader'
 
 ENV['RAILS_ENV'] ||= 'production'
 ENV['DISABLE_DATABASE_ENVIRONMENT_CHECK'] = '1' # Benchmarks don't really have 'production', so trash it at will.
-ENV['SECRET_KEY_BASE'] = SecureRandom.hex(128)
 ENV['SHIPIT_DISABLE_AUTH'] = '1' # Saves us lots of trouble
-
-require_relative '../../harness/loader'
 
 Dir.chdir __dir__
 use_gemfile
+
+require 'securerandom'
+ENV['SECRET_KEY_BASE'] = SecureRandom.hex(128)
 
 require_relative 'config/environment'
 require_relative "route_generator"
