@@ -22,7 +22,7 @@ module Shipit
   class Application < Rails::Application
     Pubsubstub.use_persistent_connections = false
     # Initialize configuration defaults for originally generated Rails version.
-    config.load_defaults 8.0
+    config.load_defaults "#{Rails::VERSION::MAJOR}.#{Rails::VERSION::MINOR}"
 
     config.active_job.queue_adapter = :test
 
