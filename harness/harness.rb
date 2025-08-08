@@ -31,6 +31,20 @@ def realtime
   Process.clock_gettime(Process::CLOCK_MONOTONIC) - r0
 end
 
+def run_once(&block)
+  if parallel = ENV["RACTOR_PARALLEL"]
+    # block = Ractor.make_shareable(block)
+    realtime do
+      ractors = Integer(parallel).times.map do
+        Ractor.new(&block)
+      end
+      ractors.each(&:join)
+    end
+  else
+    realtime(&block)
+  end
+end
+
 # Takes a block as input
 def run_benchmark(_num_itrs_hint, &block)
   times = []
@@ -50,7 +64,7 @@ def run_benchmark(_num_itrs_hint, &block)
   begin
     yjit_stats&.each_key { |key| yjit_stats[key] = RubyVM::YJIT.runtime_stats(key) }
 
-    time = realtime(&block)
+    time = run_once(&block)
     num_itrs += 1
 
     # NOTE: we may want to avoid this as it could trigger GC?
