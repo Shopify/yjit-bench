@@ -1,13 +1,13 @@
 GEM
   remote: https://rubygems.org/
   specs:
-    activemodel (7.2.2.1)
-      activesupport (= 7.2.2.1)
-    activerecord (7.2.2.1)
-      activemodel (= 7.2.2.1)
-      activesupport (= 7.2.2.1)
+    activemodel (8.0.2)
+      activesupport (= 8.0.2)
+    activerecord (8.0.2)
+      activemodel (= 8.0.2)
+      activesupport (= 8.0.2)
       timeout (>= 0.4.0)
-    activesupport (7.2.2.1)
+    activesupport (8.0.2)
       base64
       benchmark (>= 0.3)
       bigdecimal
@@ -19,6 +19,7 @@ GEM
       minitest (>= 5.1)
       securerandom (>= 0.3)
       tzinfo (~> 2.0, >= 2.0.5)
+      uri (>= 0.13.1)
     base64 (0.3.0)
     benchmark (0.4.1)
     bigdecimal (3.2.2)
@@ -32,23 +33,25 @@ GEM
     minitest (5.25.5)
     mutex_m (0.3.0)
     securerandom (0.4.1)
-    sqlite3 (1.7.3)
+    sqlite3 (2.7.3)
       mini_portile2 (~> 2.8.0)
+    sqlite3 (2.7.3-x86_64-linux-gnu)
     timeout (0.4.3)
     tzinfo (2.0.6)
       concurrent-ruby (~> 1.0)
+    uri (1.0.3)
 
 PLATFORMS
   ruby
   x86_64-linux
 
 DEPENDENCIES
-  activerecord (~> 7.2)
+  activerecord (~> 8.0)
   activerecord-jdbcsqlite3-adapter (~> 70)
   base64
   bigdecimal
   mutex_m
-  sqlite3 (~> 1.4)
+  sqlite3
 
 BUNDLED WITH
-   2.8.0.dev
+   2.7.0
