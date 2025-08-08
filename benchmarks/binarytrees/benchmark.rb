@@ -46,6 +46,4 @@ end
 
 require_relative '../../harness/loader'
 
-run_benchmark(60) do
-  Btree.bench
-end
+run_benchmark(60, Btree)
