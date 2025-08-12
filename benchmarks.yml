@@ -60,6 +60,7 @@ etanni:
   desc: etanni is an older, extremely simple template-lang format that basically turns your template into an "eval" with a lot of heredocs.
 fannkuchredux:
   desc: fannkuchredux from the Computer Language Benchmarks Game.
+  ractor: true
 fluentd:
   desc: fluentd is a log collector, which parses logs in a server and forwards them to various destinations.
 graphql:
@@ -81,8 +82,10 @@ ruby-json:
   ractor: true
 rubyboy:
   desc: Rubyboy is a functional headless GameBoy emulator, run on a specific game cartridge for a specific number of frames.
+  ractor: true
 rubykon:
   desc: Ruby solver for Go (the boardgame.) Runs many iterations forward from an initial starting board.
+  ractor: true
 tinygql:
   desc: TinyGQL gem parsing a large file in pure Ruby
 nqueens:
@@ -99,8 +102,10 @@ blurhash:
   ractor: true
 protoboeuf:
   desc: protoboeuf (pure-Ruby protobuf) message decoding
+  ractor: true
 protoboeuf-encode:
   desc: protoboeuf (pure-Ruby protobuf) message encoding
+  ractor: true
 
 #
 # MicroBenchmarks
