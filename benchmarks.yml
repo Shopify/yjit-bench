@@ -71,6 +71,7 @@ graphql-native:
   desc: GraphQL gem parsing a large file, but using a native parser
 lee:
   desc: lee is a circuit-board layout solver, deployed in a plausibly reality-like way
+  ractor: true
 nbody:
   desc: nbody from the Computer Language Benchmarks Game.
   ractor: true
