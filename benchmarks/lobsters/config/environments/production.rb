@@ -88,7 +88,7 @@ Rails.application.configure do
   # config.host_authorization = { exclude: ->(request) { request.path == "/up" } }
 
   # yjit-bench configurations
-  config.logger = nil
+  config.log_level = :error
   config.secret_key_base = 'in general secret should not be in the git repo but this is a benchmark'
   # If we want to benchmark with YJIT then it has already been enabled by command line arguments.
   # If we are benchmarking CRuby without YJIT don't enable it even if this build has it.
