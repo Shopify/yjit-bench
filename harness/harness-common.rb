@@ -127,8 +127,9 @@ def return_results(warmup_iterations, bench_iterations)
     "bench" => bench_iterations,
   }
 
-  # Collect yjit stats before loading any additional code.
+  # Collect JIT stats before loading any additional code.
   yjit_stats = RubyVM::YJIT.runtime_stats if defined?(RubyVM::YJIT) && RubyVM::YJIT.enabled?
+  zjit_stats = RubyVM::ZJIT.stats if defined?(RubyVM::ZJIT) && RubyVM::ZJIT.enabled?
 
   # Collect our own peak mem usage as soon as reasonable after finishing the last iteration.
   rss = get_rss
@@ -137,11 +138,10 @@ def return_results(warmup_iterations, bench_iterations)
     yjit_bench_results["maxrss"] = maxrss
   end
 
+  # If YJIT or ZJIT is enabled, show some of their stats at the end.
   if yjit_stats
     yjit_bench_results["yjit_stats"] = yjit_stats
-
-    formatted_stats = proc { |key| "%10s" % format_number(yjit_stats[key]) }
-    yjit_stats_keys = [
+    stats_keys = [
       *ENV.fetch("YJIT_BENCH_STATS", "").split(",").map(&:to_sym),
       :inline_code_size,
       :outlined_code_size,
@@ -149,12 +149,29 @@ def return_results(warmup_iterations, bench_iterations)
       :yjit_alloc_size,
       :compile_time_ns,
     ].uniq
-    yjit_stats_pads = yjit_stats_keys.map(&:size).max + 1
-    yjit_stats_keys.each do |key|
-      if key == :compile_time_ns
-        puts "#{"yjit_compile_time:".ljust(yjit_stats_pads)} %8.2fms" % (yjit_stats[:compile_time_ns] / 1_000_000.0).round(2)
+    puts "YJIT stats:"
+  elsif zjit_stats
+    yjit_bench_results["zjit_stats"] = zjit_stats
+    stats_keys = [
+      :compile_time_ns,
+      :profile_time_ns,
+      :gc_time_ns,
+      :invalidation_time_ns,
+    ].uniq
+    puts "ZJIT stats:"
+  end
+  if stats_keys
+    jit_stats = yjit_stats || zjit_stats
+    formatted_stats = proc { |key| "%11s" % format_number(jit_stats[key]) }
+
+    stats_pads = stats_keys.map(&:size).max + 1
+    stats_keys.each do |key|
+      case key
+      when /_time_ns\z/
+        key_name = key.to_s.sub(/_time_ns\z/, '_time')
+        puts "#{key_name.ljust(stats_pads)} %9.2fms" % (jit_stats[key] / 1_000_000.0).round(2)
       else
-        puts "#{"#{key}:".ljust(yjit_stats_pads)} #{formatted_stats[key]}"
+        puts "#{"#{key}:".ljust(stats_pads)} #{formatted_stats[key]}"
       end
     end
   end
