@@ -70,6 +70,6 @@ Rails.application.configure do
   # config.host_authorization = { exclude: ->(request) { request.path == "/up" } }
 
   # Benchmark mods:
-  config.logger = nil # disable logging
+  config.log_level = :error
   config.yjit = false
 end
