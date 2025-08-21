@@ -71,10 +71,20 @@ end
 
 def get_maxrss
   unless $LOAD_PATH.resolve_feature_path("fiddle")
-    gem "fiddle", ">= 1.1.8" # For ruby 3.5.0-dev compatibility
+    # In Ruby 3.5+, fiddle is no longer a default gem. Load the bundled-gem fiddle instead.
+    if defined?(Bundler) # benchmarks with Gemfile
+      bundler_ui_level, Bundler.ui.level = Bundler.ui.level, :error if defined?(Bundler) # suppress warnings from force_activate
+      Gem::BUNDLED_GEMS.force_activate("fiddle")
+      Bundler.ui.level = bundler_ui_level if bundler_ui_level
+    else # benchmarks without Gemfile
+      gem "fiddle", ">= 1.1.8"
+    end
   end
-
+  # Suppress a warning for Ruby 3.4+ on benchmarks with Gemfile
+  verbose, $VERBOSE = $VERBOSE, nil
   require 'fiddle'
+  $VERBOSE = verbose
+
   require 'rbconfig/sizeof'
 
   unless Fiddle::SIZEOF_LONG == 8 and RbConfig::CONFIG["host_os"] =~ /linux|darwin/
