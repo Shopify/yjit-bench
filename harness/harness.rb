@@ -31,26 +31,20 @@ def realtime
   Process.clock_gettime(Process::CLOCK_MONOTONIC) - r0
 end
 
-# Takes a block as input
-def run_benchmark(_num_itrs_hint, &block)
+def run_benchmark_loop(runner, block, yjit_stats)
   times = []
   total_time = 0
   num_itrs = 0
-  header = "itr:   time"
-
-  RubyVM::YJIT.reset_stats! if defined?(RubyVM::YJIT) && RubyVM::YJIT.enabled?
-
-  # If $YJIT_BENCH_STATS is given, print the diff of these stats at each iteration.
-  if ENV["YJIT_BENCH_STATS"]
-    yjit_stats = ENV["YJIT_BENCH_STATS"].split(",").map { |key| [key.to_sym, nil] }.to_h
-    yjit_stats.each_key { |key| header << " #{key}" }
-  end
-
-  puts header
   begin
     yjit_stats&.each_key { |key| yjit_stats[key] = RubyVM::YJIT.runtime_stats(key) }
 
-    time = realtime(&block)
+    time = realtime do
+      if runner
+        runner.bench
+      else
+        block.call
+      end
+    end
     num_itrs += 1
 
     # NOTE: we may want to avoid this as it could trigger GC?
@@ -70,6 +64,41 @@ def run_benchmark(_num_itrs_hint, &block)
     times << time
     total_time += time
   end until num_itrs >= WARMUP_ITRS + MIN_BENCH_ITRS and total_time >= MIN_BENCH_TIME
+  [num_itrs, total_time, times.freeze].freeze
+end
+
+# Takes a block as input
+def run_benchmark(_num_itrs_hint, runner = nil, &block)
+  times = []
+  total_time = 0
+  num_itrs = 0
+  header = "itr:   time"
+
+  RubyVM::YJIT.reset_stats! if defined?(RubyVM::YJIT) && RubyVM::YJIT.enabled?
+
+  # If $YJIT_BENCH_STATS is given, print the diff of these stats at each iteration.
+  if ENV["YJIT_BENCH_STATS"]
+    yjit_stats = ENV["YJIT_BENCH_STATS"].split(",").map { |key| [key.to_sym, nil] }.to_h.freeze
+    yjit_stats.each_key { |key| header << " #{key}" }
+  end
+
+  puts header
+  if parallel = ENV["RACTOR_PARALLEL"]
+    Warning[:experimental] = false
+    ractors = Integer(parallel).times.map do
+      Ractor.new(runner, block) do |runner, block|
+        run_benchmark_loop(runner, block, nil)
+      end
+    end
+    ractors.each do |ractor|
+      r_num_itrs, r_total_time, r_times = Ractor.method_defined?(:value) ? ractor.value : ractor.take
+      num_itrs += r_num_itrs
+      total_time += r_total_time
+      times += r_times
+    end
+  else
+    num_itrs, total_time, times = run_benchmark_loop(runner, block, yjit_stats)
+  end
 
   warmup, bench = times[0...WARMUP_ITRS], times[WARMUP_ITRS..-1]
   return_results(warmup, bench)
