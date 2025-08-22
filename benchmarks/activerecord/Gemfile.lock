@@ -1,13 +1,13 @@
 GEM
   remote: https://rubygems.org/
   specs:
-    activemodel (8.0.2)
-      activesupport (= 8.0.2)
-    activerecord (8.0.2)
-      activemodel (= 8.0.2)
-      activesupport (= 8.0.2)
+    activemodel (8.0.2.1)
+      activesupport (= 8.0.2.1)
+    activerecord (8.0.2.1)
+      activemodel (= 8.0.2.1)
+      activesupport (= 8.0.2.1)
       timeout (>= 0.4.0)
-    activesupport (8.0.2)
+    activesupport (8.0.2.1)
       base64
       benchmark (>= 0.3)
       bigdecimal
