@@ -138,8 +138,8 @@ def return_results(warmup_iterations, bench_iterations)
     yjit_bench_results["maxrss"] = maxrss
   end
 
-  # If YJIT or ZJIT is enabled, show some of their stats at the end.
-  if yjit_stats
+  # If YJIT or ZJIT is enabled, show some of its stats unless it does by itself.
+  if yjit_stats && !RubyVM::YJIT.stats_enabled?
     yjit_bench_results["yjit_stats"] = yjit_stats
     stats_keys = [
       *ENV.fetch("YJIT_BENCH_STATS", "").split(",").map(&:to_sym),
@@ -150,9 +150,10 @@ def return_results(warmup_iterations, bench_iterations)
       :compile_time_ns,
     ].uniq
     puts "YJIT stats:"
-  elsif zjit_stats
+  elsif zjit_stats && !RubyVM::ZJIT.stats_enabled?
     yjit_bench_results["zjit_stats"] = zjit_stats
     stats_keys = [
+      *ENV.fetch("ZJIT_BENCH_STATS", "").split(",").map(&:to_sym),
       :compile_time_ns,
       :profile_time_ns,
       :gc_time_ns,

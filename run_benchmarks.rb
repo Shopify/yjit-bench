@@ -396,6 +396,10 @@ OptionParser.new do |opts|
     ENV["YJIT_BENCH_STATS"] = str
   end
 
+  opts.on("--zjit-stats=STATS", "print ZJIT stats at each iteration for the default harness") do |str|
+    ENV["ZJIT_BENCH_STATS"] = str
+  end
+
   opts.on("--yjit_opts=OPT_STRING", "string of command-line options to run YJIT with (ignored if you use -e)") do |str|
     args.yjit_opts=str
   end

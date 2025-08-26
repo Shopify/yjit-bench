@@ -40,16 +40,18 @@ def run_benchmark(_num_itrs_hint, &block)
 
   RubyVM::YJIT.reset_stats! if defined?(RubyVM::YJIT) && RubyVM::YJIT.enabled?
 
-  # If $YJIT_BENCH_STATS is given, print the diff of these stats at each iteration.
-  if ENV["YJIT_BENCH_STATS"]
-    yjit_stats = ENV["YJIT_BENCH_STATS"].split(",").map { |key| [key.to_sym, nil] }.to_h
+  # If $YJIT_BENCH_STATS or $ZJIT_BENCH_STATS is given, print the diff of these stats at each iteration.
+  if yjit_stats = ENV["YJIT_BENCH_STATS"]
+    yjit_stats = yjit_stats.split(",").map(&:to_sym).map { |key| [key, RubyVM::YJIT.runtime_stats(key)] }.to_h
     yjit_stats.each_key { |key| header << " #{key}" }
+  end
+  if zjit_stats = ENV["ZJIT_BENCH_STATS"]
+    zjit_stats = zjit_stats.split(",").map(&:to_sym).map { |key| [key, RubyVM::ZJIT.stats(key)] }.to_h
+    zjit_stats.each_key { |key| header << " #{key}" }
   end
 
   puts header
   begin
-    yjit_stats&.each_key { |key| yjit_stats[key] = RubyVM::YJIT.runtime_stats(key) }
-
     time = realtime(&block)
     num_itrs += 1
 
@@ -59,9 +61,13 @@ def run_benchmark(_num_itrs_hint, &block)
 
     yjit_stats&.each do |key, old_value|
       new_value = RubyVM::YJIT.runtime_stats(key)
-      diff = (new_value - old_value)
-      itr_str << " %#{key.size}s" % format_number(diff)
+      itr_str << " %#{key.size}s" % format_number(new_value - old_value)
       yjit_stats[key] = new_value
+    end
+    zjit_stats&.each do |key, old_value|
+      new_value = RubyVM::ZJIT.stats(key)
+      itr_str << " %#{key.size}s" % format_number(new_value - old_value)
+      zjit_stats[key] = new_value
     end
 
     puts itr_str
