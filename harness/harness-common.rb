@@ -44,7 +44,20 @@ def use_gemfile(extra_setup_cmd: nil)
   setup_cmds(["bundle check 2> /dev/null || bundle install", extra_setup_cmd].compact)
 
   # Need to be in the appropriate directory for this...
-  require "bundler/setup"
+  require "bundler"
+  # Use Bundler.setup instead of require 'bundler/setup' to avoid bundler's autoswitch restarting the
+  # process and messing with LOAD_PATH. Autoswitching occurs when the BUNDLED_WITH in the Gemfile.lock
+  # is a different version than the loaded version of bundler.
+  Bundler.setup
+end
+
+def use_inline_gemfile(&block)
+  raise  "Block must be given" unless block
+  require "bundler/inline"
+  gemfile(install=true) do
+    source "https://rubygems.org"
+    instance_eval(&block)
+  end
 end
 
 # This returns its best estimate of the Resident Set Size in bytes.
