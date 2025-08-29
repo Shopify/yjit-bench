@@ -154,6 +154,7 @@ def return_results(warmup_iterations, bench_iterations)
     yjit_bench_results["zjit_stats"] = zjit_stats
     stats_keys = [
       *ENV.fetch("ZJIT_BENCH_STATS", "").split(",").map(&:to_sym),
+      :code_region_bytes,
       :compile_time_ns,
       :profile_time_ns,
       :gc_time_ns,
