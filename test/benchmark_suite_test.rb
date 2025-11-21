@@ -87,6 +87,7 @@ describe BenchmarkSuite do
       assert_equal ['micro'], suite.categories
     end
 
+
     it 'keeps bench_dir as BENCHMARKS_DIR when ractor category is used' do
       suite = BenchmarkSuite.new(
         categories: ['ractor'],
@@ -114,7 +115,7 @@ describe BenchmarkSuite do
         categories: [],
         name_filters: [],
         out_path: @out_path,
-        harness: 'harness-ractor'
+        harness: 'ractor'
       )
       assert_equal false, suite_auto.harness_explicit
     end
@@ -134,12 +135,12 @@ describe BenchmarkSuite do
         categories: [],
         name_filters: [],
         out_path: @out_path,
-        harness: 'harness-ractor',
+        harness: 'ractor',
         harness_explicit: false
       )
 
       assert_equal 'harness', suite.send(:benchmark_harness_for, 'custom_harness_bench')
-      assert_equal 'harness-ractor', suite.send(:benchmark_harness_for, 'simple')
+      assert_equal 'ractor', suite.send(:benchmark_harness_for, 'simple')
     end
 
     it 'ignores default_harness when harness is explicit' do
@@ -162,7 +163,7 @@ describe BenchmarkSuite do
         categories: ['ractor'],
         name_filters: [],
         out_path: @out_path,
-        harness: 'harness-ractor'
+        harness: 'ractor'
       )
 
       assert_equal true, suite.send(:ractor_category_run?)
@@ -208,21 +209,21 @@ describe BenchmarkSuite do
     end
 
     it 'does not pin when the Ractor harness is selected explicitly' do
-      refute_includes base_cmd_for('ruby 4.0.7 (2026-09-15 revision 229531a6cf) +ZJIT [x86_64-linux]', harness: 'harness-ractor', harness_explicit: true), 'taskset'
+      refute_includes base_cmd_for('ruby 4.0.7 (2026-09-15 revision 229531a6cf) +ZJIT [x86_64-linux]', harness: 'ractor', harness_explicit: true), 'taskset'
     end
 
     it 'does not pin a benchmark whose default harness is the Ractor harness' do
-      File.write('benchmarks.yml', YAML.dump(@metadata.merge('ractor_bench' => { 'category' => 'micro', 'default_harness' => 'harness-ractor' })))
+      File.write('benchmarks.yml', YAML.dump(@metadata.merge('ractor_bench' => { 'category' => 'micro', 'default_harness' => 'ractor' })))
       refute_includes base_cmd_for('ruby 4.0.7 (2026-09-15 revision 229531a6cf) +ZJIT [x86_64-linux]', benchmark_name: 'ractor_bench'), 'taskset'
     end
 
     it 'pins a Ractor-default benchmark when another harness is selected explicitly' do
-      File.write('benchmarks.yml', YAML.dump(@metadata.merge('ractor_bench' => { 'category' => 'micro', 'default_harness' => 'harness-ractor' })))
+      File.write('benchmarks.yml', YAML.dump(@metadata.merge('ractor_bench' => { 'category' => 'micro', 'default_harness' => 'ractor' })))
       assert_includes base_cmd_for('ruby 4.0.7 (2026-09-15 revision 229531a6cf) +ZJIT [x86_64-linux]', benchmark_name: 'ractor_bench', harness_explicit: true), 'taskset'
     end
 
     it 'pins the Ractor harness when pinning is forced' do
-      assert_includes base_cmd_for('ruby 4.0.7 (2026-09-15 revision 229531a6cf) +ZJIT [x86_64-linux]', harness: 'harness-ractor', harness_explicit: true, force_pinning: true), 'taskset'
+      assert_includes base_cmd_for('ruby 4.0.7 (2026-09-15 revision 229531a6cf) +ZJIT [x86_64-linux]', harness: 'ractor', harness_explicit: true, force_pinning: true), 'taskset'
     end
   end
 
@@ -377,6 +378,7 @@ describe BenchmarkSuite do
       assert_includes bench_data, 'ractor_test'
       refute_includes bench_data, 'simple'
       assert_empty bench_failures
+
     end
 
     it 'runs each Ractor count in its own process and merges the results' do
