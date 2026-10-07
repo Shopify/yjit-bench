@@ -176,6 +176,61 @@ module WindowsKernel32
   end
 end
 
+WINDOWS_POWER_MODES = {
+  "961cc777-2547-4f9d-8174-7d86181b8a7a" => "best power efficiency",
+  "00000000-0000-0000-0000-000000000000" => "balanced",
+  "3af9b8d9-7c97-431d-ad78-34a8bfea439f" => "better performance",
+  "ded574b5-45a0-4f42-8737-46345c09c238" => "best performance",
+}
+
+def windows_guid_string(bytes)
+  data1, data2, data3 = bytes.unpack('L<S<S<')
+  "%08x-%04x-%04x-%s-%s" % [data1, data2, data3, bytes[8, 2].unpack1('H*'), bytes[10, 6].unpack1('H*')]
+end
+
+# The conditions a result depends on but RUBY_DESCRIPTION does not show. Windows 11 usually keeps the
+# Balanced power scheme and applies the power slider as an overlay on it, so both are recorded.
+def get_windows_run_conditions
+  load_fiddle
+  kernel32 = Fiddle.dlopen("kernel32")
+  powrprof = Fiddle.dlopen("powrprof")
+  process = Fiddle::Function.new(kernel32['GetCurrentProcess'], [], Fiddle::TYPE_VOIDP).call
+  get_affinity = Fiddle::Function.new(kernel32['GetProcessAffinityMask'], [Fiddle::TYPE_VOIDP] * 3, Fiddle::TYPE_INT)
+  get_priority_class = Fiddle::Function.new(kernel32['GetPriorityClass'], [Fiddle::TYPE_VOIDP], Fiddle::TYPE_INT)
+  local_free = Fiddle::Function.new(kernel32['LocalFree'], [Fiddle::TYPE_VOIDP], Fiddle::TYPE_VOIDP)
+  get_active_scheme = Fiddle::Function.new(powrprof['PowerGetActiveScheme'], [Fiddle::TYPE_VOIDP] * 2, Fiddle::TYPE_INT)
+  read_friendly_name = Fiddle::Function.new(powrprof['PowerReadFriendlyName'], [Fiddle::TYPE_VOIDP] * 6, Fiddle::TYPE_INT)
+  get_overlay_scheme = Fiddle::Function.new(powrprof['PowerGetEffectiveOverlayScheme'], [Fiddle::TYPE_VOIDP], Fiddle::TYPE_INT)
+
+  process_mask = "\0".b * Fiddle::SIZEOF_VOIDP
+  system_mask = "\0".b * Fiddle::SIZEOF_VOIDP
+  raise "GetProcessAffinityMask failed" if get_affinity.call(process, process_mask, system_mask).zero?
+
+  scheme_pointer = "\0".b * Fiddle::SIZEOF_VOIDP
+  raise "PowerGetActiveScheme failed" unless get_active_scheme.call(nil, scheme_pointer).zero?
+  scheme = Fiddle::Pointer.new(scheme_pointer.unpack1('J'))
+  name_size = [0].pack('L')
+  read_friendly_name.call(nil, scheme, nil, nil, nil, name_size)
+  name = "\0".b * name_size.unpack1('L')
+  read_friendly_name.call(nil, scheme, nil, nil, name, name_size)
+  scheme_guid = windows_guid_string(scheme[0, 16])
+  local_free.call(scheme)
+
+  overlay = "\0".b * 16
+  raise "PowerGetEffectiveOverlayScheme failed" unless get_overlay_scheme.call(overlay).zero?
+  overlay_guid = windows_guid_string(overlay)
+
+  {
+    "affinity_mask" => "0x%x" % process_mask.unpack1('J'),
+    "priority_class" => "0x%x" % get_priority_class.call(process),
+    "power_scheme" => { "guid" => scheme_guid, "name" => name.force_encoding('UTF-16LE').encode('UTF-8').delete("\0") },
+    "power_mode" => { "guid" => overlay_guid, "name" => WINDOWS_POWER_MODES[overlay_guid] },
+  }
+rescue LoadError, StandardError
+  warn "Failed to get run conditions: #{$!.message}"
+  nil
+end
+
 def pin_to_cpu(cpu)
   load_fiddle
   # Etc.nprocessors counts the CPUs of every processor group, but the mask holds those of one group only.
@@ -266,6 +321,12 @@ def return_results(warmup_iterations, bench_iterations, **extra)
   ruby_bench_results["rss"] = rss
   if maxrss = get_maxrss
     ruby_bench_results["maxrss"] = maxrss
+  end
+  if is_windows
+    # RUBY_DESCRIPTION does not tell MSVC from clang-cl builds or builds with different flags.
+    # mswin has no optflags in RbConfig and folds them into CFLAGS.
+    ruby_bench_results["build_config"] = RbConfig::CONFIG.slice("CC", "CFLAGS", "CPPFLAGS", "optflags")
+    ruby_bench_results["run_conditions"] = get_windows_run_conditions
   end
 
   # If YJIT or ZJIT is enabled, show some of its stats unless it does by itself.
