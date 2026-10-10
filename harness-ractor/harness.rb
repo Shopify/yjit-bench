@@ -36,7 +36,6 @@ WORKER_GC_SAMPLES = []
 SETTLE_SLEEP = Float(ENV.fetch("RACTOR_MEM_SETTLE_SLEEP", 0.1))
 PEAK_SAMPLE_INTERVAL = Float(ENV.fetch("RACTOR_MEM_PEAK_SAMPLE_INTERVAL", 0.005))
 GLOBAL_GC_START = GC.method(:start).parameters.include?([:key, :global])
-PAGE_SIZE = Etc.sysconf(Etc::SC_PAGESIZE)
 
 def run_benchmark(num_itrs_hint, ractor_args: [], scenario: false, &block)
   warmup_itrs = Integer(ENV.fetch('WARMUP_ITRS', 5))
@@ -375,6 +374,7 @@ end
 
 STATM_FILE = "/proc/self/statm"
 STATM_AVAILABLE = File.exist?(STATM_FILE)
+PAGE_SIZE = Etc.sysconf(Etc::SC_PAGESIZE) if STATM_AVAILABLE
 
 # The resident set size right now. /proc/self/statm is the cheapest source, which
 # matters because the peak sampler reads it every PEAK_SAMPLE_INTERVAL. Off Linux
