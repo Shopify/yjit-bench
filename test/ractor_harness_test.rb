@@ -9,12 +9,13 @@ describe 'Ractor harness' do
     root = File.expand_path('..', __dir__)
     Dir.mktmpdir do |dir|
       result_path = File.join(dir, 'results.json')
-      calls_path = File.join(dir, 'calls.txt')
+      calls_dir = File.join(dir, 'calls')
+      Dir.mkdir(calls_dir)
       script = File.join(dir, 'workload.rb')
       File.write(script, <<~RUBY)
         require #{File.join(root, 'harness', 'loader').inspect}
         run_benchmark(1) do |count|
-          File.open(#{calls_path.inspect}, 'a') { |f| f.puts(count) }
+          File.open(File.join(#{calls_dir.inspect}, Ractor.current.object_id.to_s), 'a') { |f| f.puts(count) }
         end
       RUBY
       env = {
@@ -34,7 +35,8 @@ describe 'Ractor harness' do
       assert_equal({ '2' => 2 }, data['warmup_by_ractors'].transform_values(&:size))
       assert_equal({ '2' => 1 }, data['bench_by_ractors'].transform_values(&:size))
       assert_equal data['warmup_by_ractors']['2'], data['warmup']
-      assert_equal ['2'] * 6, File.readlines(calls_path, chomp: true), '(2 warmup + 1 measured) iterations x 2 Ractors'
+      calls = Dir.children(calls_dir).flat_map { |f| File.readlines(File.join(calls_dir, f), chomp: true) }
+      assert_equal ['2'] * 6, calls, '(2 warmup + 1 measured) iterations x 2 Ractors'
     end
   end
 end
