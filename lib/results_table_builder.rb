@@ -124,7 +124,7 @@ class ResultsTableBuilder
     return nil unless @include_gc
 
     label_header = ["bench", *@row_layout.extra_header_columns]
-    tables = @other_names.empty? ? [build_gc_absolute_table(label_header)] : build_gc_comparison_tables(label_header)
+    tables = @other_names.empty? ? [build_gc_absolute_table(label_header)] : [build_gc_per_ruby_table(label_header), *build_gc_comparison_tables(label_header)]
     tables.compact!
     tables.empty? ? nil : tables
   end
@@ -190,6 +190,19 @@ class ResultsTableBuilder
     end
     columns << ["minor GC %", ->(base, other) { minor_percent_cell(base, other) }]
     columns
+  end
+
+  def build_gc_per_ruby_table(label_header)
+    rows = []
+    gc_entries.each do |entry|
+      data_by_name = @executable_names.to_h { |name| [name, bench_data_for(name, entry.data_key)] }
+      next unless gc_activity?(*data_by_name.values.flat_map { |data| data.values_at(*GC_SERIES_KEYS) })
+
+      data_by_name.each do |name, data|
+        rows << [gc_label_cells(entry) + [name], [data]] if GC_SERIES_KEYS.any? { |key| data.key?(key) }
+      end
+    end
+    assemble_gc_table("GC per ruby", label_header + ["ruby"], rows, gc_absolute_columns)
   end
 
   def build_gc_absolute_table(label_header)
