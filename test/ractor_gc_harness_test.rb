@@ -222,8 +222,12 @@ describe 'Ractor GC harness' do
       assert_equal %w[0 1 2], data['gc_by_ractors'].keys.sort
 
       if data['gc_by_ractors'].values.any? { |group| group.key?('gc_controller_compact_count_bench') }
-        assert_includes stdout, '(* controller-observed compacting cycles; may overlap global counts and is not additive.)',
-          'a starred stdout column must always come with the exact legend line'
+        legend = '(* controller-observed compacting cycles; may overlap global counts and is not additive.)'
+        lines = stdout.lines(chomp: true)
+        legend_index = lines.index(legend)
+        refute_nil legend_index, 'a starred stdout column must always come with the exact legend line'
+        last_row_index = lines.rindex { |line| line.match?(/\A2\s+#2:/) }
+        assert_operator legend_index, :>, last_row_index, 'the legend must follow the last table row'
       end
 
       expected_worker_keys = %w[
