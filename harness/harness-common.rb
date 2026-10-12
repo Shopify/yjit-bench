@@ -73,6 +73,8 @@ def get_rss
     # First, grab a line like "62796 kB". Checking the Linux kernel source, Rss will always be in kB.
     rss_desc = File.read(mem_rollup_file).lines.detect { |line| line.start_with?("Rss") }.split(":", 2)[1][/(\d+)/, 1]
     1024 * Integer(rss_desc)
+  elsif defined?(WindowsMemoryCounters)
+    WindowsMemoryCounters.read&.fetch(:working_set) || 0
   else
     # Collect our own peak mem usage as soon as reasonable after finishing the last iteration.
     # This method is only accurate to kilobytes, but is nicely portable and doesn't require
@@ -163,7 +165,41 @@ def macos_resident_size
   buffer[RI_RESIDENT_SIZE_OFFSET, 8].unpack1('Q')
 end
 
+if RUBY_PLATFORM.match?(/mswin|mingw/)
+  # Resolved once like ProcPidRusage. A dropped Fiddle::Handle is freed by a deferred finalizer, whose interrupt sends
+  # YJIT code back to the interpreter for the rest of the loop the benchmark was in, so kernel32 stays open.
+  module WindowsMemoryCounters
+    @resolved = false
+
+    # The working set of this process and its peak in bytes, the Windows counterparts of RSS and max RSS.
+    def self.read
+      resolve unless @resolved
+      return nil unless @get_info
+
+      # PROCESS_MEMORY_COUNTERS: two DWORDs followed by eight SIZE_Ts, the first two being PeakWorkingSetSize and WorkingSetSize.
+      buffer = "\0".b * (8 + 8 * Fiddle::SIZEOF_SIZE_T)
+      buffer[0, 4] = [buffer.bytesize].pack('L')
+      return nil if @get_info.call(@process, buffer, buffer.bytesize).zero?
+
+      peak_working_set, working_set = buffer.unpack('x8J2')
+      { working_set: working_set, peak_working_set: peak_working_set }
+    end
+
+    def self.resolve
+      @resolved = true
+      load_fiddle
+      @kernel32 = Fiddle.dlopen("kernel32")
+      @process = Fiddle::Function.new(@kernel32['GetCurrentProcess'], [], Fiddle::TYPE_VOIDP).call
+      @get_info = Fiddle::Function.new(@kernel32['K32GetProcessMemoryInfo'], [Fiddle::TYPE_VOIDP, Fiddle::TYPE_VOIDP, Fiddle::TYPE_INT], Fiddle::TYPE_INT)
+    rescue LoadError, Fiddle::DLError, NameError
+      warn "Failed to get memory counters: #{$!.message}"
+    end
+  end
+end
+
 def get_maxrss
+  return WindowsMemoryCounters.read&.fetch(:peak_working_set) if defined?(WindowsMemoryCounters)
+
   load_fiddle
 
   require 'rbconfig/sizeof'
