@@ -130,6 +130,7 @@ def run_benchmark_gc(warmup_itrs, bench_itrs, block, ractor_args, gc_config:)
     end
     gc_by_ractors[rs] = group
   end
+  print_gc_legend
 
   return_results(warmups.values.flatten, stats.values.flatten, warmup_by_ractors: warmups, bench_by_ractors: stats, **ractor_gc_results(gc_by_ractors, gc_config))
 end
@@ -138,6 +139,9 @@ def print_gc_header(prefix)
   header = prefix + "   gc_total   marking  sweeping  gc_count     major     minor    global"
   CONTROLLER_GC_SERIES.each_value { |(_stat_key, label)| header << " %9s" % label }
   puts header
+end
+
+def print_gc_legend
   puts "(* controller-observed compacting cycles; may overlap global counts and is not additive.)" if CONTROLLER_GC_SERIES.any?
 end
 
@@ -276,6 +280,8 @@ def run_scenario_benchmark(bench_itrs, gc_config:, &scenario)
 
     gc_by_ractors[count] = group.merge(series)
   end
+
+  print_gc_legend if RACTOR_GC_ENABLED
 
   medians = counts.to_h { |count| [count, memory_summary(memory[count])] }
   print_memory_metrics(medians)
