@@ -171,18 +171,24 @@ if RUBY_PLATFORM.match?(/mswin|mingw/)
   module WindowsMemoryCounters
     @resolved = false
 
-    # The working set of this process and its peak in bytes, the Windows counterparts of RSS and max RSS.
+    # Memory counters of this process in bytes. The working set is the Windows counterpart of RSS,
+    # and the commit charge (PagefileUsage) is the private memory the process has committed.
     def self.read
       resolve unless @resolved
       return nil unless @get_info
 
-      # PROCESS_MEMORY_COUNTERS: two DWORDs followed by eight SIZE_Ts, the first two being PeakWorkingSetSize and WorkingSetSize.
+      # PROCESS_MEMORY_COUNTERS: two DWORDs followed by eight SIZE_Ts.
       buffer = "\0".b * (8 + 8 * Fiddle::SIZEOF_SIZE_T)
       buffer[0, 4] = [buffer.bytesize].pack('L')
       return nil if @get_info.call(@process, buffer, buffer.bytesize).zero?
 
-      peak_working_set, working_set = buffer.unpack('x8J2')
-      { working_set: working_set, peak_working_set: peak_working_set }
+      peak_working_set, working_set, _, _, _, _, commit_charge, peak_commit_charge = buffer.unpack('x8J8')
+      {
+        working_set: working_set,
+        peak_working_set: peak_working_set,
+        commit_charge: commit_charge,
+        peak_commit_charge: peak_commit_charge,
+      }
     end
 
     def self.resolve
@@ -256,6 +262,10 @@ def return_results(warmup_iterations, bench_iterations, **extra)
   ruby_bench_results["rss"] = rss
   if maxrss = get_maxrss
     ruby_bench_results["maxrss"] = maxrss
+  end
+  if defined?(WindowsMemoryCounters) && (counters = WindowsMemoryCounters.read)
+    ruby_bench_results["commit_charge"] = counters[:commit_charge]
+    ruby_bench_results["peak_commit_charge"] = counters[:peak_commit_charge]
   end
 
   # If YJIT or ZJIT is enabled, show some of its stats unless it does by itself.
