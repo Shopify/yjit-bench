@@ -101,6 +101,9 @@ describe ArgumentParser do
     end
 
     describe '--chruby option' do
+      # The mock rubies are shell scripts, which File.executable? does not accept on Windows, where chruby does not exist anyway.
+      before { skip 'chruby is not available on Windows' if Gem.win_platform? }
+
       it 'finds ruby in /opt/rubies' do
         Dir.mktmpdir do |tmpdir|
           ruby_path = File.join(tmpdir, 'opt/rubies/3.2.0/bin/ruby')
@@ -628,6 +631,7 @@ describe ArgumentParser do
       end
 
       it 'does not set default executables when --chruby option is provided' do
+        skip 'chruby is not available on Windows' if Gem.win_platform?
         Dir.mktmpdir do |tmpdir|
           @temp_home = tmpdir
           rubies_dir = File.join(tmpdir, '.rubies')
