@@ -794,6 +794,7 @@ describe BenchmarkRunner do
   describe '.render_graph' do
     it 'delegates to GraphRenderer and returns calculated png_path' do
       skip 'rmagick segfaults on truffleruby 25.0.0' if RUBY_ENGINE == 'truffleruby'
+      skip 'the graph group with rmagick is not installed on Windows' if Gem.win_platform?
       Dir.mktmpdir do |dir|
         json_path = File.join(dir, 'test.json')
         expected_png_path = File.join(dir, 'test.png')
