@@ -3,8 +3,12 @@
 source "https://rubygems.org"
 
 gem "csv"
-gem "gruff"
 gem "minitest", "~> 5.0"
 gem "minitest-mock"
 gem "rake"
-gem "rmagick"
+
+# Windows CI skips this group because rmagick does not build against MSYS2's ImageMagick.
+group :graph do
+  gem "gruff"
+  gem "rmagick"
+end
