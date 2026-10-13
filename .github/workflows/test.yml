@@ -155,9 +155,52 @@ jobs:
       - name: Test run_once.sh
         run: ./run_once.sh --yjit-stats benchmarks/railsbench/benchmark.rb
 
+  test-windows:
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        ruby: [ruby, head]
+    if: ${{ github.event_name != 'schedule' || github.repository == 'ruby/ruby-bench' }}
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ matrix.ruby }}
+          bundler: ${{ matrix.ruby == 'head' && 'default' || 'Gemfile.lock' }}
+      - name: Install ImageMagick
+        run: ridk exec pacman -S --noconfirm --needed mingw-w64-ucrt-x86_64-imagemagick
+      - name: Install gems
+        run: bundle install
+
+      - name: Run tests
+        run: bundle exec rake test
+
+  benchmark-default-windows:
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        ruby: [ruby, head]
+    if: ${{ github.event_name != 'schedule' || github.repository == 'ruby/ruby-bench' }}
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ matrix.ruby }}
+
+      - name: Test run_benchmarks.rb
+        run: ruby run_benchmarks.rb
+        env:
+          WARMUP_ITRS: '1'
+          MIN_BENCH_ITRS: '1'
+          MIN_BENCH_TIME: '0'
+
   all-tests:
     runs-on: ubuntu-latest
-    needs: [test, benchmark-default, benchmark-ractor, benchmark-ractor-only, benchmark-graph, benchmark-run-once]
+    needs: [test, test-windows, benchmark-default, benchmark-default-windows, benchmark-ractor, benchmark-ractor-only, benchmark-graph, benchmark-run-once]
     if: always()
     steps:
       - name: Check all job results
