@@ -2,4 +2,4 @@
 
 source "https://rubygems.org"
 
-gem "rubyboy", git: "https://github.com/sacckey/rubyboy"
+gem "rubyboy"
