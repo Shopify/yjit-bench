@@ -69,6 +69,7 @@ describe 'run_benchmarks.rb integration' do
 
   describe 'script structure' do
     it 'run_benchmarks.rb is executable' do
+      skip 'Windows has no executable bit' if Gem.win_platform?
       assert_equal true, File.executable?(@script_path)
     end
 
