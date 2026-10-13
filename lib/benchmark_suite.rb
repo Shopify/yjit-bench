@@ -12,6 +12,7 @@ require_relative 'benchmark_runner'
 require_relative 'benchmark_discovery'
 require_relative 'ractor_breakdown'
 require_relative 'ractor_counts'
+require_relative 'windows_pinning'
 
 # BenchmarkSuite runs a collection of benchmarks and collects their results
 class BenchmarkSuite
@@ -19,7 +20,6 @@ class BenchmarkSuite
   RACTOR_CATEGORY = ["ractor"].freeze
   RACTOR_ONLY_CATEGORY = ["ractor-only"].freeze
   RACTOR_HARNESS = "harness-ractor"
-  PIN_CPU_ENV = "RUBY_BENCH_PIN_CPU"
 
   attr_reader :categories, :name_filters, :excludes, :out_path, :harness, :harness_explicit, :pre_init, :no_pinning, :force_pinning, :bench_dir
 
@@ -48,18 +48,19 @@ class BenchmarkSuite
   # Run a single benchmark entry on a single executable.
   # Returns { name:, data: } on success, { name:, failure: } on error.
   def run_benchmark(entry, ruby:, ruby_description:)
-    env = benchmark_env(ruby).merge(pinning_env(ruby_description, entry.name))
+    env = benchmark_env(ruby)
     caller_json_path = ENV["RESULT_JSON_PATH"]
     quiet = ENV['BENCHMARK_QUIET'] == '1'
     cmd_prefix = base_cmd(ruby_description, entry.name)
+    pin_cpu = windows_pin_cpu(ruby_description, entry.name)
     benchmark_harness = benchmark_harness_for(entry.name)
 
     if benchmark_harness == RACTOR_HARNESS
-      return run_ractor_benchmark(entry, ruby, cmd_prefix, env, benchmark_harness, caller_json_path, quiet: quiet)
+      return run_ractor_benchmark(entry, ruby, cmd_prefix, env, benchmark_harness, caller_json_path, quiet: quiet, pin_cpu: pin_cpu)
     end
 
     result_json_path = caller_json_path || File.join(out_path, "temp#{Process.pid}.json")
-    result = run_benchmark_process(entry.script_path, result_json_path, ruby, cmd_prefix, env, benchmark_harness, quiet: quiet)
+    result = run_benchmark_process(entry.script_path, result_json_path, ruby, cmd_prefix, env, benchmark_harness, quiet: quiet, pin_cpu: pin_cpu)
 
     if result[:success]
       { name: entry.name, data: process_benchmark_result(result_json_path, result[:command], delete_file: !caller_json_path), harness: benchmark_harness }
@@ -103,13 +104,13 @@ class BenchmarkSuite
     end
   end
 
-  def run_ractor_benchmark(entry, ruby, cmd_prefix, env, benchmark_harness, caller_json_path, quiet: false)
+  def run_ractor_benchmark(entry, ruby, cmd_prefix, env, benchmark_harness, caller_json_path, quiet: false, pin_cpu: nil)
     blobs_by_count = {}
 
     ractor_counts_for(entry.name).each do |count|
       result_json_path = File.join(out_path, "temp#{Process.pid}_r#{count}.json")
       count_env = env.merge(RactorCounts::ENV_VAR => count.to_s)
-      result = run_benchmark_process(entry.script_path, result_json_path, ruby, cmd_prefix, count_env, benchmark_harness, quiet: quiet)
+      result = run_benchmark_process(entry.script_path, result_json_path, ruby, cmd_prefix, count_env, benchmark_harness, quiet: quiet, pin_cpu: pin_cpu)
 
       unless result[:success]
         FileUtils.rm_f(result_json_path)
@@ -140,13 +141,13 @@ class BenchmarkSuite
 
   # Clear project-level Bundler environment so benchmarks run in a clean context.
   # Benchmarks that need Bundler (e.g., railsbench) set up their own via use_gemfile.
-  def run_benchmark_process(script_path, result_json_path, ruby, cmd_prefix, env, benchmark_harness, quiet: false)
+  def run_benchmark_process(script_path, result_json_path, ruby, cmd_prefix, env, benchmark_harness, quiet: false, pin_cpu: nil)
     if defined?(Bundler)
       Bundler.with_unbundled_env do
-        run_single_benchmark(script_path, result_json_path, ruby, cmd_prefix, env, benchmark_harness, quiet: quiet)
+        run_single_benchmark(script_path, result_json_path, ruby, cmd_prefix, env, benchmark_harness, quiet: quiet, pin_cpu: pin_cpu)
       end
     else
-      run_single_benchmark(script_path, result_json_path, ruby, cmd_prefix, env, benchmark_harness, quiet: quiet)
+      run_single_benchmark(script_path, result_json_path, ruby, cmd_prefix, env, benchmark_harness, quiet: quiet, pin_cpu: pin_cpu)
     end
   end
 
@@ -195,7 +196,7 @@ class BenchmarkSuite
     entries.select { |entry| filter.match?(entry.name) }
   end
 
-  def run_single_benchmark(script_path, result_json_path, ruby, cmd_prefix, env, benchmark_harness, quiet: false)
+  def run_single_benchmark(script_path, result_json_path, ruby, cmd_prefix, env, benchmark_harness, quiet: false, pin_cpu: nil)
     # Fix for jruby/jruby#7394 in JRuby 9.4.2.0
     script_path = File.expand_path(script_path)
 
@@ -213,7 +214,7 @@ class BenchmarkSuite
     ].compact).map(&:to_s)
 
     # Do the benchmarking
-    result = BenchmarkRunner.check_call(cmd, env: env, raise_error: false, quiet: quiet)
+    result = BenchmarkRunner.check_call(cmd, env: env, raise_error: false, quiet: quiet, pin_cpu: pin_cpu)
     result[:command] = cmd.shelljoin
     result
   ensure
@@ -288,9 +289,9 @@ class BenchmarkSuite
     end
   end
 
-  # Windows has no taskset, so the harness pins itself to the CPU given in this variable.
-  def pinning_env(ruby_description, benchmark_name)
-    { PIN_CPU_ENV => (pinned_cpu.to_s if windows? && pin?(ruby_description, benchmark_name)) }
+  # Windows has no taskset, so the runner pins the benchmark process to this CPU when it spawns it.
+  def windows_pin_cpu(ruby_description, benchmark_name)
+    pinned_cpu if windows? && pin?(ruby_description, benchmark_name)
   end
 
   # Pin the process to one given core to improve caching and reduce variance on CRuby

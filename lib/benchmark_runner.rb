@@ -5,6 +5,7 @@ require 'json'
 require 'rbconfig'
 require 'shellwords'
 require_relative 'table_formatter'
+require_relative 'windows_pinning'
 
 # Extracted helper methods from run_benchmarks.rb for testing
 module BenchmarkRunner
@@ -154,16 +155,18 @@ module BenchmarkRunner
 
     # Checked system - error or return info if the command fails.
     # An Array command with arguments runs without a shell, so Shellwords escapes never reach the program.
-    def check_call(command, env: {}, raise_error: true, quiet: ENV['BENCHMARK_QUIET'] == '1')
+    # pin_cpu pins the command to a CPU on Windows, where there is no taskset to put in the command.
+    def check_call(command, env: {}, raise_error: true, quiet: ENV['BENCHMARK_QUIET'] == '1', pin_cpu: nil)
       command_str = command.is_a?(Array) ? command.shelljoin : command
       puts("+ #{command_str}") unless quiet
 
       result = {}
 
-      if quiet
-        result[:success] = system(env, *command, out: File::NULL, err: File::NULL)
+      options = quiet ? { out: File::NULL, err: File::NULL } : {}
+      result[:success] = if pin_cpu
+        WindowsPinning.system(pin_cpu, env, *command, **options)
       else
-        result[:success] = system(env, *command)
+        system(env, *command, **options)
       end
       result[:status] = $?
 
