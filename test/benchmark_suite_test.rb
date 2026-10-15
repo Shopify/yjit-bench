@@ -181,16 +181,18 @@ describe BenchmarkSuite do
   end
 
   describe '#base_cmd' do
-    def base_cmd_for(ruby_description)
+    def base_cmd_for(ruby_description, benchmark_name: 'simple', harness: 'harness', harness_explicit: false, force_pinning: false)
       suite = BenchmarkSuite.new(
         categories: ['micro'],
         name_filters: [],
         out_path: @out_path,
-        harness: 'harness'
+        harness: harness,
+        harness_explicit: harness_explicit,
+        force_pinning: force_pinning
       )
       suite.stub :linux?, true do
         suite.stub :setarch_prefix, [] do
-          suite.send(:base_cmd, ruby_description, 'simple')
+          suite.send(:base_cmd, ruby_description, benchmark_name)
         end
       end
     end
@@ -203,6 +205,24 @@ describe BenchmarkSuite do
     it 'does not pin other Rubies, which use multiple cores' do
       refute_includes base_cmd_for('jruby 10.1.1.0 (3.4.5) 2025-08-27 OpenJDK 64-Bit Server VM [x86_64-linux]'), 'taskset'
       refute_includes base_cmd_for('truffleruby 34.0.1 [x86_64-linux]'), 'taskset'
+    end
+
+    it 'does not pin when the Ractor harness is selected explicitly' do
+      refute_includes base_cmd_for('ruby 4.0.7 (2026-09-15 revision 229531a6cf) +ZJIT [x86_64-linux]', harness: 'harness-ractor', harness_explicit: true), 'taskset'
+    end
+
+    it 'does not pin a benchmark whose default harness is the Ractor harness' do
+      File.write('benchmarks.yml', YAML.dump(@metadata.merge('ractor_bench' => { 'category' => 'micro', 'default_harness' => 'harness-ractor' })))
+      refute_includes base_cmd_for('ruby 4.0.7 (2026-09-15 revision 229531a6cf) +ZJIT [x86_64-linux]', benchmark_name: 'ractor_bench'), 'taskset'
+    end
+
+    it 'pins a Ractor-default benchmark when another harness is selected explicitly' do
+      File.write('benchmarks.yml', YAML.dump(@metadata.merge('ractor_bench' => { 'category' => 'micro', 'default_harness' => 'harness-ractor' })))
+      assert_includes base_cmd_for('ruby 4.0.7 (2026-09-15 revision 229531a6cf) +ZJIT [x86_64-linux]', benchmark_name: 'ractor_bench', harness_explicit: true), 'taskset'
+    end
+
+    it 'pins the Ractor harness when pinning is forced' do
+      assert_includes base_cmd_for('ruby 4.0.7 (2026-09-15 revision 229531a6cf) +ZJIT [x86_64-linux]', harness: 'harness-ractor', harness_explicit: true, force_pinning: true), 'taskset'
     end
   end
 
