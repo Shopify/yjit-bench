@@ -308,7 +308,7 @@ class BenchmarkSuite
   def should_pin?(benchmark_name)
     return false if no_pinning
     return true if force_pinning
-    return false if ractor_category_run?
+    return false if ractor_category_run? || benchmark_harness_for(benchmark_name) == RACTOR_HARNESS
 
     benchmark_meta = benchmarks_metadata[benchmark_name] || {}
     !benchmark_meta["no_pinning"]
