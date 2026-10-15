@@ -73,6 +73,8 @@ def get_rss
     # First, grab a line like "62796 kB". Checking the Linux kernel source, Rss will always be in kB.
     rss_desc = File.read(mem_rollup_file).lines.detect { |line| line.start_with?("Rss") }.split(":", 2)[1][/(\d+)/, 1]
     1024 * Integer(rss_desc)
+  elsif defined?(WindowsMemoryCounters)
+    WindowsMemoryCounters.read&.fetch(:working_set) || 0
   else
     # Collect our own peak mem usage as soon as reasonable after finishing the last iteration.
     # This method is only accurate to kilobytes, but is nicely portable and doesn't require
@@ -163,7 +165,47 @@ def macos_resident_size
   buffer[RI_RESIDENT_SIZE_OFFSET, 8].unpack1('Q')
 end
 
+if RUBY_PLATFORM.match?(/mswin|mingw/)
+  # Resolved once like ProcPidRusage. A dropped Fiddle::Handle is freed by a deferred finalizer, whose interrupt sends
+  # YJIT code back to the interpreter for the rest of the loop the benchmark was in, so kernel32 stays open.
+  module WindowsMemoryCounters
+    @resolved = false
+
+    # Memory counters of this process in bytes. The working set is the Windows counterpart of RSS,
+    # and the commit charge (PagefileUsage) is the private memory the process has committed.
+    def self.read
+      resolve unless @resolved
+      return nil unless @get_info
+
+      # PROCESS_MEMORY_COUNTERS: two DWORDs followed by eight SIZE_Ts.
+      buffer = "\0".b * (8 + 8 * Fiddle::SIZEOF_SIZE_T)
+      buffer[0, 4] = [buffer.bytesize].pack('L')
+      return nil if @get_info.call(@process, buffer, buffer.bytesize).zero?
+
+      peak_working_set, working_set, _, _, _, _, commit_charge, peak_commit_charge = buffer.unpack('x8J8')
+      {
+        working_set: working_set,
+        peak_working_set: peak_working_set,
+        commit_charge: commit_charge,
+        peak_commit_charge: peak_commit_charge,
+      }
+    end
+
+    def self.resolve
+      @resolved = true
+      load_fiddle
+      @kernel32 = Fiddle.dlopen("kernel32")
+      @process = Fiddle::Function.new(@kernel32['GetCurrentProcess'], [], Fiddle::TYPE_VOIDP).call
+      @get_info = Fiddle::Function.new(@kernel32['K32GetProcessMemoryInfo'], [Fiddle::TYPE_VOIDP, Fiddle::TYPE_VOIDP, Fiddle::TYPE_INT], Fiddle::TYPE_INT)
+    rescue LoadError, Fiddle::DLError, NameError
+      warn "Failed to get memory counters: #{$!.message}"
+    end
+  end
+end
+
 def get_maxrss
+  return WindowsMemoryCounters.read&.fetch(:peak_working_set) if defined?(WindowsMemoryCounters)
+
   load_fiddle
 
   require 'rbconfig/sizeof'
@@ -220,6 +262,10 @@ def return_results(warmup_iterations, bench_iterations, **extra)
   ruby_bench_results["rss"] = rss
   if maxrss = get_maxrss
     ruby_bench_results["maxrss"] = maxrss
+  end
+  if defined?(WindowsMemoryCounters) && (counters = WindowsMemoryCounters.read)
+    ruby_bench_results["commit_charge"] = counters[:commit_charge]
+    ruby_bench_results["peak_commit_charge"] = counters[:peak_commit_charge]
   end
 
   # If YJIT or ZJIT is enabled, show some of its stats unless it does by itself.
