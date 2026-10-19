@@ -9,3 +9,4 @@ __pycache__
 /benchmarks/discourse
 
 .DS_Store
+/benchmarks/ractor-conservative-stack/build

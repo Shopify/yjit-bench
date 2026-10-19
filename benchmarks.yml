@@ -296,6 +296,11 @@ json_parse_string:
   ractor: true
   ractor_only: true
   default_harness: ractor
+ractor-conservative-stack:
+  desc: ractors each build a deep Ruby -> C -> Ruby call stack with large C frames and run minor GCs at the bottom, to stress conservative machine stack scanning.
+  ractor: true
+  ractor_only: true
+  default_harness: ractor
 ractor-dead-set:
   desc: multiple ractors each build a large live set and terminate, then memory retention after their death is measured.
   ractor: true
