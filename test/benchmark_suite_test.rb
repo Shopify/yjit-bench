@@ -15,7 +15,6 @@ describe BenchmarkSuite do
 
     # Create mock benchmarks directory structure
     FileUtils.mkdir_p('benchmarks')
-    FileUtils.mkdir_p('harness')
 
     # Create a simple benchmark file
     File.write('benchmarks/simple.rb', <<~RUBY)
@@ -378,8 +377,6 @@ describe BenchmarkSuite do
       assert_includes bench_data, 'ractor_test'
       refute_includes bench_data, 'simple'
       assert_empty bench_failures
-
-
     end
 
     it 'runs each Ractor count in its own process and merges the results' do
