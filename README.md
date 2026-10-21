@@ -210,6 +210,12 @@ harness records:
   call, every 5 ms during it (`RACTOR_MEM_PEAK_SAMPLE_INTERVAL`), and just
   after it.
 
+By default, the process returns to single-Ractor mode when a trial's Ractors
+terminate, so the settling GC before the retained RSS reading runs as a
+single-Ractor GC. Set `RACTOR_MEM_KEEPALIVE=1` to keep one idle Ractor alive
+for the whole run. The settling GC is then the one a multi-Ractor process runs.
+The JSON output records the setting as `ractor_mem_keepalive`.
+
 `run_benchmarks.rb` runs a scenario benchmark in one process per count, like
 other Ractor benchmarks. It starts no count-0 process when the benchmark's
 `benchmarks.yml` entry sets `ractor_scenario: true`; without that key, the

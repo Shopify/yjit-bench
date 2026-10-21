@@ -35,6 +35,7 @@ MAX_ITERS = Integer(ENV.fetch("MAX_BENCH_ITRS", 5))
 WORKER_GC_SAMPLES = []
 SETTLE_SLEEP = Float(ENV.fetch("RACTOR_MEM_SETTLE_SLEEP", 0.1))
 PEAK_SAMPLE_INTERVAL = Float(ENV.fetch("RACTOR_MEM_PEAK_SAMPLE_INTERVAL", 0.005))
+KEEPALIVE = ENV["RACTOR_MEM_KEEPALIVE"] == "1"
 GLOBAL_GC_START = GC.method(:start).parameters.include?([:key, :global])
 
 def run_benchmark(num_itrs_hint, ractor_args: [], scenario: false, &block)
@@ -241,6 +242,13 @@ def run_scenario_benchmark(bench_itrs, gc_config:, &scenario)
   raise ArgumentError, "a scenario benchmark needs a Ractor count above 0" if counts.empty?
   bench_itrs = 1 if bench_itrs < 1
 
+  # With RACTOR_MEM_KEEPALIVE=1, park a Ractor for the whole run so the process
+  # never drops back to a single objspace when a scenario's workers die. Otherwise
+  # gc_settle's second GC.start runs as a single-objspace local major GC, which can
+  # release pages a multi-Ractor process would keep. Started before base_rss so
+  # its own objspace is in the baseline.
+  keepalive = Ractor.new { Ractor.receive } if KEEPALIVE
+
   gc_settle
   base_rss = get_rss
   puts "base RSS: #{format_mib(base_rss)}"
@@ -280,6 +288,11 @@ def run_scenario_benchmark(bench_itrs, gc_config:, &scenario)
     gc_by_ractors[count] = group.merge(series)
   end
 
+  if keepalive
+    keepalive.send(nil)
+    keepalive.join
+  end
+
   print_gc_legend if RACTOR_GC_ENABLED
 
   medians = counts.to_h { |count| [count, memory_summary(memory[count])] }
@@ -291,6 +304,7 @@ def run_scenario_benchmark(bench_itrs, gc_config:, &scenario)
     ractor_mode: "scenario",
     ractor_mem_settle: GLOBAL_GC_START ? "global" : "default",
     ractor_mem_malloc_trim: MallocTrim.available?,
+    ractor_mem_keepalive: KEEPALIVE,
     ractor_mem_base_rss: base_rss,
     ractor_mem_medians: medians,
     ractor_mem_samples: memory,
