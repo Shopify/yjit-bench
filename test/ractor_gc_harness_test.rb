@@ -149,6 +149,15 @@ describe 'Ractor GC harness' do
     end
   RUBY
 
+  RACTOR_COUNT_SCENARIO_BODY = <<~'RUBY'
+    run_benchmark(1, scenario: true) do |_count|
+      worker = Ractor.new { Object.new }
+      worker.join
+      sleep 0.001 until worker.inspect.include?("terminated")
+      proc { puts "ractor count #{Ractor.count}" }
+    end
+  RUBY
+
   SCENARIO_NO_GC_ENV = {
     'RUBY_BENCH_RACTOR_GC' => nil,
     'RUBY_BENCH_RACTORS' => '1',
@@ -198,6 +207,7 @@ describe 'Ractor GC harness' do
         'MIN_BENCH_ITRS' => '2',
         'MAX_BENCH_ITRS' => '2',
         'MIN_BENCH_TIME' => '0',
+        'RACTOR_MEM_KEEPALIVE' => nil,
         'RESULT_JSON_PATH' => result_path
       ).merge(env)
       stdout, stderr, status = Open3.capture3(env, @ruby, "-r#{File.join(ROOT, 'harness', 'ractor')}", script, chdir: ROOT)
@@ -362,6 +372,7 @@ describe 'Ractor GC harness' do
       assert_equal 'ractor-local-workload', data['gc_scope']
       assert_equal 'scenario', data['ractor_mode']
       assert_equal 'global', data['ractor_mem_settle']
+      refute data['ractor_mem_keepalive'], 'the keepalive Ractor is off unless RACTOR_MEM_KEEPALIVE=1'
       assert_equal %w[1 2], data['bench_by_ractors'].keys.sort, 'scenario mode skips count 0'
       assert_equal({ '1' => [], '2' => [] }, data['warmup_by_ractors'], 'scenario mode runs no warmup even with WARMUP_ITRS=1')
       assert_equal %w[1 2], data['gc_by_ractors'].keys.sort
@@ -437,6 +448,17 @@ describe 'Ractor GC harness' do
     run_workload(FINISH_SCENARIO_BODY, env: env) do |stdout, stderr, status, _result_path|
       assert status.success?, "workload failed:\n#{stdout}\n#{stderr}"
       assert_equal ['finish called for 1'] * 2 + ['finish called for 2'] * 2, stdout.scan(/finish called for \d/)
+    end
+  end
+
+  it 'keeps the process multi-Ractor between trials only with RACTOR_MEM_KEEPALIVE=1' do
+    { nil => 1, '1' => 2 }.each do |keepalive, expected|
+      env = SCENARIO_NO_GC_ENV.merge('RACTOR_MEM_KEEPALIVE' => keepalive)
+      run_workload(RACTOR_COUNT_SCENARIO_BODY, env: env) do |stdout, stderr, status, result_path|
+        assert status.success?, "workload failed with RACTOR_MEM_KEEPALIVE=#{keepalive.inspect}:\n#{stdout}\n#{stderr}"
+        assert_equal ["ractor count #{expected}"], stdout.scan(/ractor count \d+/)
+        assert_equal !keepalive.nil?, JSON.parse(File.read(result_path))['ractor_mem_keepalive']
+      end
     end
   end
 
