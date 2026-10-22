@@ -14,20 +14,25 @@ require "rubocop"
 # integrates with RuboCop
 class RuboCopRunner < RuboCop::Runner
   def initialize
-    super(
-      ::RuboCop::Options.new.parse(
-        [
-          "--stderr",
-          "--force-exclusion",
-          "--format",
-          "RuboCop::Formatter::BaseFormatter",
-          "--raise-cop-error",
-          "--autocorrect",
-        ]
-      ).first,
-      ::RuboCop::ConfigStore.new
-    )
+    args = [
+      "--stderr",
+      "--force-exclusion",
+      "--format",
+      "RuboCop::Formatter::BaseFormatter",
+      "--raise-cop-error",
+      "--autocorrect",
+      # Without this, RuboCop searches upwards for a .rubocop.yml (and falls back to
+      # ~/.rubocop.yml), so the amount of work done would depend on where this repo
+      # happens to be checked out. Always benchmark against RuboCop's default config.
+      "--force-default-config",
+    ]
+    options, _paths = ::RuboCop::Options.new.parse(args)
 
+    config_store = ::RuboCop::ConfigStore.new
+    # This is how `RuboCop::CLI` applies the option to the config store
+    config_store.force_default_config! if options[:force_default_config]
+
+    super(options, config_store)
   end
 
   def run(path, contents)
