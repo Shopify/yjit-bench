@@ -521,8 +521,10 @@ Ractor's own object space. The JSON output records the scope as
 
 The text summary shows GC data in separate tables after the timing table.
 A single-executable report has one `GC summary` table. A comparison report
-has a `GC time ratios` table (base/comparison) and a `GC counts` table
-(base → comparison). A table hides a column that has no data in any row and
+has a `GC per ruby` table, a `GC time ratios` table (base/comparison), and a
+`GC counts` table (base → comparison). The `GC per ruby` table has one row
+for each ruby, including the base, with the absolute `GC summary` columns.
+A table hides a column that has no data in any row and
 lists the hidden columns below the table. A ratio column has no data when it
 is `N/A` in every row; a `0.000` ratio stays visible. Any other column has no
 data when it is zero or `N/A` in every row.
@@ -530,9 +532,10 @@ data when it is zero or `N/A` in every row.
 * Tables marked `worker sum` add the Ractor-local counters and GC times of
   the sampled workers of each iteration. `GCs/iter` is the sum of `minor/iter`,
   `major/iter`, and `global/iter`; a global cycle counts under `global` on
-  the Ractor that initiated it, not under `major`. Single-executable reports
-  also show `GC ms/worker`, which divides each iteration's worker-sum GC
-  time by its sampled worker count, then averages.
+  the Ractor that initiated it, not under `major`. The absolute GC tables
+  (the single-executable `GC summary` and the `GC per ruby` table) also show
+  `GC ms/worker`, which divides each iteration's worker-sum GC time by its
+  sampled worker count, then averages.
 * `compacts*` shows the main Ractor's
   `GC.stat(:compact_count)` delta. Every global compacting cycle increments
   it in every object space, so it is not summed across workers.
